@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vet Appointment System</title>
+  <link rel="stylesheet" href="../styles/index.css" />
+  <link rel="stylesheet" href="../styles/index_Footer.css" />
+  <link rel="stylesheet" href="../styles/index_Header.css" />
+</head>
+<body>
+
+  <!-- Header Section -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-wrapper">
+        <img src="../Image/logo.png" alt="Logo" class="logo-header" />
+      </div>
+      <h1 class="brand-name">FUR-EVER CARE</h1>
+    </div>
+    <div class="header-right">
+      <nav class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#contact">Contact</a>
+        <button class="header-btn" id="loginBtn">Log in</button>
+        
+        <!-- Login Options Popup -->
+        <div id="loginPopup" class="login-popup">
+          <button class="popup-btn" id="clientBtn">Client</button>
+          <button class="popup-btn" id="adminBtn">Admin</button>
+        </div>
+
+        <!-- Admin Login Form -->
+        <div class="overlay" id="adminOverlay">
+          <div class="form-container">
+            <button class="close-btn" id="closeAdmin">&times;</button>
+            <h2 class="form-title">Admin Login</h2>
+            <form class="login-form" action="../php/login_admi.php" method="post">
+              <div class="form-group">
+                <label for="adminUsername">Username <span class="required">*</span></label>
+                <input type="text" id="adminUsername" name="username" required />
+              </div>
+              <div class="form-group">
+                <label for="adminPassword">Password <span class="required">*</span></label>
+                <input type="password" id="adminPassword" name="password" required />
+              </div>
+              <button type="submit" class="submit-btn">Login</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Client Login Form -->
+        <div class="overlay" id="clientOverlay">
+          <div class="form-container">
+            <button class="close-btn" id="closeClient">&times;</button>
+            <h2 class="form-title">Client Login</h2>
+            <form class="login-form" action="../php/login.php" method="post">
+              <div class="form-group">
+                <label for="clientEmail">Username <span class="required">*</span></label>
+                <input type="text" id="clientEmail" name="username" required />
+              </div>
+              <div class="form-group">
+                <label for="clientPassword">Password <span class="required">*</span></label>
+                <input type="password" id="clientPassword" name="password" required />
+              </div>
+              <button type="submit" class="submit-btn">Login</button>
+            </form>
+          </div>
+        </div>
+
+        <button class="header-btn">Sign up</button>
+        <img src="../Image/profile 1.png" alt="User" class="user-icon" />
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <div class="home">
+    <main class="hero">
+      <div class="hero-left">
+        <h1>
+          Loving Care for <br /> Your <span>Precious Pets</span>
+        </h1>
+        <p>Your pet's happiness is our priority!</p>
+
+        <div class="hero-buttons">
+          <button class="btn-gradient">Book Your Pet's Visit</button>
+          <button class="btn-outline">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#001B66"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="heart-icon"
+            >
+              <path d="M20.8 4.6c-1.5-1.5-3.9-1.5-5.4 0L12 8l-3.4-3.4c-1.5-1.5-3.9-1.5-5.4 0s-1.5 3.9 0 5.4L12 20l8.8-9.9c1.5-1.5 1.5-3.9 0-5.5z" />
+            </svg>
+            Learn More
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="image-placeholder">
+          <img src="../Image/pet.jpg" alt="Pet" class="pet-image" />
+        </div>
+        <div class="carousel-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+ <!-- footer -->
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+
+  <script src="../script/index.js"></script>
+  <script>
+    // JS to toggle login popups and overlays
+    const loginBtn = document.getElementById('loginBtn');
+    const loginPopup = document.getElementById('loginPopup');
+    const adminBtn = document.getElementById('adminBtn');
+    const clientBtn = document.getElementById('clientBtn');
+    const adminOverlay = document.getElementById('adminOverlay');
+    const clientOverlay = document.getElementById('clientOverlay');
+    const closeAdmin = document.getElementById('closeAdmin');
+    const closeClient = document.getElementById('closeClient');
+
+    loginBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      loginPopup.classList.toggle('active');
+    });
+
+    adminBtn.addEventListener('click', () => {
+      loginPopup.classList.remove('active');
+      adminOverlay.style.display = 'flex';
+    });
+
+    clientBtn.addEventListener('click', () => {
+      loginPopup.classList.remove('active');
+      clientOverlay.style.display = 'flex';
+    });
+
+    closeAdmin.addEventListener('click', () => adminOverlay.style.display = 'none');
+    closeClient.addEventListener('click', () => clientOverlay.style.display = 'none');
+
+    // Hide overlays when clicking outside
+    window.addEventListener('click', (e) => {
+      if (e.target === adminOverlay) adminOverlay.style.display = 'none';
+      if (e.target === clientOverlay) clientOverlay.style.display = 'none';
+    });
+  </script>
+</body>
+</html>

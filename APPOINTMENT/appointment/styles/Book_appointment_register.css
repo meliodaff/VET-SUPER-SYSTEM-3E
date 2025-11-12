@@ -1,0 +1,95 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #fff;
+  margin: 0;
+  padding: 0%;
+  color: #002060;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  margin: 90px auto;
+}
+
+h1 {
+  text-align: center;
+  color: #002060;
+}
+.form-title {
+  text-align: center;
+  font-size: 42px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.subtitle {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+/* Form Sections */
+.section {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding: 15px;
+}
+
+.section-title {
+  font-weight: bold;
+  margin-bottom: 30px;
+  margin-top: 30px;
+  color: #002060;
+  display: inline-block;
+  width: 49%;
+  font-size: 23px;
+  
+}
+
+.section-title.wide {
+  width: 100%;
+}
+
+/* Form Rows */
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+/* Default inputs stretch equally */
+input, select, textarea {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  background: #f5fcff;
+  font-size: 14px;
+}
+
+/* Make short inputs fixed width */
+.short-input {
+  flex: 0 0 0px;
+  width: 160px; /* fixed 120px */
+}
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #002060;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #1a3d7c;
+}

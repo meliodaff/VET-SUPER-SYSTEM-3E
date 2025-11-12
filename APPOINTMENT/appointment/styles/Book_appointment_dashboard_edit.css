@@ -1,0 +1,123 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #002060;
+  transition: 0.3s;
+}
+
+/* Container */
+.container {
+  max-width: 900px;
+  padding: 30px;
+  background: #fff;
+  margin: 70px auto;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Titles */
+.container h1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 16px;
+  color: #444;
+}
+
+/* Form */
+.reschedule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Form rows */
+.form-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row label {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.form-row input,
+.form-row textarea,
+.form-row select {
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 15px;
+  background: #f0faff;
+  outline: none;
+}
+
+.form-row input:focus,
+.form-row textarea:focus,
+.form-row select:focus {
+  border-color: #002060;
+  box-shadow: 0 0 5px rgba(0, 32, 96, 0.3);
+}
+
+/* Two columns layout */
+.two-columns {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.two-columns > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Form buttons */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 12px 25px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  font-size: 15px;
+}
+
+/* Save button */
+.save-btn {
+  background-color: #002060;
+  color: #fff;
+}
+
+.save-btn:hover {
+  background-color: #001040;
+}
+
+/* Cancel button */
+.cancel-btn {
+  background-color: #fff;
+  border: 1px solid #002060;
+  color: #002060;
+}
+
+.cancel-btn:hover {
+  background-color: #002060;
+  color: #fff;
+}

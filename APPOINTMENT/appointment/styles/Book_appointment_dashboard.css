@@ -1,0 +1,103 @@
+/* Container */
+.container {
+  max-width: 1100px;
+  margin: 90px auto;
+  padding: 20px;
+  
+}
+
+/* Header */
+.appointments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.appointments-header h1 {
+  font-size: 28px;
+  font-weight: bold;
+  color: #002060;
+}
+
+.new-appointment {
+  padding: 12px 20px;
+  background: #002060;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.new-appointment:hover {
+  background: #001040;
+}
+
+/* Table */
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.appointments-table th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 2px solid #ccc;
+  color: #002060;
+  font-size: 16px;
+}
+
+.appointments-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: top;
+}
+
+.appointments-table tr {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.appointments-table td strong {
+  color: #002060;
+}
+
+/* Status Tags */
+.status {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.status.booked {
+  background: #002060;
+  color: #fff;
+}
+
+.status.confirmed {
+  background: #d6fdd6;
+  color: #006600;
+}
+
+.status.completed {
+  background: #e6e6e6;
+  color: #333;
+}
+
+/* Action Links */
+.appointments-table td a {
+  display: inline-block;
+  margin-top: 4px;
+  color: #002060;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.appointments-table td a:hover {
+  text-decoration: underline;
+}
+
