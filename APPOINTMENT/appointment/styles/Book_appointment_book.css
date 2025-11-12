@@ -1,0 +1,120 @@
+/* Scoped Reset: only inside .container */
+.container,
+.container * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #002060;
+}
+
+/* Container */
+.container {
+  max-width: 1000px;
+  padding: 30px;
+  background: #fff;
+  margin: 90px auto;
+  border-radius: 10px; /* smoother corners */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* subtle depth */
+}
+
+/* Titles */
+.container h1 {
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.container .subtitle {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 16px;
+  color: #666;
+}
+
+.container .form-title {
+  text-align: center;
+  font-size: 36px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: #001540;
+}
+
+/* Form */
+.container .appointment-form {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  background: #fafcff;
+}
+
+.container .section-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Form Rows */
+.container .form-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.container .form-row input,
+.container .form-row select {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background: #f0f8ff;
+  transition: all 0.3s ease;
+  width: 100%; /* Makes Phone Number, Email, Payment Method same width */
+}
+
+.container .form-row input:focus,
+.container .form-row select:focus {
+  border-color: #002060;
+  box-shadow: 0 0 6px rgba(0, 32, 96, 0.3);
+}
+
+/* Submit Button */
+.container .submit-btn {
+  padding: 14px 20px;
+  background: #002060;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  width: 100%;
+}
+
+.container .submit-btn:hover {
+  background: #001040;
+  transform: translateY(-2px);
+}
+
+.status-options {
+  display: flex;
+  gap: 20px; /* space between options */
+  margin-top: 5px;
+}
+
+.status-options label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+

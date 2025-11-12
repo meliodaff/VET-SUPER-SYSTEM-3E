@@ -1,0 +1,148 @@
+/* Header */
+.header {
+      display: flex;
+      align-items: center;
+      width: 92%;
+      height: 85px;
+      justify-content: space-between;
+      background: #afecff;
+      padding: 15px 30px 15px 0;
+      border-radius: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin: 20px auto 0 auto;
+    }
+
+/* Left section (logo + name) */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Logo wrapper (circular container) */
+.logo-wrapper {
+  height: 90px;
+  width: 90px;
+  border-radius: 50%;
+  overflow: hidden; /* ensures image stays inside circle */
+  flex-shrink: 0;
+  margin-left: 20px;
+  margin-right: 0px;
+}
+
+.logo-header {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* makes sure the image fills the circle */
+}
+
+
+/* Brand name (logo text) */
+.brand-name {
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;   /* increased from 1.3rem */
+  color: #003366;
+}
+
+
+/* Book Now button */
+.header-btn {
+  background: #fff;
+  color: #003366;
+  border: 2px solid #003366;
+  font-size: 14px;
+  padding: 5px 15px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 27, 102, 0.15);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.header-btn:hover {
+  background: #e6f3fa;
+  color: #001b66;
+}
+.header-btn.active {
+  background: #e0e0e0;
+  color: #003366;
+}
+
+/* Admin button */
+
+.admin-btn {
+  background: #fff;
+  color: #003366;
+  border: 2px solid #003366;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 0.5em 1.5em;
+  border-radius: 40px;
+  box-shadow: 0 2px 6px rgba(0, 27, 102, 0.15);
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Header right section (Book Now + Nav Links + Icon) */
+.header-right {
+  display: flex;
+  align-items: center;  /* makes everything (button + links + icon) center aligned vertically */
+  gap: 1.2rem;
+}
+
+/* Navigation links */
+.nav-links {
+  display: flex;
+  align-items: center;   /* keeps text centered with button */
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  font-size: 16px;
+  font-weight: 500;
+  color: #001b66;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: #3d7cff;
+}
+
+/* User icon */
+.user-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  margin-right: 0px;
+}
+
+/* Logout Popup */
+.logout-popup {
+  position: absolute;
+  top: 60px; /* adjust based on header height */
+  right: 20px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: none; /* hidden by default */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  z-index: 1000;
+}
+
+.logout-popup button {
+  background: #dc3545; /* red fill */
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 10px 14px;
+  width: 100%;
+  text-align: center;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* shadow */
+  transition: all 0.3s ease;
+}
+
+.logout-popup button:hover {
+  background: #c82333; /* darker red when hovered */
+}
+
