@@ -1,0 +1,276 @@
+/* * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+.body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("/images/background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.attendance {
+  width: 50%;
+  padding: 40px;
+  position: relative;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 50px;
+}
+
+.logo img {
+  width: 150px;
+  height: 140px;
+}
+
+.logo h1 {
+  font-size: 40px;
+  color: #5080be;
+  font-weight: 800;
+}
+
+.form {
+  text-align: center;
+  margin-left: 30px;
+  margin-top: -10px;
+}
+
+.title {
+  font-size: 28px;
+  color: #1d5e9e;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.attend_form input {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+label {
+  display: block;
+  text-align: left;
+  font-weight: 600;
+  color: #1d5e9e;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.time-field {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+
+.time-fields {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.time-field label {
+  font-weight: 600;
+  color: #1d5e9e;
+  margin-bottom: 5px;
+}
+
+.time-fields input {
+  width: 100%;
+}
+
+button {
+  width: 100%;
+  height: 40px;
+  padding: 10px;
+  border: none;
+  background-color: #1d5e9e;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 20px;
+}
+
+button:hover {
+  background-color: #164a7c;
+}
+
+.img_bg {
+  width: 50%;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+}
+
+.img_bg img {
+  width: 90%;
+  border-radius: 20px;
+}
+
+.popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.popup-box {
+  background: #fff;
+  border-radius: 30px;
+  width: 1000px;
+  padding: 40px 20px;
+  text-align: center;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+.close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #000;
+}
+
+.profile-pic {
+  width: 150px;
+  height: 150px;
+  background-color: #d3d3d3;
+  border-radius: 50%;
+  margin: 0 auto 25px;
+  object-fit: cover;
+}
+
+.popup-box h3 {
+  color: #1d5e9e;
+  margin-bottom: 10px;
+  font-size: 50px;
+}
+
+.popup-box p {
+  font-size: 20px;
+  margin: 6px 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    background-position: center;
+    flex-direction: column;
+  }
+
+  .attendance {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .logo img {
+    width: 120px;
+    height: 110px;
+  }
+
+  .logo h1 {
+    font-size: 28px;
+  }
+
+  .form {
+    margin-left: 0;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .attend_form input {
+    font-size: 14px;
+  }
+
+  button {
+    font-size: 16px;
+    height: 38px;
+  }
+
+  .popup-box {
+    width: 300px;
+    padding: 30px 15px;
+  }
+
+  .popup-box h3 {
+    font-size: 24px;
+  }
+
+  .popup-box p {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .logo img {
+    width: 100px;
+    height: 90px;
+  }
+
+  .logo h1 {
+    font-size: 24px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  label {
+    font-size: 13px;
+  }
+
+  button {
+    font-size: 14px;
+  }
+
+  .popup-box {
+    width: 250px;
+  }
+} */
