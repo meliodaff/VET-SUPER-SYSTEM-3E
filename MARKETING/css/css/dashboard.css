@@ -1,0 +1,420 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Header and Navigation */
+header {
+    background-color: #ffffff;
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.logo img {
+    height: 85px;
+    width: auto;
+}
+
+.logo span {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.6rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #007bff;
+}
+
+.book-now {
+    background-color: #007bff;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.book-now:hover {
+    background-color: #0056b3;
+}
+
+/* Profile dropdown */
+.profile-menu {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 50px; 
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  width: 200px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease-in-out;
+  z-index: 1000;
+}
+
+.dropdown li {
+  padding: 10px 20px;
+}
+
+.dropdown li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+  transition: background 0.2s;
+}
+
+.dropdown li a:hover {
+  background: #f5f5f5;
+}
+
+.dropdown li.logout a {
+  color: red;
+  font-weight: bold;
+}
+
+.profile-menu:hover .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Dashboard Logo */
+.dashboardlogo {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.dashboardlogo img {
+  width: 120px;
+  height: auto;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  text-align: center;
+  margin: 30px 0;
+  color: #003366;
+}
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+.dashboard-header h1 span {
+  padding: 0 5px;
+  border-radius: 5px;
+}
+
+/* Tabs */
+.tabs {
+  display: inline-flex;
+  background: #1d0a5b;
+  border-radius: 30px;
+  padding: 5px;
+  margin: 20px auto;
+  justify-content: center;
+}
+.tabs-container {
+  display: flex;
+  justify-content: center;
+}
+.tab {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+  text-decoration: none;
+}
+.tab.active {
+  background: #fff;
+  color: #000;
+}
+.tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Pets Section */
+.pets-section {
+  padding: 20px;
+  text-align: center;
+}
+.pets-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.pet-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  width: 250px;
+  text-align: left;
+}
+.pet-card h3 {
+  margin: 0;
+  color: #2c0b5e;
+}
+.pet-card button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  border: none;
+  background: #2c0b5e;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Summary Section */
+.summary-section {
+  padding: 20px;
+  text-align: center;
+}
+.summary-boxes {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.summary-box {
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 180px;
+}
+
+/* Appointments Section */
+.appointments-section {
+  padding: 20px;
+  text-align: center;
+}
+.appointment-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 10px auto;
+  max-width: 400px;
+  text-align: left;
+}
+
+
+
+
+/* Footer Styles */
+.main-footer {
+  background: #002d72;
+  color: white;
+  padding: 2rem 1.5rem 1rem;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+  gap: 2rem;
+}
+
+/* Brand (Logo + Text) */
+.footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.footer-logo {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+}
+
+.footer-center {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.footer-title h2 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+}
+
+.footer-title p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: white;
+}
+
+/* Schedule */
+.footer-schedule h3,
+.footer-contact h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.schedule-card {
+  background: #6c7ea7;
+  color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 230px;
+}
+
+.schedule-icon {
+  font-size: 1.5rem;
+  color: black; 
+}
+
+.schedule-text p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+.schedule-text .emergency {
+  color: red;
+  font-weight: bold;
+}
+
+/* Contact */
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.contact-item {
+  background: #6c7ea7;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.9rem;
+}
+
+.contact-item.careers {
+  background: #6c7ea7;
+  color: white;
+  font-weight: 600;
+}
+
+/* Bottom Bar */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.85rem;
+}
+.footer-bottom a {
+  color: white;
+  text-decoration: none;
+}
+.footer-bottom a:hover {
+  text-decoration: underline;
+}
+
+.contact-item svg,
+.schedule-icon svg {
+  flex-shrink: 0;
+  color: black;
+}
+
+.contact-item svg {
+  stroke: white;
+}
+
+.contact-item.careers svg {
+  stroke: white;
+}
+
+.footer-bottom svg {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.paw-icon {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    margin-top: -2px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .schedule-card {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-contact {
+    width: 100%;
+    align-items: center;
+  }
+}
