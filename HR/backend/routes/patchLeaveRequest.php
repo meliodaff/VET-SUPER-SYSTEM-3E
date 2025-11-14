@@ -1,23 +1,28 @@
 <?php
-require_once __DIR__ . '/../config/config.php';
+// require_once __DIR__ . '/../config/config.php';
 include_once __DIR__ . "/../config/database.php";
-require_once __DIR__ . "/../controllers/getSchedule.controller.php";
+require_once __DIR__ . "/../controllers/patchLeaveRequest.controller.php";
 include_once __DIR__ . "/../config/cors.php";
+
 
 
 $REQUEST_METHOD = $_SERVER["REQUEST_METHOD"];
 
 
 if($REQUEST_METHOD === "GET"){
+    $requestId = isset($_GET["requestId"]) ? $_GET["requestId"] : null;
     $idParams = isset($_GET["id"]) ? $_GET["id"] : null;
-    if(!$idParams) {
-
-        $response = getEmployeeSchedules($pdo);
+    $status = isset($_GET["status"]) ? $_GET["status"] : null;
+    if(!$idParams || !$status || !$requestId) {
+        http_response_code(400);
+        $response = [
+            "error" => "Missing ID or status params"
+        ];
+        echo json_encode($response);
+        return;
     } else {
-        
-        $response = getEmployeeSchedule($idParams, $pdo);
+        $response = patchLeaveRequest($requestId, $status, $idParams, $pdo);
     }
-
 
     if (!$response["success"]){
         http_response_code(500);

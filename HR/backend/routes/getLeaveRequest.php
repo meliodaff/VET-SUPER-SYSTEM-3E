@@ -22,11 +22,13 @@ if($REQUEST_METHOD === "GET"){
     if (!$response["success"]){
         http_response_code(500);
         $response = [
+            "success" => false,
             "error" => $response["error"]
         ];
     } else {
         http_response_code(200);
         $response = [
+            "success" => true,
             "data" => $response["data"]
         ];
     }

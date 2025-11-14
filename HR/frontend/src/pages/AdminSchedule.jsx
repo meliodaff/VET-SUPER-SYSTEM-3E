@@ -1,8 +1,17 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Search, Edit, ChevronLeft, ChevronRight, X, Save } from "lucide-react";
+import {
+  Search,
+  Edit,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
+import useGetSchedule from "../api/useGetSchedule";
 
 export default function AttendanceSchedule() {
   const navigate = useNavigate();
@@ -10,9 +19,12 @@ export default function AttendanceSchedule() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 8, 1));
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [editingIndex, setEditingIndex] = useState(null);
   const [editedNotes, setEditedNotes] = useState("");
+  const [isEditScheduleModalOpen, setIsEditScheduleModalOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState(null);
+  const [editingDay, setEditingDay] = useState("");
 
   const {
     getAttendanceRecords,
@@ -60,37 +72,9 @@ export default function AttendanceSchedule() {
     fetchAttendance();
   }, [selectedDate]);
 
-  // Sample schedule data
-  const [scheduleData, setScheduleData] = useState([
-    {
-      employeeId: "VT-12345",
-      name: "Sphere Star",
-      shift: "09/10/2025",
-      time: "10:00 AM",
-      notes: "Morning shift",
-    },
-    {
-      employeeId: "VT-22345",
-      name: "Mean Arthur",
-      shift: "09/10/2025",
-      time: "10:05 AM",
-      notes: "Full day",
-    },
-    {
-      employeeId: "VT-32345",
-      name: "Juan Dela Cruz",
-      shift: "09/11/2025",
-      time: "08:30 AM",
-      notes: "Early shift",
-    },
-    {
-      employeeId: "VT-42345",
-      name: "Maria Santos",
-      shift: "09/12/2025",
-      time: "02:00 PM",
-      notes: "Afternoon",
-    },
-  ]);
+  // Schedule data
+  const [scheduleData, setScheduleData] = useState([]);
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
 
   // Filter and sort attendance
   const filteredAttendance = useMemo(() => {
@@ -115,18 +99,73 @@ export default function AttendanceSchedule() {
     return filtered;
   }, [searchQuery, sortBy, attendanceData]);
 
-  // Filter and sort schedule
+  const { getSchedules, loadingForGetSchedule } = useGetSchedule();
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      setLoadingSchedule(true);
+      const response = await getSchedules();
+      console.log("Schedule Response:", response);
+
+      if (!response.success) {
+        console.error(response.message);
+        setLoadingSchedule(false);
+        return;
+      }
+
+      // Transform API data to schedule format - NOW INCLUDING NAMES
+      const transformedData = response.data.map((record, index) => ({
+        id: `${record.employee_id}-${record.day_of_week}-${index}`,
+        employeeId: record.employee_id,
+        name: `${record.first_name} ${record.last_name}`, // ADD THIS LINE
+        department: record.department,
+        position: record.Position, // Also add position if you want
+        hireDate: record.hire_date,
+        employmentType: record.employment_type,
+        dayOfWeek: record.day_of_week,
+      }));
+
+      setScheduleData(transformedData);
+      setLoadingSchedule(false);
+    };
+
+    fetchSchedules();
+  }, []);
+
+  // Filter and sort schedule - group by employee
   const filteredSchedule = useMemo(() => {
-    let filtered = scheduleData.filter((record) => {
+    // Group schedules by employee
+    const groupedByEmployee = {};
+    scheduleData.forEach((record) => {
+      if (!groupedByEmployee[record.employeeId]) {
+        groupedByEmployee[record.employeeId] = {
+          employeeId: record.employeeId,
+          name: record.name, // ADD THIS LINE
+          department: record.department,
+          position: record.position, // ADD THIS LINE
+          hireDate: record.hireDate,
+          employmentType: record.employmentType,
+          days: [],
+        };
+      }
+      groupedByEmployee[record.employeeId].days.push(record.dayOfWeek);
+    });
+
+    let filtered = Object.values(groupedByEmployee).filter((record) => {
       const query = searchQuery.toLowerCase();
       return (
-        record.employeeId.toLowerCase().includes(query) ||
-        record.name.toLowerCase().includes(query)
+        record.employeeId?.toString().toLowerCase().includes(query) ||
+        record.name?.toLowerCase().includes(query) || // ADD THIS LINE for name search
+        record.department?.toLowerCase().includes(query)
       );
     });
 
-    if (sortBy === "position") {
-      filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === "employee") {
+      filtered = [...filtered].sort((a, b) => a.employeeId - b.employeeId);
+    } else if (sortBy === "department") {
+      filtered = [...filtered].sort((a, b) =>
+        a.department.localeCompare(b.department)
+      );
     }
 
     return filtered;
@@ -174,6 +213,48 @@ export default function AttendanceSchedule() {
   const handleCancelEdit = () => {
     setEditingIndex(null);
     setEditedNotes("");
+  };
+
+  const handleEditSchedule = (record) => {
+    setEditingSchedule(record);
+    setEditingDay("");
+    setIsEditScheduleModalOpen(true);
+  };
+
+  const handleSaveSchedule = () => {
+    if (editingSchedule && editingDay) {
+      // Check if the day already exists for this employee
+      const dayExists = editingSchedule.days.includes(editingDay);
+
+      if (!dayExists) {
+        // Add the new day to the schedule data
+        setScheduleData((prev) => [
+          ...prev,
+          {
+            id: `${editingSchedule.employeeId}-${editingDay}-${Date.now()}`,
+            employeeId: editingSchedule.employeeId,
+            department: editingSchedule.department,
+            hireDate: editingSchedule.hireDate,
+            employmentType: editingSchedule.employmentType,
+            dayOfWeek: editingDay,
+          },
+        ]);
+      } else {
+        alert("This employee is already scheduled for " + editingDay);
+      }
+
+      setIsEditScheduleModalOpen(false);
+      setEditingSchedule(null);
+      setEditingDay("");
+    } else if (!editingDay) {
+      alert("Please select a day");
+    }
+  };
+
+  const handleDeleteSchedule = (id) => {
+    if (window.confirm("Are you sure you want to delete this schedule?")) {
+      setScheduleData((prev) => prev.filter((record) => record.id !== id));
+    }
   };
 
   return (
@@ -352,7 +433,7 @@ export default function AttendanceSchedule() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                       type="text"
-                      placeholder="Search"
+                      placeholder="Search by Employee ID or Department"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -363,113 +444,187 @@ export default function AttendanceSchedule() {
                     onChange={(e) => setSortBy(e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-auto"
                   >
-                    <option value="">Sort by Position</option>
-                    <option value="position">Name A-Z</option>
+                    <option value="">Sort by</option>
+                    <option value="employee">Employee ID</option>
+                    <option value="department">Department</option>
                   </select>
                 </div>
 
                 {/* Schedule Table */}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
-                          Employee ID
-                        </th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
-                          Name
-                        </th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
-                          Shift
-                        </th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
-                          Time
-                        </th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
-                          Notes
-                        </th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {filteredSchedule.length > 0 ? (
-                        filteredSchedule.map((record, index) => (
-                          <tr
-                            key={index}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900">
-                              {record.employeeId}
-                            </td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900">
-                              {record.name}
-                            </td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900">
-                              {record.shift}
-                            </td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900">
-                              {record.time}
-                            </td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3">
-                              {editingIndex === index ? (
-                                <div className="flex gap-2 items-center">
-                                  <input
-                                    type="text"
-                                    value={editedNotes}
-                                    onChange={(e) =>
-                                      setEditedNotes(e.target.value)
-                                    }
-                                    className="flex-1 px-2 py-1 border border-blue-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    autoFocus
-                                  />
-                                  <button
-                                    onClick={() => handleSaveNotes(index)}
-                                    className="p-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                                    title="Save"
-                                  >
-                                    <Save className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={handleCancelEdit}
-                                    className="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                                    title="Cancel"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              ) : (
-                                <span className="text-gray-900">
-                                  {record.notes}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3">
-                              {editingIndex !== index && (
-                                <button
-                                  className="p-1 hover:bg-gray-100 rounded transition-colors"
-                                  onClick={() =>
-                                    handleEditClick(index, record.notes)
-                                  }
-                                  title="Edit notes"
-                                >
-                                  <Edit className="w-4 h-4 text-gray-600" />
-                                </button>
-                              )}
+                  {loadingSchedule ? (
+                    <div className="text-center py-8 text-gray-500">
+                      Loading schedules...
+                    </div>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
+                            No.
+                          </th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
+                            Name
+                          </th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
+                            Employment Type
+                          </th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
+                            Scheduled Days
+                          </th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-black text-gray-900 uppercase">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {filteredSchedule.length > 0 ? (
+                          filteredSchedule.map((record, key) => {
+                            console.log("Schedule Record:", record);
+                            const isOnLeave =
+                              record.employmentType == "On Leave"
+                                ? true
+                                : false;
+                            const allWeekDays = [
+                              "Monday",
+                              "Tuesday",
+                              "Wednesday",
+                              "Thursday",
+                              "Friday",
+                              "Saturday",
+                              "Sunday",
+                            ];
+                            const hasAllDays = allWeekDays.every((day) =>
+                              record.days.includes(day)
+                            );
+                            const displayDays = hasAllDays
+                              ? ["Everyday"]
+                              : record.days;
+
+                            return (
+                              <tr
+                                key={key}
+                                className={`transition-colors ${
+                                  isOnLeave
+                                    ? "bg-red-50 cursor-not-allowed"
+                                    : "hover:bg-gray-50"
+                                }`}
+                              >
+                                <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900 font-semibold">
+                                  {key + 1}
+                                </td>
+                                <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900">
+                                  {record.name}
+                                  {isOnLeave && (
+                                    <span className="ml-2 px-2 py-0.5 bg-red-200 text-red-800 text-xs font-bold rounded">
+                                      ON LEAVE
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900 text-xs">
+                                  {record.employmentType}
+                                </td>
+                                <td className="px-2 sm:px-4 py-2 sm:py-3">
+                                  <div className="flex flex-wrap gap-1">
+                                    {displayDays.map((day, idx) => (
+                                      <span
+                                        key={idx}
+                                        className={`px-2 py-1 rounded text-xs font-semibold whitespace-nowrap ${
+                                          isOnLeave
+                                            ? "bg-red-100 text-red-700"
+                                            : "bg-blue-100 text-blue-700"
+                                        }`}
+                                      >
+                                        {day === "Everyday"
+                                          ? day
+                                          : day.substring(0, 3)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="px-2 sm:px-4 py-2 sm:py-3">
+                                  <div className="flex gap-2 items-center">
+                                    <button
+                                      onClick={() =>
+                                        !isOnLeave && handleEditSchedule(record)
+                                      }
+                                      disabled={isOnLeave}
+                                      className={`p-1 rounded transition-colors ${
+                                        isOnLeave
+                                          ? "opacity-50 cursor-not-allowed"
+                                          : "hover:bg-blue-100"
+                                      }`}
+                                      title={
+                                        isOnLeave
+                                          ? "Cannot edit - Employee on leave"
+                                          : "Edit schedule"
+                                      }
+                                    >
+                                      <Edit
+                                        className={`w-4 h-4 ${
+                                          isOnLeave
+                                            ? "text-gray-400"
+                                            : "text-blue-600"
+                                        }`}
+                                      />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (isOnLeave) return;
+                                        if (
+                                          window.confirm(
+                                            "Are you sure you want to delete all schedules for this employee?"
+                                          )
+                                        ) {
+                                          setScheduleData((prev) =>
+                                            prev.filter(
+                                              (s) =>
+                                                s.employeeId !==
+                                                record.employeeId
+                                            )
+                                          );
+                                        }
+                                      }}
+                                      disabled={isOnLeave}
+                                      className={`p-1 rounded transition-colors ${
+                                        isOnLeave
+                                          ? "opacity-50 cursor-not-allowed"
+                                          : "hover:bg-red-100"
+                                      }`}
+                                      title={
+                                        isOnLeave
+                                          ? "Cannot delete - Employee on leave"
+                                          : "Delete all schedules for this employee"
+                                      }
+                                    >
+                                      <Trash2
+                                        className={`w-4 h-4 ${
+                                          isOnLeave
+                                            ? "text-gray-400"
+                                            : "text-red-600"
+                                        }`}
+                                      />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan="5"
+                              className="px-4 py-8 text-center text-gray-500"
+                            >
+                              {scheduleData.length === 0
+                                ? "No schedules found"
+                                : "No matching schedules"}
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan="6"
-                            className="px-4 py-8 text-center text-gray-500"
-                          >
-                            No records found
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
 
@@ -558,6 +713,130 @@ export default function AttendanceSchedule() {
           )}
         </div>
       </div>
+
+      {/* Edit Schedule Modal */}
+      {isEditScheduleModalOpen && editingSchedule && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-6 text-white">
+              <h2 className="text-2xl font-black">Edit Schedule</h2>
+              <p className="text-blue-100 text-sm mt-1">
+                Employee ID: {editingSchedule.employeeId}
+              </p>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  value={editingSchedule.department}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                  Employment Type
+                </label>
+                <input
+                  type="text"
+                  value={editingSchedule.employmentType}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                  Current Scheduled Days
+                </label>
+                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg">
+                  {editingSchedule.days && editingSchedule.days.length > 0 ? (
+                    editingSchedule.days.map((day, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold"
+                      >
+                        {day}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-500 text-sm">
+                      No scheduled days
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                  Add/Edit Day of Week
+                </label>
+                <select
+                  value={editingDay}
+                  onChange={(e) => setEditingDay(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">Select a day to add</option>
+                  {[
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday",
+                  ].map((day) => (
+                    <option
+                      key={day}
+                      value={day}
+                      disabled={editingSchedule.days.includes(day)}
+                    >
+                      {day}
+                      {editingSchedule.days.includes(day)
+                        ? " (Already scheduled)"
+                        : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <p className="text-xs text-blue-600">
+                  <strong>Note:</strong> Select a day to add to this employee's
+                  schedule. Changes will be saved when you click Save Changes.
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setIsEditScheduleModalOpen(false);
+                  setEditingSchedule(null);
+                  setEditingDay("");
+                }}
+                className="flex-1 px-4 py-2 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveSchedule}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

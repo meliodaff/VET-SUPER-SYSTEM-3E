@@ -2,7 +2,6 @@
     include_once __DIR__ . "/../config/database.php";
     // require_once __DIR__ . "/../utils/checkDuplicateEmailForEmployee.php";
     require_once __DIR__ . "/../utils/checkLeaveRequestBalance.php";
-    require_once __DIR__ . "/../utils/checkLeaveRequestPending.php";
     function insertLeaveRequest($pdo, $leaveDetails, $files){
 
         

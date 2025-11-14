@@ -6,6 +6,9 @@
     function getEmployeeSchedules($pdo) {
     
         $query = "SELECT
+e.first_name,
+e.last_name,
+e.Position,
 e.employee_id,
 e.department,
 e.hire_date,
@@ -35,6 +38,9 @@ ON	e.employee_id = es.employee_id";
 
     function getEmployeeSchedule($id, $pdo) {
         $query = "SELECT
+e.first_name,
+e.last_name,
+e.Position,
 e.employee_id,
 e.department,
 e.hire_date,

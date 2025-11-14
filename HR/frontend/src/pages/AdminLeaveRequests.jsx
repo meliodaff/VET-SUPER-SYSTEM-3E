@@ -7,8 +7,12 @@ import {
   Check,
   X,
   MessageSquare,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import DashboardLayout from "../components/layouts/DashboardLayout";
+import useGetLeaveRequest from "../api/useGetLeaveRequest";
+import usePatchLeaveRequest from "../api/usePatchLeaveRequest";
 
 export default function AdminLeaveRequests() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,8 +20,11 @@ export default function AdminLeaveRequests() {
   const [sortBy, setSortBy] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [actionNotes, setActionNotes] = useState("");
   const [actionType, setActionType] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [leaveRequests, setLeaveRequests] = useState([
     {
@@ -112,15 +119,71 @@ export default function AdminLeaveRequests() {
     },
   ]);
 
+  const {
+    getLeaveRequest,
+    getLeaveRequests,
+    loadingForGetLeaveRequest,
+    loadingForGetLeaveRequests,
+  } = useGetLeaveRequest();
+
+  useEffect(() => {
+    const useGetLeaveRequestFunc = async () => {
+      try {
+        const response = await getLeaveRequests();
+        console.log("Response from API:", response);
+
+        // Check if response exists and has success property
+        if (!response || !response.success) {
+          console.error(
+            "Failed to fetch leave requests:",
+            response?.message || "Unknown error"
+          );
+          return;
+        }
+
+        // Check if data exists and is an array
+        if (!response.data || !Array.isArray(response.data)) {
+          console.error("Response data is not an array");
+          return;
+        }
+
+        const formattedData = response.data.map((data, key) => ({
+          requestId: `LR-00${data.request_id}`,
+          employeeName: data.first_name + " " + data.last_name,
+          employeeId: data.employee_id,
+          leaveType: data.type_name,
+          startDate: data.start_date,
+          endDate: data.end_date,
+          duration: data.leave_days,
+          reason: data.reason_detail,
+          status: (data.status || "pending").toLowerCase(),
+          approvedBy: null,
+          approvalDate: null,
+          document: data.attachment_url,
+          notes: "-",
+        }));
+        setLeaveRequests(formattedData);
+      } catch (error) {
+        console.error("Error in useGetLeaveRequestFunc:", error);
+      }
+    };
+    useGetLeaveRequestFunc();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Filter and sort leave requests
   const filteredAndSortedRequests = useMemo(() => {
     let filtered = leaveRequests.filter((request) => {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
-        request.employeeId.toLowerCase().includes(query) ||
-        request.employeeName.toLowerCase().includes(query) ||
-        request.leaveType.toLowerCase().includes(query) ||
-        request.reason.toLowerCase().includes(query);
+        request.employeeId?.toString().toLowerCase().includes(query) ||
+        false ||
+        request.employeeName?.toLowerCase().includes(query) ||
+        false ||
+        request.leaveType?.toLowerCase().includes(query) ||
+        false ||
+        request.reason?.toLowerCase().includes(query) ||
+        false;
 
       const matchesFilter =
         filterStatus === "all" || request.status === filterStatus;
@@ -144,6 +207,22 @@ export default function AdminLeaveRequests() {
     return filtered;
   }, [leaveRequests, searchQuery, filterStatus, sortBy]);
 
+  // Pagination
+  const totalPages = Math.ceil(filteredAndSortedRequests.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRequests = filteredAndSortedRequests.slice(
+    startIndex,
+    endIndex
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterStatus, sortBy]);
+
+  const { patchLeaveRequests, loadingForPatchLeaveRequest } =
+    usePatchLeaveRequest();
   const handleApprove = (request) => {
     setSelectedRequest(request);
     setActionType("approve");
@@ -158,27 +237,67 @@ export default function AdminLeaveRequests() {
     setActionNotes("");
   };
 
-  const submitAction = () => {
+  const submitAction = async () => {
     if (!selectedRequest) return;
 
-    setLeaveRequests((prev) =>
-      prev.map((req) =>
-        req.id === selectedRequest.id
-          ? {
-              ...req,
-              status: actionType === "approve" ? "approved" : "rejected",
-              approvedBy: "Admin User",
-              approvalDate: new Date().toISOString().split("T")[0],
-              notes: actionNotes,
-            }
-          : req
-      )
-    );
+    const requestId = selectedRequest.requestId
+      .replace("LR-00", "")
+      .replace("LR-0", "")
+      .replace("LR-", "");
 
-    setIsModalOpen(false);
-    setSelectedRequest(null);
-    setActionNotes("");
-    setActionType(null);
+    console.log("Submitting action with:", {
+      requestId,
+      status: actionType === "approve" ? "Approved" : "Rejected",
+      employeeId: selectedRequest.employeeId,
+      actionNotes,
+    });
+
+    try {
+      const response = await patchLeaveRequests(
+        requestId,
+        actionType === "approve" ? "Approved" : "Rejected",
+        selectedRequest.employeeId
+      );
+
+      console.log("API Response:", response);
+
+      if (response?.success) {
+        setLeaveRequests((prev) =>
+          prev.map((req) =>
+            req.requestId === selectedRequest.requestId
+              ? {
+                  ...req,
+                  status: actionType === "approve" ? "approved" : "rejected",
+                  approvedBy: "Admin User",
+                  approvalDate: new Date().toISOString().split("T")[0],
+                  notes: actionNotes,
+                }
+              : req
+          )
+        );
+
+        setIsModalOpen(false);
+        setSelectedRequest(null);
+        setActionNotes("");
+        setActionType(null);
+
+        alert(
+          `Leave request ${
+            actionType === "approve" ? "approved" : "rejected"
+          } successfully!`
+        );
+      } else {
+        console.error("Failed to update leave request:", response);
+        alert(
+          `Failed to ${actionType} leave request: ${
+            response?.message || response?.error || "Unknown error"
+          }`
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting action:", error);
+      alert(`Error: ${error.message || "Failed to process request"}`);
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -345,14 +464,14 @@ export default function AdminLeaveRequests() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredAndSortedRequests.length > 0 ? (
-                  filteredAndSortedRequests.map((request) => (
+                  paginatedRequests.map((request, key) => (
                     <tr
-                      key={request.id}
+                      key={key}
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-semibold text-gray-900">
-                          {request.id}
+                          {request.requestId}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -405,7 +524,10 @@ export default function AdminLeaveRequests() {
                           </div>
                         ) : (
                           <button
-                            onClick={() => setSelectedRequest(request)}
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setIsDetailsModalOpen(true);
+                            }}
                             className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
                           >
                             View Details
@@ -426,12 +548,62 @@ export default function AdminLeaveRequests() {
                 )}
               </tbody>
             </table>
+
+            {/* Desktop Pagination */}
+            {filteredAndSortedRequests.length > 0 && (
+              <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div className="text-sm text-gray-600">
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(endIndex, filteredAndSortedRequests.length)} of{" "}
+                  {filteredAndSortedRequests.length} results
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="inline-flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                            currentPage === page
+                              ? "bg-blue-600 text-white"
+                              : "border border-gray-300 text-gray-700 hover:bg-gray-100"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    )}
+                  </div>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="inline-flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Leave Requests Cards - Mobile */}
           <div className="md:hidden space-y-4">
             {filteredAndSortedRequests.length > 0 ? (
-              filteredAndSortedRequests.map((request) => (
+              paginatedRequests.map((request) => (
                 <div
                   key={request.id}
                   className={`rounded-xl p-4 shadow-lg border-2 ${getLeaveTypeColor(
@@ -500,7 +672,10 @@ export default function AdminLeaveRequests() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => setSelectedRequest(request)}
+                      onClick={() => {
+                        setSelectedRequest(request);
+                        setIsDetailsModalOpen(true);
+                      }}
                       className="w-full text-blue-600 hover:text-blue-700 font-semibold text-sm py-2 rounded-lg hover:bg-blue-50 transition-colors"
                     >
                       View Details
@@ -513,9 +688,260 @@ export default function AdminLeaveRequests() {
                 No leave requests found
               </div>
             )}
+
+            {/* Mobile Pagination */}
+            {filteredAndSortedRequests.length > 0 && (
+              <div className="mt-6 flex items-center justify-between gap-2">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </button>
+                <div className="text-sm text-gray-600 font-semibold">
+                  {currentPage} / {totalPages}
+                </div>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Details Modal */}
+      {isDetailsModalOpen && selectedRequest && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-6 text-white sticky top-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-black">Leave Request Details</h2>
+                  <p className="text-blue-100 text-sm mt-1">
+                    {selectedRequest.requestId}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsDetailsModalOpen(false)}
+                  className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              {/* Employee Information */}
+              <div className="border-b border-gray-200 pb-4">
+                <h3 className="text-lg font-black text-gray-900 mb-4">
+                  Employee Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold uppercase">
+                      Employee Name
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {selectedRequest.employeeName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold uppercase">
+                      Employee ID
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {selectedRequest.employeeId}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Leave Information */}
+              <div className="border-b border-gray-200 pb-4">
+                <h3 className="text-lg font-black text-gray-900 mb-4">
+                  Leave Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold uppercase">
+                      Leave Type
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {selectedRequest.leaveType}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold uppercase">
+                      Duration
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {selectedRequest.duration} day
+                      {selectedRequest.duration > 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold uppercase">
+                      Start Date
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {formatDate(selectedRequest.startDate)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold uppercase">
+                      End Date
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {formatDate(selectedRequest.endDate)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Request Details */}
+              <div className="border-b border-gray-200 pb-4">
+                <h3 className="text-lg font-black text-gray-900 mb-4">
+                  Request Details
+                </h3>
+                <div>
+                  <p className="text-xs text-gray-600 font-semibold uppercase mb-2">
+                    Reason
+                  </p>
+                  <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
+                    {selectedRequest.reason}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Information */}
+              <div className="border-b border-gray-200 pb-4">
+                <h3 className="text-lg font-black text-gray-900 mb-4">
+                  Status Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold uppercase">
+                      Current Status
+                    </p>
+                    <div className="mt-1">
+                      {getStatusBadge(selectedRequest.status)}
+                    </div>
+                  </div>
+                  {selectedRequest.status !== "pending" && (
+                    <>
+                      <div>
+                        <p className="text-xs text-gray-600 font-semibold uppercase">
+                          Approved By
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {selectedRequest.approvedBy || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-semibold uppercase">
+                          Approval Date
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {selectedRequest.approvalDate
+                            ? formatDate(selectedRequest.approvalDate)
+                            : "N/A"}
+                        </p>
+                      </div>
+                      {selectedRequest.notes && (
+                        <div className="sm:col-span-2">
+                          <p className="text-xs text-gray-600 font-semibold uppercase mb-2">
+                            Notes
+                          </p>
+                          <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
+                            {selectedRequest.notes}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Attachment */}
+              {selectedRequest.document && (
+                <div className="border-b border-gray-200 pb-4">
+                  <h3 className="text-lg font-black text-gray-900 mb-4">
+                    Attachment
+                  </h3>
+                  <a
+                    href={`http://localhost/VET-SUPER-SYSTEM-3E/HR/backend/${selectedRequest.document}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-semibold text-sm"
+                  >
+                    📄 Download Attachment
+                  </a>
+                </div>
+              )}
+
+              {/* Request Submission Date */}
+              <div>
+                <p className="text-xs text-gray-600 font-semibold uppercase">
+                  Submitted On
+                </p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {formatDate(selectedRequest.startDate)}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <button
+                onClick={() => setIsDetailsModalOpen(false)}
+                className="flex-1 px-4 py-2 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+              {selectedRequest.status === "pending" && (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsDetailsModalOpen(false);
+                      setActionType("approve");
+                      setIsModalOpen(true);
+                    }}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Check className="w-4 h-4 inline mr-1" />
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsDetailsModalOpen(false);
+                      setActionType("reject");
+                      setIsModalOpen(true);
+                    }}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <X className="w-4 h-4 inline mr-1" />
+                    Reject
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Action Modal */}
       {isModalOpen && selectedRequest && (
@@ -573,9 +999,13 @@ export default function AdminLeaveRequests() {
                   <p className="text-xs text-gray-600 mb-1">
                     Attached Document
                   </p>
-                  <p className="text-sm font-semibold text-blue-600">
-                    📄 {selectedRequest.document}
-                  </p>
+                  <a
+                    href={`http://localhost/VET-SUPER-SYSTEM-3E/HR/backend/${selectedRequest.document}`}
+                    target="_blank"
+                    className="text-sm font-semibold text-blue-600"
+                  >
+                    📄 Document
+                  </a>
                 </div>
               )}
             </div>
@@ -595,13 +1025,23 @@ export default function AdminLeaveRequests() {
               </button>
               <button
                 onClick={submitAction}
+                disabled={loadingForPatchLeaveRequest}
                 className={`flex-1 px-4 py-2 text-white font-semibold rounded-lg transition-colors ${
                   actionType === "approve"
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
+                    ? "bg-green-600 hover:bg-green-700 disabled:bg-green-400"
+                    : "bg-red-600 hover:bg-red-700 disabled:bg-red-400"
+                } disabled:cursor-not-allowed`}
               >
-                {actionType === "approve" ? "Approve" : "Reject"}
+                {loadingForPatchLeaveRequest ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Processing...
+                  </span>
+                ) : actionType === "approve" ? (
+                  "Approve"
+                ) : (
+                  "Reject"
+                )}
               </button>
             </div>
           </div>
