@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Search, Edit, ChevronLeft, ChevronRight, X, Save } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
 
 export default function AttendanceSchedule() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("attendance");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
@@ -336,7 +338,10 @@ export default function AttendanceSchedule() {
                     {monthNames[currentMonth.getMonth()]}{" "}
                     {currentMonth.getFullYear()}
                   </h2>
-                  <button className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 transition-colors w-full sm:w-auto">
+                  <button
+                    onClick={() => navigate("/admin-leave-requests")}
+                    className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 transition-colors w-full sm:w-auto"
+                  >
                     Leave Request
                   </button>
                 </div>

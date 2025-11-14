@@ -1,5 +1,4 @@
 <?php
-
 function getLeaveRequests($pdo){
     try {
             $query = "SELECT
@@ -12,7 +11,8 @@ function getLeaveRequests($pdo){
     lt.type_name,
     lr.start_date,
     lr.end_date,
-    lr.status
+    lr.status,
+    DATEDIFF(lr.end_date, lr.start_date) + 1 as leave_days
     FROM leave_requests lr
     JOIN employees e
     ON lr.employee_id = e.employee_id
@@ -53,13 +53,15 @@ function getLeaveRequest($employeeId, $pdo){
     lt.type_name,
     lr.start_date,
     lr.end_date,
-    lr.status
+    lr.status,
+    DATEDIFF(lr.end_date, lr.start_date) + 1 as leave_days
     FROM leave_requests lr
     JOIN employees e
     ON lr.employee_id = e.employee_id
     JOIN leave_types lt
     ON lr.leave_type_id = lt.leave_type_id
-    WHERE lr.status = 'Pending' AND e.employee_id = :employee_id";
+    WHERE lr.status = 'Pending' 
+    AND e.employee_id = :employee_id";
 
     $stmt = $pdo->prepare($query);
 

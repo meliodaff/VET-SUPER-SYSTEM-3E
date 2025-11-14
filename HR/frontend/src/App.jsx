@@ -9,6 +9,7 @@ import Employees from "./pages/Employees";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSchedule from "./pages/AdminSchedule";
 import AdminIncentives from "./pages/AdminIncentives";
+import AdminLeaveRequests from "./pages/AdminLeaveRequests";
 import EmployeeAnalytics from "./pages/EmployeeAnalytics";
 import EmployeeSchedule from "./pages/EmployeeSchedule";
 import LeaveRequest from "./pages/LeaveRequest";
@@ -23,13 +24,18 @@ export default function App() {
         <Route element={<AdminAnalytics />} path="/admin-analytics" />
         <Route element={<AdminSchedule />} path="/admin-schedule" />
         <Route element={<AdminIncentives />} path="/admin-incentives" />
+        <Route element={<AdminLeaveRequests />} path="/admin-leave-requests" />
         <Route element={<Employees />} path="/employees" />
         <Route element={<Applicant />} path="/applicant" />
 
         <Route element={<EmployeeSchedule />} path="/employee-schedule" />
         <Route element={<Homepage />} path="/" />
-        <Route element={<JobOffer />} path="/job-offer" />
-        <Route element={<JobApplicationForm />} path="/job-application" />
+        <Route path="/job-offers" element={<JobOffer />} />
+        <Route path="/job-offer/:jobId" element={<JobOffer />} />
+        <Route
+          path="/job-application/:jobId"
+          element={<JobApplicationForm />}
+        />
         {/* employee schedule not done yet */}
         <Route element={<LeaveRequest />} path="/leave-request" />
         {/* not complete yet, the request shouldnt decerement immediately the count of leave remaining */}

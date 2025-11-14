@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Button from "./Button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 const NavItem = ({ link, children, active = false }) => (
   <Link to={link}>
     <button
@@ -31,35 +31,57 @@ const MobileNavItem = ({ link, children, active = false }) => (
 
 const navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Show navigation only on dashboard-related routes, hide on homepage and job offer pages
+  const showNavigation =
+    location.pathname !== "/" && !location.pathname.startsWith("/job-");
 
   return (
     <nav className="w-full bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link
+            to="/"
+            className="flex items-center space-x-3 flex-shrink-0 hover:opacity-80 transition-opacity"
+          >
             <img
-              src="src/assets/images/logo.png"
+              src="/images/logo.png"
               alt="Logo"
               className="w-10 h-10 object-contain"
             />
             <span className="text-blue-600 font-black text-xl tracking-wide">
               FUR EVER
             </span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
-            <NavItem active link="/">
-              Home
-            </NavItem>
-            <NavItem link="/employee-schedule">SCHEDULE</NavItem>
-            <NavItem link="/employee-incentives">INCENTIVES</NavItem>
-            <NavItem link="/employee-analytics">ANALYTICS</NavItem>
-          </div>
+          {showNavigation && (
+            <div className="hidden md:flex items-center space-x-1 flex-1 justify-center">
+              <NavItem
+                link="/employee-schedule"
+                active={location.pathname === "/employee-schedule"}
+              >
+                SCHEDULE
+              </NavItem>
+              <NavItem
+                link="/employee-incentives"
+                active={location.pathname === "/employee-incentives"}
+              >
+                INCENTIVES
+              </NavItem>
+              <NavItem
+                link="/employee-analytics"
+                active={location.pathname === "/employee-analytics"}
+              >
+                ANALYTICS
+              </NavItem>
+            </div>
+          )}
 
           {/* Login Button */}
-          <div className="hidden md:block">
+          <div className="hidden md:block ml-auto">
             <Button className="border-2 border-black hover:bg-black hover:text-white transform hover:scale-105">
               LOGIN
             </Button>
@@ -96,13 +118,27 @@ const navbar = () => {
         </div>
 
         {/* Mobile Menu */}
-        {isMobileMenuOpen && (
+        {isMobileMenuOpen && showNavigation && (
           <div className="md:hidden py-4 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
             <div className="flex flex-col space-y-2">
-              <MobileNavItem active>HOME</MobileNavItem>
-              <MobileNavItem>SCHEDULE</MobileNavItem>
-              <MobileNavItem>INCENTIVES</MobileNavItem>
-              <MobileNavItem>REPORT</MobileNavItem>
+              <MobileNavItem
+                link="/employee-schedule"
+                active={location.pathname === "/employee-schedule"}
+              >
+                SCHEDULE
+              </MobileNavItem>
+              <MobileNavItem
+                link="/employee-incentives"
+                active={location.pathname === "/employee-incentives"}
+              >
+                INCENTIVES
+              </MobileNavItem>
+              <MobileNavItem
+                link="/employee-analytics"
+                active={location.pathname === "/employee-analytics"}
+              >
+                ANALYTICS
+              </MobileNavItem>
               <div className="pt-4">
                 <Button className="w-full border-2 border-black hover:bg-black hover:text-white">
                   LOGIN

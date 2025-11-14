@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Bell, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const NavItem = ({ link, children, active = false, onClick }) => (
   <Link to={link}>
@@ -36,6 +36,18 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("HOME");
+  const location = useLocation();
+
+  // Sync activeNav with current route
+  useEffect(() => {
+    if (location.pathname === "/employee-schedule") {
+      setActiveNav("SCHEDULE");
+    } else if (location.pathname === "/employee-incentives") {
+      setActiveNav("INCENTIVES");
+    } else if (location.pathname === "/employee-analytics") {
+      setActiveNav("ANALYTICS");
+    }
+  }, [location.pathname]);
 
   // Sample notifications - backend ready
   const notifications = [
@@ -110,26 +122,22 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link
+            to="/"
+            className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+          >
             <img
-              src="src/assets/images/logo.png"
+              src="/images/logo.png"
               alt="Logo"
               className="w-10 h-10 object-contain"
             />
             <span className="text-blue-600 font-black text-xl tracking-wide">
               FUR EVER
             </span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            <NavItem
-              active={activeNav === "HOME"}
-              onClick={() => handleNavClick("HOME")}
-              link="/"
-            >
-              HOME
-            </NavItem>
             <NavItem
               active={activeNav === "SCHEDULE"}
               onClick={() => handleNavClick("SCHEDULE")}
@@ -275,24 +283,28 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
               <MobileNavItem
                 active={activeNav === "HOME"}
                 onClick={() => handleNavClick("HOME")}
+                link="/"
               >
                 HOME
               </MobileNavItem>
               <MobileNavItem
                 active={activeNav === "SCHEDULE"}
                 onClick={() => handleNavClick("SCHEDULE")}
+                link="/employee-schedule"
               >
                 SCHEDULE
               </MobileNavItem>
               <MobileNavItem
                 active={activeNav === "INCENTIVES"}
                 onClick={() => handleNavClick("INCENTIVES")}
+                link="/employee-incentives"
               >
                 INCENTIVES
               </MobileNavItem>
               <MobileNavItem
                 active={activeNav === "ANALYTICS"}
                 onClick={() => handleNavClick("ANALYTICS")}
+                link="/employee-analytics"
               >
                 ANALYTICS
               </MobileNavItem>

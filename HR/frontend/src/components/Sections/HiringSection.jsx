@@ -1,5 +1,5 @@
 const HiringSection = () => (
-  <section className="text-center max-w-4xl mx-auto px-6">
+  <section className="text-center max-w-4xl mx-auto px-6" id="careers-section">
     <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-black mb-4 drop-shadow-sm">
       We're Hiring!
     </h3>

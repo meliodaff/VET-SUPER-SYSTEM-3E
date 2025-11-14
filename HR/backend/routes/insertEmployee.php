@@ -12,7 +12,7 @@ $REQUEST_METHOD = $_SERVER["REQUEST_METHOD"];
 
 if($REQUEST_METHOD === "POST"){
 
-    $formDetails = ["firstName", "middleName", "lastName", "birthDate", "gender", "email", "phoneNumber", "address", "hireDate", "employmentStatus", "jobTitle", "password", "isAdmin"];
+    $formDetails = ["firstName", "middleName", "lastName", "birthDate", "gender", "email", "phoneNumber", "address", "employmentStatus", "jobTitle", "password", "isAdmin"];
 
    validateForm($formDetails);
 

@@ -13,7 +13,7 @@
             ];
         }
 
-        $query = "INSERT INTO employees (first_name, middle_name, last_name, date_of_birth, gender, contact_email, phone_number, address, hire_date, employment_status, job_title, password_hash, is_admin) VALUES (:first_name, :middle_name, :last_name, :date_of_birth, :gender, :contact_email, :phone_number, :address, :hire_date, :employment_status, :job_title, :password_hash, :is_admin)";
+        $query = "INSERT INTO employees (first_name, middle_name, last_name, date_of_birth, gender, contact_email, phone_number, address, employment_status, job_title, password_hash, is_admin) VALUES (:first_name, :middle_name, :last_name, :date_of_birth, :gender, :contact_email, :phone_number, :address, :employment_status, :job_title, :password_hash, :is_admin)";
 
         try {
             // i dont think if this is necessary
@@ -30,7 +30,6 @@
             ":contact_email"     => $employee["email"],
             ":phone_number"      => $employee["phoneNumber"],
             ":address"           => $employee["address"],
-            ":hire_date"         => $employee["hireDate"],
             ":employment_status" => $employee["employmentStatus"],
             ":job_title"         => $employee["jobTitle"],
             ":password_hash"     => $hashedPassword,

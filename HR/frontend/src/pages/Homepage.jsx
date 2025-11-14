@@ -9,11 +9,11 @@ const Homepage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-sky-100 relative">
       <main>
-      <Navbar />
-      <HeroSection />
-      <HiringSection />
-      <ServicesSection />
-      <CareSection />
+        <Navbar />
+        <HeroSection />
+        <HiringSection />
+        <ServicesSection />
+        <CareSection />
       </main>
       <Footer />
     </div>

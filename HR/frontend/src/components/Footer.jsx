@@ -1,63 +1,153 @@
-import { FaClock, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
+import {
+  FaClock,
+  FaMapMarkerAlt,
+  FaPhoneAlt,
+  FaEnvelope,
+} from "react-icons/fa";
+
+import "../styles/Footer.css";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#0A1172] text-white py-10 px-6 sm:px-12 lg:px-20 mt-auto w-full rounded-t-2xl">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+    <footer class="main-footer">
+      <div class="footer-container">
+        <div class="footer-brand">
+          <img
+            src="/images/VETERINARY_LOGO_SYSTEM.png"
+            alt="Fur-Ever Care Logo"
+            class="footer-logo"
+          />
+        </div>
 
-        {/* Logo and Schedule */}
-        <div>
-          <div className="flex items-center space-x-3 mb-4">
-            <img 
-              src="/src/assets/images/logo.png" 
-              alt="Fur Ever Care Logo" 
-              className="w-14 h-14"
-            />
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black">FUR EVER CARE</h2>
-              <p className="text-sm font-semibold">VETERINARY SERVICE</p>
-            </div>
+        <div class="footer-center">
+          <div class="footer-title">
+            <h2>FUR-EVER CARE</h2>
+            <p>VETERINARY SERVICES</p>
           </div>
 
-          <div className="bg-white/10 p-4 rounded-lg shadow-md">
-            <div className="flex items-center space-x-2 mb-2">
-              <FaClock className="text-white" />
-              <h3 className="font-bold">SCHEDULE</h3>
+          <div class="footer-schedule">
+            <h3>SCHEDULE</h3>
+            <div class="schedule-card">
+              <div class="schedule-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="#002d72"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+              </div>
+              <div class="schedule-text">
+                <p>9:00 AM - 5:00 PM</p>
+              </div>
             </div>
-            <p className="text-sm">MONDAY - FRIDAY 8:00 AM - 8:00 PM</p>
-            <p className="text-sm">SATURDAY - SUNDAY 8:00 AM - 8:00 PM</p>
-            <p className="text-sm text-red-400 font-bold">EMERGENCY 24/7</p>
           </div>
         </div>
 
-        {/* Middle Section - Links */}
-        <div className="flex flex-col space-y-3 text-center md:text-left">
-          <a href="#" className="hover:underline font-semibold">About Us</a>
-          <a href="#" className="hover:underline font-semibold">Service</a>
-          <a href="#" className="hover:underline font-semibold">Terms and Condition</a>
-          <a href="#" className="hover:underline font-semibold">Privacy and Policy</a>
-        </div>
+        <div class="footer-contact">
+          <h3>CONTACT INFORMATION</h3>
 
-        {/* Contact Info */}
-        <div>
-          <h3 className="font-bold mb-4">CONTACT INFORMATION</h3>
-          <div className="flex items-center space-x-2 mb-2">
-            <FaMapMarkerAlt />
-            <p>123 Pet Care Avenue</p>
+          <div class="contact-item">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="white"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1118 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <p>
+              123 Pet Care Avenue
+              <br />
+              Veterinary District, VC 12345
+            </p>
           </div>
-          <div className="flex items-center space-x-2 mb-2">
-            <FaPhoneAlt />
-            <p>1234567890</p>
+
+          <div class="contact-item">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="white"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M22 16.92V21a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.11 19.5 19.5 0 01-6-6A19.79 19.79 0 012 4.18 2 2 0 014 2h4.09a2 2 0 012 1.72c.12.81.37 1.61.72 2.34a2 2 0 01-.45 2.11L9 10a16 16 0 006 6l1.83-1.36a2 2 0 012.11-.45c.73.35 1.53.6 2.34.72a2 2 0 011.72 2.01z" />
+            </svg>
+            <p>(555) 123-PETS</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <FaEnvelope />
+
+          <div class="contact-item">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="white"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M4 4h16v16H4z" />
+              <path d="M22 6l-10 7L2 6" />
+            </svg>
             <p>furevercare@gmail.com</p>
           </div>
+
+          <a href="#careers-section" class="contact-item careers">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M10 2h4a2 2 0 012 2v2h4a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h4V4a2 2 0 012-2z" />
+              <path d="M16 10V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v6" />
+            </svg>
+            Careers
+          </a>
         </div>
       </div>
 
-      <div className="border-t border-white/20 mt-8 pt-4 text-center text-sm">
-        Copyright © 2025 Fur Ever Vet Clinic | All Rights Reserved.
+      <div class="footer-bottom">
+        <p>
+          <svg
+            class="paw-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+          >
+            <path
+              d="M226.5 92.9c14.3 42.9-.3 86.2-32.6 96.8s-70.1-15.6-84.4-58.5s.3-86.2 32.6-96.8s70.1 15.6 84.4 58.5zM100.4 198.6c18.9 32.4 14.3 70.1-10.2 84.1s-59.7-.9-78.5-33.3S-2.7 179.3 21.8 165.3s59.7 .9 78.5 33.3zM69.2 401.2C121.6 259.9 214.7 224 256 224s134.4 35.9 186.8 177.2c3.6 9.7 5.2 20.1 5.2 30.5v1.6c0 25.8-20.9 46.7-46.7 46.7c-11.5 0-22.9-1.4-34-4.2l-88-22c-15.3-3.8-31.3-3.8-46.6 0l-88 22c-11.1 2.8-22.5 4.2-34 4.2C84.9 480 64 459.1 64 433.3v-1.6c0-10.4 1.6-20.8 5.2-30.5zM421.8 282.7c-24.5-14-29.1-51.7-10.2-84.1s54-47.3 78.5-33.3s29.1 51.7 10.2 84.1s-54 47.3-78.5 33.3zM310.1 189.7c-32.3-10.6-46.9-53.9-32.6-96.8s52.1-69.1 84.4-58.5s46.9 53.9 32.6 96.8s-52.1 69.1-84.4 58.5z"
+              fill="currentColor"
+            />
+          </svg>
+          All rights reserved (2025)
+        </p>
+        <a href="privacy.php">Privacy Policy</a>
+        <p>
+          <svg
+            class="paw-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+          >
+            <path
+              d="M226.5 92.9c14.3 42.9-.3 86.2-32.6 96.8s-70.1-15.6-84.4-58.5s.3-86.2 32.6-96.8s70.1 15.6 84.4 58.5zM100.4 198.6c18.9 32.4 14.3 70.1-10.2 84.1s-59.7-.9-78.5-33.3S-2.7 179.3 21.8 165.3s59.7 .9 78.5 33.3zM69.2 401.2C121.6 259.9 214.7 224 256 224s134.4 35.9 186.8 177.2c3.6 9.7 5.2 20.1 5.2 30.5v1.6c0 25.8-20.9 46.7-46.7 46.7c-11.5 0-22.9-1.4-34-4.2l-88-22c-15.3-3.8-31.3-3.8-46.6 0l-88 22c-11.1 2.8-22.5 4.2-34 4.2C84.9 480 64 459.1 64 433.3v-1.6c0-10.4 1.6-20.8 5.2-30.5zM421.8 282.7c-24.5-14-29.1-51.7-10.2-84.1s54-47.3 78.5-33.3s29.1 51.7 10.2 84.1s-54 47.3-78.5 33.3zM310.1 189.7c-32.3-10.6-46.9-53.9-32.6-96.8s52.1-69.1 84.4-58.5s46.9 53.9 32.6 96.8s-52.1 69.1-84.4 58.5z"
+              fill="currentColor"
+            />
+          </svg>
+        </p>
       </div>
     </footer>
   );

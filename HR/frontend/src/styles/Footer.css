@@ -1,0 +1,152 @@
+.main-footer {
+  background: #002d72;
+  color: white;
+  padding: 2rem 1.5rem 1rem;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+  gap: 2rem;
+}
+
+/* Brand (Logo + Text) */
+.footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.footer-logo {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+}
+
+.footer-center {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.footer-title h2 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+}
+
+.footer-title p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: white;
+}
+
+/* Schedule */
+.footer-schedule h3,
+.footer-contact h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.schedule-card {
+  background: #6c7ea7;
+  color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 230px;
+}
+
+.schedule-icon {
+  font-size: 1.5rem;
+  color: black;
+}
+
+.schedule-text p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+.schedule-text .emergency {
+  color: red;
+  font-weight: bold;
+}
+
+/* Contact */
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.contact-item {
+  background: #6c7ea7;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.9rem;
+}
+
+.contact-item.careers {
+  background: #6c7ea7;
+  color: white;
+  font-weight: 600;
+}
+
+/* Bottom Bar */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.85rem;
+}
+.footer-bottom a {
+  color: white;
+  text-decoration: none;
+}
+.footer-bottom a:hover {
+  text-decoration: underline;
+}
+
+.contact-item svg,
+.schedule-icon svg {
+  flex-shrink: 0;
+  color: black;
+}
+
+.contact-item svg {
+  stroke: white;
+}
+
+.contact-item.careers svg {
+  stroke: white;
+}
+
+.footer-bottom svg {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.paw-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  margin-top: -2px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
