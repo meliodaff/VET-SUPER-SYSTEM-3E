@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
 import useGetSchedule from "../api/useGetSchedule";
+import usePostScheduleDay from "../api/usePostScheduleDay";
 
 export default function AttendanceSchedule() {
   const navigate = useNavigate();
@@ -136,26 +137,33 @@ export default function AttendanceSchedule() {
   const filteredSchedule = useMemo(() => {
     // Group schedules by employee
     const groupedByEmployee = {};
+
     scheduleData.forEach((record) => {
       if (!groupedByEmployee[record.employeeId]) {
         groupedByEmployee[record.employeeId] = {
           employeeId: record.employeeId,
-          name: record.name, // ADD THIS LINE
+          name: record.name,
           department: record.department,
-          position: record.position, // ADD THIS LINE
+          position: record.position,
           hireDate: record.hireDate,
           employmentType: record.employmentType,
           days: [],
         };
       }
-      groupedByEmployee[record.employeeId].days.push(record.dayOfWeek);
+      if (record.dayOfWeek !== null) {
+        groupedByEmployee[record.employeeId].days.push(record.dayOfWeek);
+      }
     });
 
-    let filtered = Object.values(groupedByEmployee).filter((record) => {
+    // Keep track of employees with empty schedules
+    // Find any employees that had schedules removed (days array is empty after filter)
+    const allEmployees = Object.values(groupedByEmployee);
+
+    let filtered = allEmployees.filter((record) => {
       const query = searchQuery.toLowerCase();
       return (
         record.employeeId?.toString().toLowerCase().includes(query) ||
-        record.name?.toLowerCase().includes(query) || // ADD THIS LINE for name search
+        record.name?.toLowerCase().includes(query) ||
         record.department?.toLowerCase().includes(query)
       );
     });
@@ -197,57 +205,116 @@ export default function AttendanceSchedule() {
     "DECEMBER",
   ];
 
-  const handleEditClick = (index, currentNotes) => {
-    setEditingIndex(index);
-    setEditedNotes(currentNotes);
-  };
-
-  const handleSaveNotes = (index) => {
-    const updatedSchedule = [...scheduleData];
-    updatedSchedule[index].notes = editedNotes;
-    setScheduleData(updatedSchedule);
-    setEditingIndex(null);
-    setEditedNotes("");
-  };
-
-  const handleCancelEdit = () => {
-    setEditingIndex(null);
-    setEditedNotes("");
-  };
-
   const handleEditSchedule = (record) => {
+    console.log(record);
     setEditingSchedule(record);
     setEditingDay("");
     setIsEditScheduleModalOpen(true);
   };
 
-  const handleSaveSchedule = () => {
-    if (editingSchedule && editingDay) {
-      // Check if the day already exists for this employee
+  const {
+    postScheduleDay,
+    loadingForPostScheduleDay,
+    deleteScheduleDay,
+    loadingForDeleteScheduleDay,
+  } = usePostScheduleDay();
+
+  const handleSaveSchedule = async () => {
+    if (editingDay) {
+      // Only run this logic if user selected a day to ADD
       const dayExists = editingSchedule.days.includes(editingDay);
 
-      if (!dayExists) {
-        // Add the new day to the schedule data
-        setScheduleData((prev) => [
-          ...prev,
-          {
-            id: `${editingSchedule.employeeId}-${editingDay}-${Date.now()}`,
-            employeeId: editingSchedule.employeeId,
-            department: editingSchedule.department,
-            hireDate: editingSchedule.hireDate,
-            employmentType: editingSchedule.employmentType,
-            dayOfWeek: editingDay,
-          },
-        ]);
-      } else {
+      if (dayExists) {
         alert("This employee is already scheduled for " + editingDay);
+        return;
       }
 
-      setIsEditScheduleModalOpen(false);
-      setEditingSchedule(null);
-      setEditingDay("");
-    } else if (!editingDay) {
-      alert("Please select a day");
+      // Add the new day to the schedule data
+      setScheduleData((prev) => [
+        ...prev,
+        {
+          id: `${editingSchedule.employeeId}-${editingDay}-${Date.now()}`,
+          employeeId: editingSchedule.employeeId,
+          name: editingSchedule.name,
+          department: editingSchedule.department,
+          position: editingSchedule.position,
+          hireDate: editingSchedule.hireDate,
+          employmentType: editingSchedule.employmentType,
+          dayOfWeek: editingDay,
+        },
+      ]);
+
+      const response = await postScheduleDay(
+        editingSchedule.employeeId,
+        editingDay
+      );
+
+      console.log(response);
+
+      alert("Schedule added successfully!");
+    }
+
+    // Always close the modal (whether a day was added or not)
+    setIsEditScheduleModalOpen(false);
+    setEditingSchedule(null);
+    setEditingDay("");
+  };
+
+  const handleRemoveScheduleDay = async (employeeId, dayToRemove) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to remove ${dayToRemove} from this employee's schedule?`
+      )
+    ) {
+      return;
+    }
+
+    // Check how many days this employee currently has
+    const employeeDays = scheduleData.filter(
+      (s) => s.employeeId === employeeId
+    );
+
+    if (employeeDays.length === 1) {
+      // This is the last day - keep employee but set dayOfWeek to null
+      setScheduleData((prev) =>
+        prev.map((s) => {
+          if (s.employeeId === employeeId && s.dayOfWeek === dayToRemove) {
+            return {
+              ...s,
+              dayOfWeek: null, // Mark as no schedule
+            };
+          }
+          return s;
+        })
+      );
+    } else {
+      // Multiple days - just remove this specific day
+      setScheduleData((prev) =>
+        prev.filter(
+          (s) => !(s.employeeId === employeeId && s.dayOfWeek === dayToRemove)
+        )
+      );
+    }
+
+    const response = await deleteScheduleDay(employeeId, dayToRemove);
+
+    if (!response.success) {
+      alert(response.message);
+      return;
+    }
+
+    alert(`${dayToRemove} removed successfully!`);
+
+    // Update editing schedule if in modal
+    if (editingSchedule && editingSchedule.employeeId === employeeId) {
+      const updatedDays = editingSchedule.days.filter(
+        (day) => day !== dayToRemove
+      );
+
+      setEditingSchedule((prev) => ({
+        ...prev,
+        days: updatedDays,
+      }));
     }
   };
 
@@ -480,7 +547,9 @@ export default function AttendanceSchedule() {
                       <tbody className="divide-y divide-gray-200">
                         {filteredSchedule.length > 0 ? (
                           filteredSchedule.map((record, key) => {
-                            console.log("Schedule Record:", record);
+                            {
+                              /* console.log("Schedule Record:", record); */
+                            }
                             const isOnLeave =
                               record.employmentType == "On Leave"
                                 ? true
@@ -526,28 +595,35 @@ export default function AttendanceSchedule() {
                                 </td>
                                 <td className="px-2 sm:px-4 py-2 sm:py-3">
                                   <div className="flex flex-wrap gap-1">
-                                    {displayDays.map((day, idx) => (
-                                      <span
-                                        key={idx}
-                                        className={`px-2 py-1 rounded text-xs font-semibold whitespace-nowrap ${
-                                          isOnLeave
-                                            ? "bg-red-100 text-red-700"
-                                            : "bg-blue-100 text-blue-700"
-                                        }`}
-                                      >
-                                        {day === "Everyday"
-                                          ? day
-                                          : day.substring(0, 3)}
+                                    {record.days && record.days.length > 0 ? (
+                                      displayDays.map((day, idx) => (
+                                        <span
+                                          key={idx}
+                                          className={`px-2 py-1 rounded text-xs font-semibold whitespace-nowrap ${
+                                            isOnLeave
+                                              ? "bg-red-100 text-red-700"
+                                              : "bg-blue-100 text-blue-700"
+                                          }`}
+                                        >
+                                          {day === "Everyday"
+                                            ? day
+                                            : day.substring(0, 3)}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="text-gray-400 text-xs italic">
+                                        No schedule
                                       </span>
-                                    ))}
+                                    )}
                                   </div>
                                 </td>
                                 <td className="px-2 sm:px-4 py-2 sm:py-3">
                                   <div className="flex gap-2 items-center">
                                     <button
-                                      onClick={() =>
-                                        !isOnLeave && handleEditSchedule(record)
-                                      }
+                                      onClick={() => {
+                                        !isOnLeave &&
+                                          handleEditSchedule(record);
+                                      }}
                                       disabled={isOnLeave}
                                       className={`p-1 rounded transition-colors ${
                                         isOnLeave
@@ -756,15 +832,27 @@ export default function AttendanceSchedule() {
                 <label className="block text-sm font-bold text-gray-900 mb-2">
                   Current Scheduled Days
                 </label>
-                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg">
+                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg min-h-[60px]">
                   {editingSchedule.days && editingSchedule.days.length > 0 ? (
                     editingSchedule.days.map((day, idx) => (
-                      <span
+                      <div
                         key={idx}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold"
+                        className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold"
                       >
-                        {day}
-                      </span>
+                        <span>{day}</span>
+                        <button
+                          onClick={() =>
+                            handleRemoveScheduleDay(
+                              editingSchedule.employeeId,
+                              day
+                            )
+                          }
+                          className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                          title={`Remove ${day}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
                     ))
                   ) : (
                     <span className="text-gray-500 text-sm">
@@ -816,6 +904,7 @@ export default function AttendanceSchedule() {
             </div>
 
             {/* Modal Footer */}
+            {/* Modal Footer */}
             <div className="flex gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
               <button
                 onClick={() => {
@@ -825,13 +914,18 @@ export default function AttendanceSchedule() {
                 }}
                 className="flex-1 px-4 py-2 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                Close
               </button>
               <button
                 onClick={handleSaveSchedule}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={!editingDay}
+                className={`flex-1 px-4 py-2 font-semibold rounded-lg transition-colors ${
+                  editingDay
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
               >
-                Save Changes
+                Add Day
               </button>
             </div>
           </div>

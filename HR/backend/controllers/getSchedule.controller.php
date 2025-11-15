@@ -6,17 +6,19 @@
     function getEmployeeSchedules($pdo) {
     
         $query = "SELECT
-e.first_name,
-e.last_name,
-e.Position,
-e.employee_id,
-e.department,
-e.hire_date,
-e.employment_type,
-es.day_of_week
+    e.first_name,
+    e.last_name,
+    e.Position,
+    e.employee_id,
+    e.department,
+    e.hire_date,
+    e.employment_type,
+    es.day_of_week
 FROM employees e
-JOIN employee_schedules es
-ON	e.employee_id = es.employee_id";
+LEFT JOIN employee_schedules es
+    ON e.employee_id = es.employee_id
+ORDER BY e.last_name, e.first_name;
+";
 
         try {
             $stmt = $pdo->prepare($query);
