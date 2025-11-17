@@ -1,30 +1,35 @@
 <?php
 require_once 'config.php';
 
+// Initialize variables FIRST
+$error = '';
+$success = '';
+$show_otp_form = false;
+$otp_sent = false;
+
 // Function to generate OTP
 function generateOTP($length = 6) {
     return str_pad(rand(0, pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
 }
 
-// Helper function to read SMTP response (handles multi-line responses)
+// Helper function to read SMTP response
 function readSMTPResponse($socket) {
     $response = '';
     while ($line = fgets($socket, 515)) {
         $response .= $line;
         if (substr($line, 3, 1) == ' ') {
-            break; // Last line of multi-line response
+            break;
         }
     }
     return $response;
 }
 
-// Function to send OTP email using direct SMTP with Gmail
+// Function to send OTP email
 function sendOTPEmail($email, $otp, $first_name) {
-    // Gmail SMTP Configuration
     $smtp_host = 'smtp.gmail.com';
     $smtp_port = 587;
     $smtp_user = 'furevercare8@gmail.com';
-    $smtp_pass = 'ykvsjopxjppczxwp'; // App Password
+    $smtp_pass = 'ykvsjopxjppczxwp';
     $from_email = 'furevercare8@gmail.com';
     $from_name = 'FUR-EVER CARE';
     
@@ -62,49 +67,37 @@ function sendOTPEmail($email, $otp, $first_name) {
     ";
     
     try {
-        // Create socket connection
         $socket = @stream_socket_client("tcp://$smtp_host:$smtp_port", $errno, $errstr, 30);
         if (!$socket) {
             error_log("SMTP Connection failed: $errstr ($errno)");
             return false;
         }
         
-        // Set timeout
         stream_set_timeout($socket, 30);
-        
-        // Read server greeting
         $response = readSMTPResponse($socket);
         if (substr($response, 0, 3) != '220') {
             fclose($socket);
-            error_log("SMTP Error: $response");
             return false;
         }
         
-        // Send EHLO
         fputs($socket, "EHLO " . gethostname() . "\r\n");
         $response = readSMTPResponse($socket);
         
-        // Start TLS
         fputs($socket, "STARTTLS\r\n");
         $response = readSMTPResponse($socket);
         if (substr($response, 0, 3) != '220') {
             fclose($socket);
-            error_log("STARTTLS failed: $response");
             return false;
         }
         
-        // Enable crypto
         if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
             fclose($socket);
-            error_log("TLS encryption failed");
             return false;
         }
         
-        // Send EHLO again after TLS
         fputs($socket, "EHLO " . gethostname() . "\r\n");
         $response = readSMTPResponse($socket);
         
-        // Authenticate
         fputs($socket, "AUTH LOGIN\r\n");
         $response = readSMTPResponse($socket);
         
@@ -115,38 +108,18 @@ function sendOTPEmail($email, $otp, $first_name) {
         $response = readSMTPResponse($socket);
         if (substr($response, 0, 3) != '235') {
             fclose($socket);
-            error_log("SMTP Authentication failed: $response");
             return false;
         }
         
-        // Send MAIL FROM
         fputs($socket, "MAIL FROM: <$from_email>\r\n");
         $response = readSMTPResponse($socket);
-        if (substr($response, 0, 3) != '250') {
-            fclose($socket);
-            error_log("MAIL FROM failed: $response");
-            return false;
-        }
         
-        // Send RCPT TO
         fputs($socket, "RCPT TO: <$email>\r\n");
         $response = readSMTPResponse($socket);
-        if (substr($response, 0, 3) != '250') {
-            fclose($socket);
-            error_log("RCPT TO failed: $response");
-            return false;
-        }
         
-        // Send DATA
         fputs($socket, "DATA\r\n");
         $response = readSMTPResponse($socket);
-        if (substr($response, 0, 3) != '354') {
-            fclose($socket);
-            error_log("DATA command failed: $response");
-            return false;
-        }
         
-        // Send email headers and body
         $headers = "From: $from_name <$from_email>\r\n";
         $headers .= "To: <$email>\r\n";
         $headers .= "Subject: $subject\r\n";
@@ -157,13 +130,6 @@ function sendOTPEmail($email, $otp, $first_name) {
         fputs($socket, $headers . $html_message . "\r\n.\r\n");
         $response = readSMTPResponse($socket);
         
-        if (substr($response, 0, 3) != '250') {
-            fclose($socket);
-            error_log("SMTP Send failed: $response");
-            return false;
-        }
-        
-        // Quit
         fputs($socket, "QUIT\r\n");
         fclose($socket);
         
@@ -176,11 +142,6 @@ function sendOTPEmail($email, $otp, $first_name) {
         return false;
     }
 }
-
-$error = '';
-$success = '';
-$show_otp_form = false;
-$otp_sent = false;
 
 // Handle cancel registration
 if (isset($_GET['cancel'])) {
@@ -198,12 +159,10 @@ if (isset($_POST['resend_otp'])) {
         $email = $registration_data['email'];
         $first_name = $registration_data['first_name'];
         
-        // Generate new OTP
         $otp = generateOTP(6);
         $_SESSION['registration_otp'] = $otp;
-        $_SESSION['otp_expiry'] = time() + (10 * 60); // 10 minutes
+        $_SESSION['otp_expiry'] = time() + (10 * 60);
         
-        // Send new OTP email
         if (sendOTPEmail($email, $otp, $first_name)) {
             $success = 'A new OTP has been sent to your email.';
             $show_otp_form = true;
@@ -236,7 +195,6 @@ elseif (isset($_POST['verify_otp'])) {
         $error = 'Invalid OTP code. Please try again.';
         $show_otp_form = true;
     } else {
-        // OTP verified, complete registration
         $registration_data = $_SESSION['registration_data'];
         $first_name = $registration_data['first_name'];
         $last_name = $registration_data['last_name'];
@@ -245,7 +203,6 @@ elseif (isset($_POST['verify_otp'])) {
         
         $conn = getDBConnection();
         
-        // Double-check email doesn't exist
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -261,7 +218,6 @@ elseif (isset($_POST['verify_otp'])) {
             $stmt->bind_param("ssss", $first_name, $last_name, $email, $hashed_password);
             
             if ($stmt->execute()) {
-                // Clear session data
                 unset($_SESSION['registration_otp']);
                 unset($_SESSION['registration_data']);
                 unset($_SESSION['otp_expiry']);
@@ -279,15 +235,14 @@ elseif (isset($_POST['verify_otp'])) {
         $conn->close();
     }
 }
-// Handle initial registration form submission
-elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_otp'])) {
+// Handle initial registration
+elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_otp']) && !isset($_POST['resend_otp'])) {
     $first_name = trim($_POST['first-name']);
     $last_name = trim($_POST['last-name']);
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm-password'];
 
-    // Validate first name
     if (empty($first_name) || empty($last_name) || empty($email) || empty($password) || empty($confirm_password)) {
         $error = 'All fields are required.';
     } 
@@ -317,10 +272,8 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_otp'])) {
         if ($result->num_rows > 0) {
             $error = 'Email already registered.';
         } else {
-            // Generate OTP
             $otp = generateOTP(6);
             
-            // Store registration data and OTP in session
             $_SESSION['registration_data'] = [
                 'first_name' => $first_name,
                 'last_name' => $last_name,
@@ -328,22 +281,15 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_otp'])) {
                 'password' => $password
             ];
             $_SESSION['registration_otp'] = $otp;
-            $_SESSION['otp_expiry'] = time() + (10 * 60); // 10 minutes
+            $_SESSION['otp_expiry'] = time() + (10 * 60);
             
-            // Send OTP email
             if (sendOTPEmail($email, $otp, $first_name)) {
-                $success = 'OTP has been sent to your email. Please check your inbox and enter the code below.';
+                $success = 'OTP has been sent to your email. Please check your inbox.';
                 $show_otp_form = true;
                 $otp_sent = true;
             } else {
-                // For development: show OTP on screen if email fails
-                $error = 'Failed to send OTP email. Email server not configured.<br><br>' .
-                         '<strong>Quick Setup:</strong><br>' .
-                         '1. Edit <code>C:\\xampp\\sendmail\\sendmail.ini</code><br>' .
-                         '2. Add your Gmail credentials (see EMAIL_SETUP.md for details)<br>' .
-                         '3. Restart Apache in XAMPP Control Panel<br><br>' .
-                         '<strong>For testing, use this OTP:</strong> <span style="font-size: 24px; font-weight: bold; color: #4CAF50;">' . $otp . '</span>';
-                $show_otp_form = true; // Still show OTP form so user can test
+                $error = 'Failed to send OTP. For testing, use this OTP: <strong style="font-size: 20px; color: #4CAF50;">' . $otp . '</strong>';
+                $show_otp_form = true;
             }
         }
 
@@ -352,148 +298,321 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_otp'])) {
     }
 }
 
-// Check if OTP form should be shown (from previous submission)
 if (isset($_SESSION['registration_otp']) && isset($_SESSION['registration_data'])) {
     $show_otp_form = true;
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - FUR-EVER CARE</title>
-    <link rel="stylesheet" href="css/register.css">
-      <style>
-    .alert {
-      padding: 12px 20px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .alert-success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
 
-    .alert-error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-  </style>
+        body {
+            background-image: url('image/loginbg.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            overflow-y: scroll;
+            padding: 20px;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            background-color: #00205B;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(5, 5, 5, 0.2);
+            z-index: 1000;
+        }
+
+        .back-button svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+            background-color: #001845;
+        }
+
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px 50px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            overflow: hidden;
+        }
+
+        .login-left {
+            background-color: #00205B;
+            padding: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40%;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+        }
+
+        .login-right {
+            padding: 3rem;
+            width: 60%;
+        }
+
+        h1 {
+            color: #00205B;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #00205B;
+        }
+
+        .register-button {
+            display: block;
+            margin: 1.5rem auto 0;
+            width: 50%;
+            padding: 1rem;
+            background-color: #00205B;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .register-button:hover {
+            background-color: #001845;
+        }
+
+        .sign-up-text {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .sign-up-text a {
+            color: #00205B;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .sign-up-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .page-container {
+                padding: 80px 10px 30px;
+            }
+
+            .login-card {
+                flex-direction: column;
+            }
+
+            .login-left, .login-right {
+                width: 100%;
+                padding: 2rem;
+            }
+
+            .logo {
+                width: 150px;
+            }
+
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .register-button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
-
 <body>
-    <div class="login-container">
-        <a href="index.php" class="back-button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            <span>Back to Home</span>
-        </a>
-        <div class="login-card">
-            <div class="login-left">
-                <img src="image/VETERINARY_LOGO_SYSTEM.png" alt="FUR-EVER CARE" class="logo">
-            </div>
-            <div class="login-right">
-                <h1><?php echo $show_otp_form ? 'Verify Your Email' : 'Join Our Pet Family!'; ?></h1>
+    <a href="index.php" class="back-button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        <span>Back to Home</span>
+    </a>
 
-                <?php if ($error): ?>
-                    <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
-                <?php endif; ?>
+    <div class="page-container">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-left">
+                    <img src="image/VETERINARY_LOGO_SYSTEM.png" alt="FUR-EVER CARE" class="logo">
+                </div>
+                <div class="login-right">
+                    <h1><?php echo $show_otp_form ? 'Verify Your Email' : 'Join Our Pet Family!'; ?></h1>
 
-                <?php if ($success): ?>
-                    <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
-                <?php endif; ?>
+                    <?php if ($error): ?>
+                        <div class="alert alert-error"><?php echo $error; ?></div>
+                    <?php endif; ?>
 
-                <?php if ($show_otp_form): ?>
-                    <!-- OTP Verification Form -->
-                    <p style="text-align: center; color: #666; margin-bottom: 20px;">
-                        We've sent a 6-digit verification code to <strong><?php echo isset($_SESSION['registration_data']['email']) ? htmlspecialchars($_SESSION['registration_data']['email']) : ''; ?></strong>
-                    </p>
-                    <form class="login-form" method="POST" action="register.php" id="otpForm">
-                        <div class="form-group">
-                            <label for="otp">Enter Verification Code</label>
-                            <input type="text" id="otp" name="otp" maxlength="6" pattern="[0-9]{6}" 
-                                placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" 
-                                required autofocus>
-                            <small style="display: block; text-align: center; margin-top: 10px; color: #666;">
-                                Code expires in 10 minutes
-                            </small>
-                        </div>
-                        <button type="submit" name="verify_otp" class="register-button">Verify & Complete Registration</button>
-                        <p class="sign-up-text" style="text-align: center;">
-                            <a href="register.php?cancel=1" onclick="if(confirm('Are you sure? This will cancel your registration.')) { return true; } return false;">Cancel Registration</a> | 
-                            <a href="#" onclick="document.getElementById('resendForm').submit(); return false;" style="color: #4CAF50; text-decoration: underline;">Resend OTP</a>
+                    <?php if ($success): ?>
+                        <div class="alert alert-success"><?php echo $success; ?></div>
+                    <?php endif; ?>
+
+                    <?php if ($show_otp_form): ?>
+                        <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                            We've sent a 6-digit code to <strong><?php echo isset($_SESSION['registration_data']['email']) ? htmlspecialchars($_SESSION['registration_data']['email']) : ''; ?></strong>
                         </p>
-                    </form>
-                    <form method="POST" action="register.php" id="resendForm" style="display: none;">
-                        <input type="hidden" name="resend_otp" value="1">
-                    </form>
-                <?php else: ?>
-                    <!-- Registration Form -->
-                    <form class="login-form" method="POST" action="register.php">
-                        <div class="form-group">
-                            <label for="first-name">First Name</label>
-                            <input type="text" id="first-name" name="first-name"
-                                value="<?php echo isset($_POST['first-name']) ? htmlspecialchars($_POST['first-name']) : ''; ?>"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="last-name">Last Name</label>
-                            <input type="text" id="last-name" name="last-name"
-                                value="<?php echo isset($_POST['last-name']) ? htmlspecialchars($_POST['last-name']) : ''; ?>"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input type="email" id="email" name="email"
-                                value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" id="password" name="password" required>
-                            <!-- <small>Minimum 8 characters</small> -->
-                        </div>
-                        <div class="form-group">
-                            <label for="confirm-password">Confirm Password</label>
-                            <input type="password" id="confirm-password" name="confirm-password" required>
-                        </div>
-
-                        <button type="submit" class="register-button">Register</button>
-                        <p class="sign-up-text">Already have an account? <a href="signin.php">Sign In</a></p>
-                    </form>
-                <?php endif; ?>
+                        <form class="login-form" method="POST" action="register.php">
+                            <div class="form-group">
+                                <label for="otp">Enter Verification Code</label>
+                                <input type="text" id="otp" name="otp" maxlength="6" pattern="[0-9]{6}" 
+                                    placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" 
+                                    required autofocus>
+                                <small style="display: block; text-align: center; margin-top: 10px; color: #666;">
+                                    Code expires in 10 minutes
+                                </small>
+                            </div>
+                            <button type="submit" name="verify_otp" class="register-button">Verify & Register</button>
+                            <p class="sign-up-text">
+                                <a href="register.php?cancel=1">Cancel</a> | 
+                                <a href="#" onclick="document.getElementById('resendForm').submit(); return false;">Resend OTP</a>
+                            </p>
+                        </form>
+                        <form method="POST" id="resendForm" style="display: none;">
+                            <input type="hidden" name="resend_otp" value="1">
+                        </form>
+                    <?php else: ?>
+                        <form class="login-form" method="POST" action="register.php">
+                            <div class="form-group">
+                                <label for="first-name">First Name</label>
+                                <input type="text" id="first-name" name="first-name"
+                                    value="<?php echo isset($_POST['first-name']) ? htmlspecialchars($_POST['first-name']) : ''; ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="last-name">Last Name</label>
+                                <input type="text" id="last-name" name="last-name"
+                                    value="<?php echo isset($_POST['last-name']) ? htmlspecialchars($_POST['last-name']) : ''; ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email"
+                                    value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm-password">Confirm Password</label>
+                                <input type="password" id="confirm-password" name="confirm-password" required>
+                            </div>
+                            <button type="submit" class="register-button">Register</button>
+                            <p class="sign-up-text">Already have an account? <a href="signin.php">Sign In</a></p>
+                        </form>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
+
     <script>
-        // OTP input handling - only allow numbers
         const otpInput = document.getElementById('otp');
         if (otpInput) {
             otpInput.addEventListener('input', function(e) {
-                // Only allow numbers
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
-            
-            otpInput.addEventListener('keypress', function(e) {
-                // Only allow numbers
-                if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter'].includes(e.key)) {
-                    e.preventDefault();
-                }
-            });
-        }
-        
-        // Auto-focus OTP input when page loads
-        if (otpInput) {
             otpInput.focus();
         }
     </script>
 </body>
-
 </html>
