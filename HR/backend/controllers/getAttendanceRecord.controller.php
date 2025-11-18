@@ -254,7 +254,7 @@ ORDER BY lt.leave_type_id ASC
                 "data" => [
                     "present_count" => $datas['present_count'],
                     "late_count" => $datas1["late_count"],
-                    "absent_count" => $datas2["absent_count"],
+                    "absent_count" => $datas2["absent_count"] ?? 0,
                     "leave_count" => $datas3["leave_count"],
                     "leave" =>  array_map(function($row) {
                         return [

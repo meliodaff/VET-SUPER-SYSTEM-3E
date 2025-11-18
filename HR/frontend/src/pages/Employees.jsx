@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, User, Camera } from "lucide-react";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import EmployeeInformation from "./EmployeeInformation";
 import useGetEmployees from "../api/useGetEmployee";
@@ -19,7 +19,7 @@ export default function Employees() {
     email: "",
     phoneNumber: "",
     address: "",
-    employmentStatus: "full-time",
+    employmentStatus: "Full-Time",
     jobTitle: "",
     password: "",
     confirmPassword: "",
@@ -130,7 +130,7 @@ export default function Employees() {
       email: "",
       phoneNumber: "",
       address: "",
-      employmentStatus: "full-time",
+      employmentStatus: "Full-Time",
       jobTitle: "",
       password: "",
       confirmPassword: "",
@@ -343,6 +343,63 @@ export default function Employees() {
               {/* Modal Body */}
               <div className="p-6 sm:p-8 bg-gray-50">
                 <form className="space-y-6">
+                  {/* Row 0: Profile Image Upload */}
+                  <div className="flex flex-col items-center">
+                    <label className="block text-sm font-bold text-gray-900 mb-3">
+                      Profile Photo
+                    </label>
+                    <div className="relative">
+                      <div className="w-32 h-32 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                        {formData.profileImage ? (
+                          <img
+                            src={formData.profileImage}
+                            alt="Profile preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-16 h-16 text-gray-400" />
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        id="profile-upload"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setFormData({
+                                ...formData,
+                                profileImage: reader.result,
+                              });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="profile-upload"
+                        className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-all shadow-lg"
+                      >
+                        <Camera className="w-5 h-5" />
+                      </label>
+                    </div>
+                    {formData.profileImage && (
+                      <button
+                        onClick={() =>
+                          setFormData({ ...formData, profileImage: "" })
+                        }
+                        className="mt-2 text-xs text-red-500 hover:text-red-700 font-semibold"
+                      >
+                        Remove Photo
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Row 1: First, Middle, Last Name */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6"></div>
                   {/* Row 1: First, Middle, Last Name */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div>
@@ -591,10 +648,9 @@ export default function Employees() {
                       }
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm appearance-none cursor-pointer"
                     >
-                      <option value="full-time">Full Time</option>
-                      <option value="part-time">Part Time</option>
-                      <option value="contract">Contract</option>
-                      <option value="temporary">Temporary</option>
+                      <option value="Full-Time">Full Time</option>
+                      <option value="Part-Time">Part Time</option>
+                      <option value="Contract">Contract</option>
                     </select>
                   </div>
 

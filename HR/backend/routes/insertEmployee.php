@@ -12,11 +12,11 @@ $REQUEST_METHOD = $_SERVER["REQUEST_METHOD"];
 
 if($REQUEST_METHOD === "POST"){
 
-    $formDetails = ["firstName", "middleName", "lastName", "birthDate", "gender", "email", "phoneNumber", "address", "employmentStatus", "jobTitle", "password", "isAdmin"];
+    $formDetails = ["firstName", "lastName", "birthDate", "gender", "email", "phoneNumber", "address", "employmentStatus", "jobTitle", "password", "isAdmin"];
 
    validateForm($formDetails);
 
-    $response = insertEmployee($_POST, $pdo);
+    $response = insertEmployee($_POST, $pdo, $_FILES);
 
     if(!$response["success"]){
         http_response_code(500);
