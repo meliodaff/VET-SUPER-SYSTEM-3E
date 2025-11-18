@@ -49,7 +49,7 @@
             ":Position"          => $employee["jobTitle"],
             ":department"        => $employee["department"] ?? "Vet Clinic",
             ":password_hash"     => $hashedPassword,
-            ":is_admin"          => (int) $employee["isAdmin"] ?? 0
+            ":is_admin"          => 0
              ]);
 
             if(!$isInserted){
@@ -104,13 +104,13 @@
             ]);
 
              
+            $pdo->commit(); 
              
             $response = [
                  "success" => true,
                  "message" => "Successfully inserted the employee ID: {$pdo->lastInsertId()}"
                 ];
 
-            $pdo->commit(); 
         } catch (PDOException $e) {
             $response = [
                 "success" => false,

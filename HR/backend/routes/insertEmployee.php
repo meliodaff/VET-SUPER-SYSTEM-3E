@@ -12,7 +12,7 @@ $REQUEST_METHOD = $_SERVER["REQUEST_METHOD"];
 
 if($REQUEST_METHOD === "POST"){
 
-    $formDetails = ["firstName", "lastName", "birthDate", "gender", "email", "phoneNumber", "address", "employmentStatus", "jobTitle", "password", "isAdmin"];
+    $formDetails = ["firstName", "lastName", "birthDate", "gender", "email", "phoneNumber", "address", "employmentStatus", "jobTitle", "password"];
 
    validateForm($formDetails);
 
@@ -21,12 +21,14 @@ if($REQUEST_METHOD === "POST"){
     if(!$response["success"]){
         http_response_code(500);
         echo json_encode([
-                "error" => $response["message"]
+            "success" => false,
+            "error" => $response["message"]
             ]);
         return;
     }
     http_response_code(200);
     echo json_encode([
+        "success" => true,
         "message" => $response["message"]
     ]);
     

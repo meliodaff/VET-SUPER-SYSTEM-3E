@@ -3,6 +3,7 @@ import { Search, Plus, X, User, Camera } from "lucide-react";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import EmployeeInformation from "./EmployeeInformation";
 import useGetEmployees from "../api/useGetEmployee";
+import usePostEmployee from "../api/usePostEmployee";
 
 export default function Employees() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -11,19 +12,21 @@ export default function Employees() {
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    birthDate: "",
-    gender: "",
-    email: "",
-    phoneNumber: "",
-    address: "",
+    firstName: "mytestings",
+    middleName: "mytestings",
+    lastName: "mytestings",
+    birthDate: "1990-09-01",
+    gender: "Male",
+    email: "mytestings@gmail.com",
+    phoneNumber: "09123456789",
+    address: "mytestings",
     employmentStatus: "Full-Time",
-    jobTitle: "",
-    password: "",
-    confirmPassword: "",
+    jobTitle: "Veterinarian",
+    password: "123456",
+    confirmPassword: "123456",
+    photo: null,
   });
+  const [photoPreview, setPhotoPreview] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
   const { getEmployees, loadingForGetEmployees } = useGetEmployees();
 
@@ -85,6 +88,8 @@ export default function Employees() {
     setSelectedEmployee(null);
   };
 
+  const { postEmployee, loadingForPostEmployee } = usePostEmployee();
+
   // Validate form data
   const validateForm = () => {
     const errors = {};
@@ -134,7 +139,9 @@ export default function Employees() {
       jobTitle: "",
       password: "",
       confirmPassword: "",
+      photo: null, // Reset file
     });
+    setPhotoPreview(""); // Reset preview
     setValidationErrors({});
   };
 
@@ -344,15 +351,16 @@ export default function Employees() {
               <div className="p-6 sm:p-8 bg-gray-50">
                 <form className="space-y-6">
                   {/* Row 0: Profile Image Upload */}
+                  {/* Profile Photo Upload */}
                   <div className="flex flex-col items-center">
                     <label className="block text-sm font-bold text-gray-900 mb-3">
                       Profile Photo
                     </label>
                     <div className="relative">
                       <div className="w-32 h-32 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
-                        {formData.profileImage ? (
+                        {photoPreview ? (
                           <img
-                            src={formData.profileImage}
+                            src={photoPreview}
                             alt="Profile preview"
                             className="w-full h-full object-cover"
                           />
@@ -367,12 +375,16 @@ export default function Employees() {
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
+                            // Store the actual file
+                            setFormData({
+                              ...formData,
+                              photo: file,
+                            });
+
+                            // Create preview URL for display
                             const reader = new FileReader();
                             reader.onloadend = () => {
-                              setFormData({
-                                ...formData,
-                                profileImage: reader.result,
-                              });
+                              setPhotoPreview(reader.result);
                             };
                             reader.readAsDataURL(file);
                           }
@@ -386,11 +398,12 @@ export default function Employees() {
                         <Camera className="w-5 h-5" />
                       </label>
                     </div>
-                    {formData.profileImage && (
+                    {photoPreview && (
                       <button
-                        onClick={() =>
-                          setFormData({ ...formData, profileImage: "" })
-                        }
+                        onClick={() => {
+                          setFormData({ ...formData, photo: null });
+                          setPhotoPreview("");
+                        }}
                         className="mt-2 text-xs text-red-500 hover:text-red-700 font-semibold"
                       >
                         Remove Photo
@@ -723,20 +736,51 @@ export default function Employees() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (!validateForm()) {
                       alert("Please fill out all required fields correctly");
                       return;
                     }
-                    // Call your API function here with formData
-                    console.log("Form Data:", formData);
-                    // Example: await addEmployee(formData);
-                    setIsAddEmployeeModalOpen(false);
-                    resetForm();
+
+                    try {
+                      console.log("Form Data:", formData);
+                      const response = await postEmployee(formData);
+                      console.log(response);
+
+                      if (response.success) {
+                        alert("Employee added successfully!");
+                        setIsAddEmployeeModalOpen(false);
+                        resetForm();
+                        // Refresh employee list
+                        const updatedEmployees = await getEmployees();
+                        if (updatedEmployees.success) {
+                          const formattedData = updatedEmployees.data.map(
+                            (record) => ({
+                              id: String(record.employee_id),
+                              name: record.first_name + " " + record.last_name,
+                              position: record.Position,
+                              email: record.contact_email,
+                              photo: record.profile_image_url,
+                            })
+                          );
+                          setEmployees(formattedData);
+                        }
+                      } else {
+                        alert(response.message || "Failed to add employee");
+                      }
+                    } catch (error) {
+                      console.error("Error adding employee:", error);
+                      alert("An unexpected error occurred. Please try again.");
+                    }
                   }}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all"
+                  disabled={loadingForPostEmployee}
+                  className={`px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all ${
+                    loadingForPostEmployee
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
                 >
-                  Add Employee
+                  {loadingForPostEmployee ? "Adding..." : "Add Employee"}
                 </button>
               </div>
             </div>
