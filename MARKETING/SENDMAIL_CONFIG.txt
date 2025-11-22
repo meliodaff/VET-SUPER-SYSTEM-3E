@@ -1,0 +1,77 @@
+================================================================================
+QUICK EMAIL SETUP GUIDE FOR XAMPP
+================================================================================
+
+STEP 1: Open sendmail.ini
+---------------------------
+Location: C:\xampp\sendmail\sendmail.ini
+
+STEP 2: Find the [sendmail] section and replace it with:
+-------------------------------------------------------------------------------
+
+[sendmail]
+
+smtp_server=smtp.gmail.com
+smtp_port=587
+smtp_ssl=tls
+error_logfile=error.log
+auth_username=YOUR-GMAIL-ADDRESS@gmail.com
+auth_password=YOUR-GMAIL-APP-PASSWORD
+
+force_sender=YOUR-GMAIL-ADDRESS@gmail.com
+
+-------------------------------------------------------------------------------
+
+IMPORTANT: Replace these values:
+- YOUR-GMAIL-ADDRESS@gmail.com → Your actual Gmail address
+- YOUR-GMAIL-APP-PASSWORD → Your Gmail App Password (see below)
+
+STEP 3: Get Gmail App Password
+--------------------------------
+You CANNOT use your regular Gmail password. You need an App Password:
+
+1. Go to: https://myaccount.google.com/security
+2. Make sure "2-Step Verification" is ENABLED
+3. Scroll down to "App passwords"
+4. Click "App passwords"
+5. Select:
+   - App: Mail
+   - Device: Other (Custom name)
+   - Name: XAMPP
+6. Click "Generate"
+7. Copy the 16-character password (looks like: abcd efgh ijkl mnop)
+8. Use this password in sendmail.ini (remove spaces)
+
+STEP 4: Configure php.ini
+--------------------------
+1. Open: C:\xampp\php\php.ini
+2. Find the [mail function] section
+3. Make sure it has:
+   sendmail_path = "C:\xampp\sendmail\sendmail.exe -t"
+
+STEP 5: Restart Apache
+------------------------
+1. Open XAMPP Control Panel
+2. Stop Apache
+3. Start Apache again
+
+STEP 6: Test
+------------
+Try registering again. The OTP should be sent to your email!
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If emails still don't send:
+
+1. Check error.log: C:\xampp\sendmail\error.log
+2. Try port 465 with ssl instead:
+   smtp_port=465
+   smtp_ssl=ssl
+3. Make sure 2-Step Verification is enabled on Gmail
+4. Verify you're using App Password, not regular password
+5. Check firewall isn't blocking port 587 or 465
+
+================================================================================
+

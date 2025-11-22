@@ -65,6 +65,7 @@ export default function EmployeeInformation({ employee, onClose }) {
         alert(response[1].message);
         return;
       }
+
       const formattedDataAttendanceRecord = response[0].data.map((record) => ({
         // date: record.check_in_time.split(" ")[0],
         date: record.schedule_day,
@@ -137,7 +138,7 @@ export default function EmployeeInformation({ employee, onClose }) {
               <div className="relative">
                 <div className="w-24 h-24 sm:w-32 sm:h-32 bg-blue-100 rounded-xl overflow-hidden">
                   <img
-                    src={`http://localhost/hr-information-system/backend/${employeeInformation.photo}`}
+                    src={`http://localhost/VET-SUPER-SYSTEM-3E/HR/backend/${employeeInformation.photo}`}
                     alt={employee?.name || "Employee"}
                     className="w-full h-full object-cover"
                   />
@@ -301,12 +302,14 @@ export default function EmployeeInformation({ employee, onClose }) {
                       📋 Schedule:
                     </span>
                     <span className="text-sm text-gray-900">
-                      {employeeInformation.schedule && (
-                        <>
-                          {employeeInformation.schedule} <br />
-                          9:00 AM - 5:00 PM
-                        </>
-                      )}
+                      {employeeInformation.schedule
+                        ? employeeInformation.schedule && (
+                            <>
+                              {employeeInformation.schedule} <br />
+                              9:00 AM - 5:00 PM
+                            </>
+                          )
+                        : "No schedule assigned"}
                     </span>
                   </div>
                 </div>
@@ -341,32 +344,62 @@ export default function EmployeeInformation({ employee, onClose }) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {employeeAttendanceRecordForMonth.map((record, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-900">
-                            {record.date}
-                          </td>
-                          <td className="px-4 py-3 text-gray-900">
-                            {record.timeIn}
-                          </td>
-                          <td className="px-4 py-3 text-gray-900">
-                            {record.timeOut}
-                          </td>
-                          <td className="px-4 py-3">
-                            {record.remarks && (
-                              <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                  record.remarks !== "Present"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-green-100 text-green-800"
-                                }`}
+                      {employeeAttendanceRecordForMonth.length > 0 ? (
+                        employeeAttendanceRecordForMonth.map(
+                          (record, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-gray-900">
+                                {record.date}
+                              </td>
+                              <td className="px-4 py-3 text-gray-900">
+                                {record.timeIn}
+                              </td>
+                              <td className="px-4 py-3 text-gray-900">
+                                {record.timeOut}
+                              </td>
+                              <td className="px-4 py-3">
+                                {record.remarks && (
+                                  <span
+                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                                      record.remarks !== "Present"
+                                        ? "bg-red-100 text-red-800"
+                                        : "bg-green-100 text-green-800"
+                                    }`}
+                                  >
+                                    {record.remarks}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        )
+                      ) : (
+                        <tr>
+                          <td colSpan="4" className="px-4 py-12 text-center">
+                            <div className="flex flex-col items-center justify-center">
+                              <svg
+                                className="w-16 h-16 text-gray-300 mb-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                               >
-                                {record.remarks}
-                              </span>
-                            )}
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                              </svg>
+                              <p className="text-gray-500 font-medium mb-1">
+                                No attendance records found
+                              </p>
+                              <p className="text-gray-400 text-sm">
+                                There are no records for this month yet.
+                              </p>
+                            </div>
                           </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>

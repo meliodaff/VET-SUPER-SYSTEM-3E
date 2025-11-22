@@ -1,0 +1,773 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Header and Navigation */
+header {
+    background-color: #ffffff;
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.logo img {
+    height: 85px;
+    width: auto;
+}
+
+.logo span {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.6rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #007bff;
+}
+
+.book-now {
+    background-color: #007bff;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.book-now:hover {
+    background-color: #0056b3;
+}
+
+/* Profile dropdown */
+.profile-menu {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 50px; 
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  width: 200px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease-in-out;
+  z-index: 1000;
+}
+
+.dropdown li {
+  padding: 10px 20px;
+}
+
+.dropdown li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+  transition: background 0.2s;
+}
+
+.dropdown li a:hover {
+  background: #f5f5f5;
+}
+
+.dropdown li.logout a {
+  color: red;
+  font-weight: bold;
+}
+
+.profile-menu:hover .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Dashboard Logo */
+.dashboardlogo {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.dashboardlogo img {
+  width: 120px;
+  height: auto;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  text-align: center;
+  margin: 30px 0;
+  color: #003366;
+}
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+.dashboard-header h1 span {
+  padding: 0 5px;
+  border-radius: 5px;
+}
+
+/* Tabs */
+.tabs {
+  display: inline-flex;
+  background: #1d0a5b;
+  border-radius: 30px;
+  padding: 5px;
+  margin: 20px auto;
+  justify-content: center;
+}
+.tabs-container {
+  display: flex;
+  justify-content: center;
+}
+.tab {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+  text-decoration: none;
+}
+.tab.active {
+  background: #fff;
+  color: #000;
+}
+
+.tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.vouchers-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    justify-content: center;
+    text-align: center;
+}
+
+.vouchers-container h1 {
+    font-size: 32px;
+    margin: 0;
+    color: #333;
+}
+
+.vouchers-container .subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-top: 8px;
+    margin-bottom: 32px;
+}
+
+.vouchers-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.voucher-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.voucher-header {
+    padding: 16px;
+    color: white;
+}
+
+.voucher-header.welcome {
+    background: linear-gradient(135deg, #4F46E5, #6366F1);
+}
+
+.voucher-header.loyalty {
+    background: linear-gradient(135deg, #4F46E5, #6366F1);
+}
+
+.voucher-type {
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.voucher-content {
+    padding: 24px;
+}
+
+.discount {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 8px;
+}
+
+.description {
+    color: #4B5563;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.voucher-code-section {
+    margin-bottom: 24px;
+}
+
+.code-label {
+    font-size: 12px;
+    color: #6B7280;
+    margin-bottom: 8px;
+}
+
+.code-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #F3F4F6;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.code {
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1F2937;
+    letter-spacing: 1px;
+}
+
+.copy-btn {
+    padding: 8px 16px;
+    background: #4F46E5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.copy-btn:hover {
+    background: #4338CA;
+}
+
+.voucher-details {
+    border-top: 1px solid #E5E7EB;
+    padding-top: 16px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-item .label {
+    color: #6B7280;
+}
+
+.detail-item .value {
+    color: #1F2937;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 20px;
+    }
+
+    .vouchers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .discount {
+        font-size: 28px;
+    }
+}
+
+/* Header and Navigation */
+header {
+    background-color: #ffffff;
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.logo img {
+    height: 85px;
+    width: auto;
+}
+
+.logo span {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.6rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #007bff;
+}
+
+.book-now {
+    background-color: #007bff;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.book-now:hover {
+    background-color: #0056b3;
+}
+
+/* Profile dropdown */
+.profile-menu {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 50px; 
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  width: 200px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease-in-out;
+  z-index: 1000;
+}
+
+.dropdown li {
+  padding: 10px 20px;
+}
+
+.dropdown li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+  transition: background 0.2s;
+}
+
+.dropdown li a:hover {
+  background: #f5f5f5;
+}
+
+.dropdown li.logout a {
+  color: red;
+  font-weight: bold;
+}
+
+.profile-menu:hover .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Dashboard Logo */
+.dashboardlogo {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.dashboardlogo img {
+  width: 120px;
+  height: auto;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  text-align: center;
+  margin: 30px 0;
+  color: #003366;
+}
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+.dashboard-header h1 span {
+  padding: 0 5px;
+  border-radius: 5px;
+}
+
+/* Tabs */
+.tabs {
+  display: inline-flex;
+  background: #1d0a5b;
+  border-radius: 30px;
+  padding: 5px;
+  margin: 20px auto;
+  justify-content: center;
+}
+.tabs-container {
+  display: flex;
+  justify-content: center;
+}
+.tab {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+  text-decoration: none;
+}
+.tab.active {
+  background: #fff;
+  color: #000;
+}
+.tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
+/* Container */
+.voucher-container {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  padding: 40px;
+}
+
+/* Title */
+.voucher-container h1 {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+/* Voucher list grid */
+.voucher-list {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+/* Voucher card */
+.voucher-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 20px;
+  width: 280px;
+  text-align: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.voucher-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Voucher label */
+.voucher-label {
+  display: inline-block;
+  background: #2e0854; /* Deep purple */
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* Voucher discount */
+.voucher-card h2 {
+  color: #2e0854;
+  font-size: 22px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* Voucher description */
+.voucher-card p {
+  font-size: 14px;
+  color: #444;
+  margin: 6px 0;
+}
+
+/* Voucher code box */
+.voucher-code {
+  display: inline-block;
+  margin: 15px 0;
+  padding: 8px 20px;
+  border: 1px dashed #444;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 16px;
+  background: #f9f9f9;
+}
+
+/* Small details */
+.voucher-details {
+  font-size: 13px;
+  color: #555;
+}
+
+
+/* Footer Styles */
+.main-footer {
+  background: #002d72;
+  color: white;
+  padding: 2rem 1.5rem 1rem;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+  gap: 2rem;
+}
+
+/* Brand (Logo + Text) */
+.footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.footer-logo {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+}
+
+.footer-center {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.footer-title h2 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+}
+
+.footer-title p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: white;
+}
+
+/* Schedule */
+.footer-schedule h3,
+.footer-contact h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.schedule-card {
+  background: #6c7ea7;
+  color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 230px;
+}
+
+.schedule-icon {
+  font-size: 1.5rem;
+  color: black; 
+}
+
+.schedule-text p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+.schedule-text .emergency {
+  color: red;
+  font-weight: bold;
+}
+
+/* Contact */
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.contact-item {
+  background: #6c7ea7;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.9rem;
+}
+
+.contact-item.careers {
+  background: #6c7ea7;
+  color: white;
+  font-weight: 600;
+}
+
+/* Bottom Bar */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.85rem;
+}
+.footer-bottom a {
+  color: white;
+  text-decoration: none;
+}
+.footer-bottom a:hover {
+  text-decoration: underline;
+}
+
+.contact-item svg,
+.schedule-icon svg {
+  flex-shrink: 0;
+  color: black;
+}
+
+.contact-item svg {
+  stroke: white;
+}
+
+.contact-item.careers svg {
+  stroke: white;
+}
+
+.footer-bottom svg {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.paw-icon {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    margin-top: -2px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .schedule-card {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-contact {
+    width: 100%;
+    align-items: center;
+  }
+}

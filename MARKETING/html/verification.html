@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - FUR-EVER CARE</title>
+  <link rel="stylesheet" href="verification.css">
+</head>
+<body>
+  <div class="login-container">
+    <a href="index.html" class="back-button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>Back to Home</span>
+    </a>
+
+    <div class="login-card">
+      <!-- Left Logo Section -->
+      <div class="login-left">
+        <img src="image/VETERINARY_LOGO_SYSTEM.png" alt="FUR-EVER CARE" class="logo">
+      </div>
+
+      <!-- Right Verification Section -->
+      <div class="login-right">
+        <h1>Enter 4-digit recovery code</h1>
+        <h5>The recovery code was sent to your email. Please enter the code.</h5>
+
+        <form class="login-form" action="landing.html" method="GET">
+          <div class="code-inputs">
+            <input type="text" maxlength="1">
+            <input type="text" maxlength="1">
+            <input type="text" maxlength="1">
+            <input type="text" maxlength="1">
+          </div>
+        
+          <button type="submit" class="verif-button" onclick="window.location.href='newpass.html'; return false;">Confirm</button>
+
+          <p class="sign-up-text">
+            <a href="signin.html">Can't have the code? Resend</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="verification.js"></script>
+</body>
+</html>

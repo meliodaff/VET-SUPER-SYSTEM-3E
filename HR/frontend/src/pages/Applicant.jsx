@@ -1,18 +1,23 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { MoreVertical, Search } from "lucide-react";
+import { MoreVertical, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetJobApplicants from "../api/useGetApplicant";
 import useUpdateApplicantStatus from "../api/useUpdateApplicantStatus";
 
 export default function ApplicantsTable() {
   const [activeMenuId, setActiveMenuId] = useState(null);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateSort, setDateSort] = useState("none");
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const { getJobApplicants, loadingForGetJobApplicant } = useGetJobApplicants();
   const { updateApplicantStatus, loadingForUpdateApplicantStatus } =
     useUpdateApplicantStatus();
+
   useEffect(() => {
     const useGetJobApplicantsFunc = async () => {
       const response = await getJobApplicants();
@@ -90,13 +95,77 @@ export default function ApplicantsTable() {
 
     // sort by createdAt if requested
     if (dateSort === "desc") {
-      out.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // newest first
+      out.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else if (dateSort === "asc") {
-      out.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // oldest first
+      out.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     }
 
     return out;
   }, [applicants, searchTerm, statusFilter, dateSort]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentApplicants = filteredApplicants.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, dateSort, itemsPerPage]);
+
+  // Pagination handlers
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+
+    if (totalPages <= maxPagesToShow) {
+      // Show all pages if total is small
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show first, last, current, and nearby pages
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
 
   // applicant status color
   const statusColors = {
@@ -109,13 +178,13 @@ export default function ApplicantsTable() {
 
   return (
     <DashboardLayout>
-      {/* Header Row: left title, right controls */}
+      {/* Header Row */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <div className="text-center md:text-left">
           <h1 className="text-2xl font-bold text-gray-800">Job Applicants</h1>
         </div>
 
-        {/* Right-aligned controls: Search, Sort by Status, Sort by Date */}
+        {/* Right-aligned controls */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">
           {/* Search */}
           <div className="relative w-full md:w-72">
@@ -155,10 +224,25 @@ export default function ApplicantsTable() {
         </div>
       </div>
 
-      {/* Secondary label on the top-right */}
-      <div className="flex justify-end mb-3">
+      {/* Secondary label and items per page selector */}
+      <div className="flex justify-between items-center mb-3">
         <div className="text-sm text-gray-500 font-medium">
           Applicant Information Details
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Show:</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            className="border rounded-md p-1 text-sm"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+          <span className="text-sm text-gray-600">per page</span>
         </div>
       </div>
 
@@ -192,8 +276,8 @@ export default function ApplicantsTable() {
           </thead>
 
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredApplicants.length > 0 ? (
-              filteredApplicants.map((applicant) => (
+            {currentApplicants.length > 0 ? (
+              currentApplicants.map((applicant) => (
                 <tr
                   key={applicant.id}
                   className="hover:bg-gray-50 transition-colors"
@@ -220,9 +304,7 @@ export default function ApplicantsTable() {
                       applicant.resume
                     ) : (
                       <a
-                        href={`
-                          http://localhost/hr-information-system/backend/${applicant.resume}
-                          `}
+                        href={`http://localhost/hr-information-system/backend/${applicant.resume}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -283,6 +365,67 @@ export default function ApplicantsTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {filteredApplicants.length > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-3">
+          {/* Results info */}
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1} to{" "}
+            {Math.min(endIndex, filteredApplicants.length)} of{" "}
+            {filteredApplicants.length} results
+          </div>
+
+          {/* Pagination buttons */}
+          <div className="flex items-center gap-2">
+            {/* Previous button */}
+            <button
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-md border transition-colors ${
+                currentPage === 1
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            {/* Page numbers */}
+            <div className="flex gap-1">
+              {getPageNumbers().map((page, index) => (
+                <button
+                  key={index}
+                  onClick={() => typeof page === "number" && goToPage(page)}
+                  disabled={page === "..."}
+                  className={`min-w-[40px] px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    page === currentPage
+                      ? "bg-blue-600 text-white"
+                      : page === "..."
+                      ? "bg-white text-gray-400 cursor-default"
+                      : "bg-white text-gray-700 hover:bg-gray-50 border"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            {/* Next button */}
+            <button
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-md border transition-colors ${
+                currentPage === totalPages
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

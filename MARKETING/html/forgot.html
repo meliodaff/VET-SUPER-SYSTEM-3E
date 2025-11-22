@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - FUR-EVER CARE</title>
+    <link rel="stylesheet" href="forgot.css">
+</head>
+<body>
+    <div class="login-container">
+        <a href="index.html" class="back-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Back to Home</span>
+        </a>
+        <div class="login-card">
+            <div class="login-left">
+                <img src="image/VETERINARY_LOGO_SYSTEM.png" alt="FUR-EVER CARE" class="logo">
+            </div>
+            <div class="login-right">
+                <h1>Forgot Password?</h1>
+                <h5>We’ll help you get back into your account!</h5>
+                <form class="login-form" action="landing.html" method="GET">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <button type="submit" class="verif-button" onclick="window.location.href='verification.html'; return false;">Send Verification Code</button>
+                    <p class="sign-up-text"> <a href="signin.html">Back to Sign In</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

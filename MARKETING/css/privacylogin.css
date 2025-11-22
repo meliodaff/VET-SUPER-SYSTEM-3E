@@ -1,0 +1,1256 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Header and Navigation */
+header {
+    background-color: #ffffff;
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.logo img {
+    height: 85px;
+    width: auto;
+}
+
+.logo span {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.6rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #007bff;
+}
+
+.book-now {
+    background-color: #007bff;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.book-now:hover {
+    background-color: #0056b3;
+}
+
+/* Profile dropdown */
+.profile-menu {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 50px; 
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  width: 200px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease-in-out;
+  z-index: 1000;
+}
+
+.dropdown li {
+  padding: 10px 20px;
+}
+
+.dropdown li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+  transition: background 0.2s;
+}
+
+.dropdown li a:hover {
+  background: #f5f5f5;
+}
+
+.dropdown li.logout a {
+  color: red;
+  font-weight: bold;
+}
+
+.profile-menu:hover .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.privacy-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+h1 {
+    color: #0047AB;
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.last-updated {
+    color: #FF0000;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 0.9em;
+}
+
+.intro {
+    margin-bottom: 30px;
+}
+
+.privacy-section {
+    margin-bottom: 30px;
+}
+
+h2 {
+    color: #0047AB;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+}
+
+ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+p {
+    margin-bottom: 15px;
+}
+
+.contact-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    max-width: 300px;
+    padding: 25px;
+    transition: transform 0.3s ease;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-content {
+    text-align: center;
+}
+
+.icon {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.contact-card h3 {
+    color: #333;
+    font-size: 1.1em;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.contact-card p {
+    color: #0047AB;
+    line-height: 1.5;
+}
+
+
+
+.contact-item p {
+    color: white;
+    line-height: 1.5;
+}
+
+.policy-intro {
+    align-items: flex-start;
+    display: flex;
+}    
+    
+/* Profile dropdown */
+.profile-menu {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 50px; 
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  width: 200px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease-in-out;
+  z-index: 1000;
+}
+
+.dropdown li {
+  padding: 10px 20px;
+}
+
+.dropdown li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+  transition: background 0.2s;
+}
+
+.dropdown li a:hover {
+  background: #f5f5f5;
+}
+
+.dropdown li.logout a {
+  color: red;
+  font-weight: bold;
+}
+
+.profile-menu:hover .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+
+/* Privacy Page Content Styles */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    .privacy-content {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .bottom-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
+
+/* Footer Styles */
+.main-footer {
+    background-color: #00205B;
+    color: white;
+    padding: 2rem 0 0;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2rem;
+}
+
+.footer-left {
+    flex: 1;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.footer-logo {
+    width: 100px;
+    height: auto;
+}
+
+.brand-name h2 {
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.brand-name h3 {
+    font-size: 1rem;
+    margin: 0.1rem 0 0;
+    font-weight: 500;
+}
+
+.schedule-section h4,
+.contact-section h4 {
+    font-size: 0.9rem;
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.schedule-info {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.clock-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.clock-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.times p {
+    margin: 0 0 0.35rem;
+    font-size: 0.85rem;
+}
+
+.times p:last-child {
+    margin-bottom: 0;
+}
+
+.emergency {
+    color: #FF4B4B;
+}
+
+.footer-right {
+    flex: 1;
+    max-width: 400px;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.contact-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.contact-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-size: 0.85rem;
+}
+
+.contact-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.contact-card p {
+    margin: 0;
+    line-height: 1.4;
+    font-size: 0.85rem;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 0;
+    margin-top: 2rem;
+}
+
+.bottom-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.copyright {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.paw-icon {
+    width: 12px;
+    height: 12px;
+    opacity: 0.8;
+}
+
+.privacy {
+    color: white;
+    text-decoration: none;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+}
+
+.privacy:hover {
+    opacity: 1;
+}
+
+@media (max-width: 1024px) {
+    .footer-content {
+        flex-direction: column;
+        gap: 3rem;
+    }
+
+    .footer-left {
+        padding-right: 0;
+    }
+
+    .logo-section {
+        justify-content: center;
+    }
+
+    .contact-info {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .logo-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .bottom-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
+.main-footer {
+    background-color: #00205B;
+    color: white;
+    padding: 3rem 0 0;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2rem;
+}
+
+.footer-left {
+    flex: 1;
+    padding-right: 4rem;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.footer-logo {
+    width: 150px;
+    height: auto;
+}
+
+.footer-logo {
+    width: 100px;
+    height: auto;
+}
+
+.brand-name h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.brand-name h3 {
+    font-size: 1.2rem;
+    margin: 0.25rem 0 0;
+    font-weight: 500;
+}
+
+.footer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.contact-info h3, .schedule h3 {
+    font-size: 1rem;
+    margin: 0 0 1rem;
+    color: #fff;
+}
+
+.contact-card, .schedule-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.contact-item, .schedule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.contact-item svg, .schedule-item svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.5;
+    flex-shrink: 0;
+}
+
+.contact-item p, .schedule-times p {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.schedule-times .emergency {
+    color: #FF4B4B;
+    margin-top: 0.5rem;
+}
+
+.contact-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.contact-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.contact-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.contact-button svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.5;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.footer-logo img {
+    width: 80px;
+    height: auto;
+}
+
+.footer-brand h3 {
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.footer-brand h4 {
+    font-size: 1rem;
+    margin: 0.2rem 0 0;
+    font-weight: 500;
+    color: #9BA4B5;
+}
+
+.footer-center h3, .footer-right h3 {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.schedule-info {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.schedule-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: black;
+    stroke-width: 1.5;
+}
+
+.schedule-times p {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+}
+
+.emergency {
+    color: #FF4B4B;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: white;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+.contact-item:hover {
+    opacity: 0.8;
+}
+
+.contact-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+    stroke-width: 1.5;
+}
+
+.contact-item span {
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.careers {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem 0;
+}
+
+.footer-bottom-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.copyright {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.paw-icon {
+    width: 14px;
+    height: 14px;
+    opacity: 0.8;
+}
+
+.privacy-policy {
+    color: white;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.privacy-policy:hover {
+    opacity: 1;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .footer-content {
+        flex-direction: column;
+        gap: 3rem;
+    }
+
+    .footer-left {
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-info {
+        align-items: center;
+    }
+
+    .contact-buttons {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 640px) {
+    .footer-bottom-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
+
+.copyright {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.paw-icon {
+    font-size: 0.8rem;
+}
+
+.privacy-policy {
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+.privacy-policy:hover {
+    opacity: 0.8;
+}
+
+/* Responsive design for footer */
+@media (max-width: 968px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .footer-logo {
+        justify-content: center;
+    }
+
+    .footer-center, .footer-right {
+        text-align: center;
+    }
+
+    .schedule-info, .contact-info {
+        justify-content: center;
+    }
+
+    .footer-bottom-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
+
+
+
+/* Contact form */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+textarea {
+    height: 150px;
+    resize: vertical;
+}
+
+button {
+    background-color: #00bcd4;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #008ba3;
+}
+
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+}
+
+.meet-us {
+    background-color: #ffffff;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.meet-us-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.meet-us h2 {
+    color: #00205B;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.meet-us p {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 3rem;
+}
+
+.contact-cards {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.contact-info-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+    transition: transform 0.3s ease;
+}
+
+.contact-info-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 1rem;
+    color: #0047AB;
+}
+
+.contact-info-card h3 {
+    color: #00205B;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.contact-info-card p {
+    color: #666;
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.schedule-visit-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #0047AB, #00205B);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.schedule-visit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 71, 171, 0.3);
+}
+
+@media (max-width: 768px) {
+    .meet-us h2 {
+        font-size: 2rem;
+    }
+    
+    .contact-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .contact-info-card {
+        width: 100%;
+    }
+}
+
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    main {
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+
+
+
+/* Footer Styles */
+.main-footer {
+  background: #002d72;
+  color: white;
+  padding: 2rem 1.5rem 1rem;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+  gap: 2rem;
+}
+
+/* Brand (Logo + Text) */
+.footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.footer-logo {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+}
+
+.footer-center {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.footer-title h2 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+}
+
+.footer-title p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: white;
+}
+
+/* Schedule */
+.footer-schedule h3,
+.footer-contact h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.schedule-card {
+  background: #6c7ea7;
+  color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 230px;
+}
+
+.schedule-icon {
+  font-size: 1.5rem;
+  color: black;
+}
+
+.schedule-text p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+.schedule-text .emergency {
+  color: red;
+  font-weight: bold;
+}
+
+/* Contact */
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.contact-item {
+    background: #6c7ea7;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.9rem;
+}
+
+.contact-item.careers {
+  background: #6c7ea7;
+  color: white;
+  font-weight: 600;
+}
+
+/* Bottom Bar */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.85rem;
+}
+.footer-bottom a {
+  color: white;
+  text-decoration: none;
+}
+.footer-bottom a:hover {
+  text-decoration: underline;
+}
+
+.contact-item svg,
+.schedule-icon svg {
+  flex-shrink: 0;
+}
+
+.contact-item svg {
+  stroke: white;
+}
+
+.contact-item.careers svg {
+  stroke: white;
+}
+
+.footer-bottom svg {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.paw-icon {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    margin-top: -2px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .schedule-card {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-contact {
+    width: 100%;
+    align-items: center;
+  }
+}
+
+/* Password Input Styles */
+.password-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.password-input input {
+  padding-right: 3rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+  background: #f0faff;
+}
+
+.password-input input:focus {
+  outline: none;
+  border-color: #002d72;
+  box-shadow: 0 0 3px rgba(0, 45, 114, 0.4);
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke: #666;
+}
+
+.toggle-password:hover svg {
+  stroke: #333;
+}
+
+/* Update Password Button */
+.update-password {
+  background-color: #006838;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: block;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.update-password:hover {
+  background-color: #004d29;
+}
