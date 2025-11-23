@@ -7,6 +7,7 @@ import {
   Gift,
   BarChart3,
   LogOut,
+  Megaphone,
 } from "lucide-react";
 
 import { Link, useLocation } from "react-router-dom";
@@ -24,6 +25,7 @@ export default function Sidebar() {
       "/admin-schedule": "Schedule",
       "/admin-incentives": "Incentives",
       "/admin-analytics": "Analytics",
+      "/admin-announcements": "Announcements",
     };
 
     const currentItem = pathToItemMap[location.pathname];
@@ -58,6 +60,12 @@ export default function Sidebar() {
       label: "Analytics",
       icon: BarChart3,
       link: "/admin-analytics",
+    },
+    {
+      id: "Announcements",
+      label: "Announcements",
+      icon: Megaphone,
+      link: "/admin-announcements",
     },
   ];
 

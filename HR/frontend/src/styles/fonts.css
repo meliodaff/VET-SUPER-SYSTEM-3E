@@ -1,0 +1,14 @@
+    /*Fonts from google.. gumagana*/
+    @import url('https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300..700&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300..700&display=swap');
+
+
+    /*dowloaded fonts.. ayaw gumana dahil kay enerio*/
+    @font-face {
+      font-family: ' Souliyo Unicode'; /*Souliyo Unicode*/
+      src: url("C:\Users\armea\OneDrive\Documents\Desktop\login-vet\di-gumaganang-font\Souliyo-Regular.ttf")  format('truetype');
+    }
+    @font-face {
+      font-family: 'Tharlon'; /*Tharlon*/
+      src: url("C:\Users\armea\OneDrive\Documents\Desktop\login-vet\di-gumaganang-font\Tharlon-Regular.ttf") format('truetype');
+    }

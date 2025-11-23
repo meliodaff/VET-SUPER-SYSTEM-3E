@@ -1,5 +1,5 @@
 body {
-  background-image: url("../Image/background.png");
+  background-image: url("/images/background.png");
   background-color: rgba(201, 228, 255, 1);
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -9,14 +9,14 @@ h1,
 p {
   margin: 0;
 }
-.container {
+.login-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
 }
 
-.register-img {
+.login-img {
   height: 165px;
   border-style: solid;
   border-width: 8px;
@@ -26,8 +26,8 @@ p {
   z-index: 10;
 }
 
-.register-bg {
-  background-image: url("../Image/Rectangle 2397.png");
+.login-bg {
+  background-image: url("/images/Rectangle 2397.png");
   background-size: cover;
   background-repeat: no-repeat;
   width: 409px;
@@ -35,7 +35,8 @@ p {
   color: black;
   font-size: 20px;
 }
-.register-form {
+
+.login-form {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,7 +48,6 @@ p {
   font-size: 23px;
   margin-top: 75px;
 }
-
 .subtitle {
   font-family: "Spline Sans";
   font-size: 20px;
@@ -56,56 +56,22 @@ p {
   color: rgba(2, 32, 122, 1);
 }
 
-form {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-  border-bottom: 1px solid rgba(2, 32, 122, 1);
-  align-items: center;
-}
-
-.name-inputs {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-}
-
-.name-inputs input {
-  width: 140px;
-  height: 33px;
-  border-width: 1px;
-  border-color: rgba(196, 226, 255, 1);
-  border-style: solid;
-  border-radius: 30px;
-  padding-left: 15px;
-  outline: none;
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-family: "Souliyo Unicode", arial;
-}
-
-.name-inputs input::placeholder {
-  color: rgba(2, 32, 122, 1);
-  font-size: 14px;
-  font-family: "Souliyo Unicode", arial;
-}
-
 .email {
-  width: 310px;
-  height: 33px;
+  width: 330px;
+  height: 42px;
   border-width: 1px;
   border-color: rgba(196, 226, 255, 1);
   border-style: solid;
   border-radius: 30px;
   padding-left: 15px;
   outline: none;
-  margin-bottom: 16px;
+  margin-bottom: 19px;
   font-size: 18px;
   font-family: "Souliyo Unicode", arial;
 }
 .email::placeholder {
   color: rgba(2, 32, 122, 1);
-  font-size: 14px;
+  font-size: 15px;
   font-family: "Souliyo Unicode", arial;
 }
 
@@ -115,11 +81,11 @@ form {
   border-style: solid;
   border-radius: 30px;
   padding-left: 13px;
-  width: 314px;
-  height: 35px;
+  width: 335px;
+  height: 42px;
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .password-field {
@@ -133,7 +99,7 @@ form {
 
 .password-field::placeholder {
   color: rgba(2, 32, 122, 1);
-  font-size: 14px;
+  font-size: 15px;
   font-family: "Souliyo Unicode", arial;
 }
 
@@ -141,8 +107,10 @@ form {
   border: none;
   background-color: white;
   cursor: pointer;
-  margin-left: 10px;
   border-radius: 20px;
+  margin-right: 10px;
+  padding: 0 7px;
+  padding-bottom: 5px;
 }
 
 .eye-button:hover {
@@ -152,40 +120,19 @@ form {
 .eye-image {
   width: 15px;
   height: 15px;
-  margin-top: 7px;
-}
-.terms-and-privacy {
-  display: flex;
-  margin-top: -10px;
-  align-items: center;
-  margin-left: 10px;
-  width: 100%;
 }
 a {
   text-decoration: none;
 }
-input[type="checkbox"] {
-  width: 10px;
-  height: 10px;
-}
-.terms-and-privacy-p {
-  font-size: 12px;
-  color: rgba(2, 32, 122, 1);
+.forget-link {
+  font-size: 13px;
+  color: rgba(255, 0, 0, 0.5);
+  margin-left: 225px;
+  margin-bottom: 20px;
   font-family: "Souliyo Unicode", arial;
-  font-family: Tajawal;
 }
 
-.terms-link {
-  font-weight: bold;
-  color: rgba(2, 32, 122, 1);
-}
-
-.privacy-policy-link {
-  font-weight: bold;
-  color: rgba(2, 32, 122, 1);
-}
-
-.register-button {
+.login-button {
   width: 220px;
   height: 38px;
   border-radius: 13px;
@@ -193,19 +140,18 @@ input[type="checkbox"] {
   background-color: rgba(80, 128, 190, 1);
   color: white;
   font-weight: bold;
-  margin-bottom: 14px;
+  margin-bottom: 36px;
   cursor: pointer;
-  margin-top: 18px;
 }
-.login {
+.register {
   font-size: 13px;
   color: rgba(2, 32, 122, 1);
   font-weight: 300;
-  margin-top: 10px;
+  margin-top: 26px;
   margin-bottom: 10px;
   font-family: Tajawal;
 }
-.login-link {
+.register-link {
   color: rgba(2, 32, 122, 1);
   font-weight: bold;
   font-family: "Tharlon", arial;

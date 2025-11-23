@@ -13,7 +13,10 @@
     e.department,
     e.hire_date,
     e.employment_type,
-    es.day_of_week
+    es.day_of_week,
+    e.gender,
+    e.profile_image_url AS photo
+
 FROM employees e
 LEFT JOIN employee_schedules es
     ON e.employee_id = es.employee_id
@@ -47,7 +50,11 @@ e.employee_id,
 e.department,
 e.hire_date,
 e.employment_type,
-es.day_of_week
+es.day_of_week,
+e.gender,
+e.profile_image_url AS photo
+
+
 FROM employees e
 JOIN employee_schedules es
 ON	e.employee_id = es.employee_id

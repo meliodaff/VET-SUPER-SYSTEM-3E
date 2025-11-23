@@ -46,6 +46,8 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
       setActiveNav("INCENTIVES");
     } else if (location.pathname === "/employee-analytics") {
       setActiveNav("ANALYTICS");
+    } else if (location.pathname === "/employee-performance-rating") {
+      setActiveNav("PERFORMANCE");
     }
   }, [location.pathname]);
 
@@ -158,6 +160,13 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
               link="/employee-analytics"
             >
               ANALYTICS
+            </NavItem>
+            <NavItem
+              active={activeNav === "PERFORMANCE"}
+              onClick={() => handleNavClick("PERFORMANCE")}
+              link="/employee-performance-rating"
+            >
+              PERFORMANCE RATING
             </NavItem>
           </div>
 
@@ -307,6 +316,13 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
                 link="/employee-analytics"
               >
                 ANALYTICS
+              </MobileNavItem>
+              <MobileNavItem
+                active={activeNav === "PERFORMANCE"}
+                onClick={() => handleNavClick("PERFORMANCE")}
+                link="/employee-performance-rating"
+              >
+                PERFORMANCE RATING
               </MobileNavItem>
 
               {/* Mobile Search */}

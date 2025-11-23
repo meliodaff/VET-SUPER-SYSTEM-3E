@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Button from "./Button";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 const NavItem = ({ link, children, active = false }) => (
   <Link to={link}>
     <button
@@ -32,7 +32,7 @@ const MobileNavItem = ({ link, children, active = false }) => (
 const navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-
+  const navigate = useNavigate();
   // Show navigation only on dashboard-related routes, hide on homepage and job offer pages
   const showNavigation =
     location.pathname !== "/" && !location.pathname.startsWith("/job-");
@@ -82,7 +82,12 @@ const navbar = () => {
 
           {/* Login Button */}
           <div className="hidden md:block ml-auto">
-            <Button className="border-2 border-black hover:bg-black hover:text-white transform hover:scale-105">
+            <Button
+              onClick={() => {
+                navigate("/login");
+              }}
+              className="border-2 border-black hover:bg-black hover:text-white transform hover:scale-105"
+            >
               LOGIN
             </Button>
           </div>

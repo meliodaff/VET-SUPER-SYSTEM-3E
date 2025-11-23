@@ -56,14 +56,6 @@ p {
   color: rgba(2, 32, 122, 1);
 }
 
-form {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-  border-bottom: 1px solid rgba(2, 32, 122, 1);
-  align-items: center;
-}
-
 .name-inputs {
   width: 100%;
   display: flex;
