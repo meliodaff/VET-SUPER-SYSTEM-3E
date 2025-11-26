@@ -11,10 +11,16 @@ $REQUEST_METHOD = $_SERVER["REQUEST_METHOD"];
 
 if($REQUEST_METHOD === "GET"){
     $idParams = isset($_GET["id"]) ? $_GET["id"] : null;
-    if(!$idParams) {
+    $forInterview = isset($_GET["forInterview"]) ? $_GET["forInterview"] : null;
+    
+    if ($forInterview === "true") {
+        $response = getJobApplicantsForInterview($pdo);
+    } 
+    else if(!$idParams) {
 
         $response = getJobApplicants($pdo);
-    } else {
+    }
+    else  {
         
         $response = getJobApplicant($idParams, $pdo);
     }

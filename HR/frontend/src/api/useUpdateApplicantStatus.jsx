@@ -5,13 +5,15 @@ const useUpdateApplicantStatus = () => {
   const [loadingForUpdateApplicantStatus, setLoadingForUpdateApplicantStatus] =
     useState(false);
 
-  const updateApplicantStatus = async (data) => {
+  const updateApplicantStatus = async (formData) => {
     try {
       setLoadingForUpdateApplicantStatus(true);
-      const response = await axios.post("/updateApplicantStatus.php", data);
+      const response = await axios.post("/updateApplicantStatus.php", formData);
+      console.log(response);
       return response.data;
     } catch (error) {
       if (error.status >= 400) {
+        console.log(error);
         return {
           success: false,
           message: error.response.data.message,
