@@ -45,10 +45,10 @@ $stmt->bind_param(
 // ✅ Execute and redirect instead of showing success message
 if ($stmt->execute()) {
     $stmt->close();
-    header("Location: ../Book_appointment_book.php?status=added");
+    header("Location: ../client_page/Book_appointment_book.php?status=added");
     exit;
 } else {
-    header("Location: ../Book_appointment_book.php?status=error");
+    header("Location: ../client_page/Book_appointment_book.php?status=error");
     exit;
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Home,
   User,
@@ -7,12 +7,32 @@ import {
   Gift,
   BarChart3,
   LogOut,
+  Megaphone,
 } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Sidebar() {
   const [activeItem, setActiveItem] = useState("Applicant");
+  const location = useLocation();
+
+  // Sync activeItem with current route
+  useEffect(() => {
+    const pathToItemMap = {
+      "/dashboard": "Dashboard",
+      "/employees": "Employee Profile",
+      "/applicant": "Applicant",
+      "/admin-schedule": "Schedule",
+      "/admin-incentives": "Incentives",
+      "/admin-analytics": "Analytics",
+      "/admin-announcements": "Announcements",
+    };
+
+    const currentItem = pathToItemMap[location.pathname];
+    if (currentItem) {
+      setActiveItem(currentItem);
+    }
+  }, [location.pathname]);
 
   const menuItems = [
     { id: "Dashboard", label: "Dashboard", icon: Home, link: "/dashboard" },
@@ -41,15 +61,24 @@ export default function Sidebar() {
       icon: BarChart3,
       link: "/admin-analytics",
     },
+    {
+      id: "Announcements",
+      label: "Announcements",
+      icon: Megaphone,
+      link: "/admin-announcements",
+    },
   ];
 
   return (
     <div className="fixed top-0 left-0 h-full w-64 bg-white shadow-lg flex flex-col">
       <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center gap-3">
+        <Link
+          to="/"
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+        >
           {/* Logo */}
           <img
-            src="src/assets/images/logo.png"
+            src="/images/logo.png"
             alt="Fur Ever Logo"
             className="w-12 h-12 rounded-full object-cover"
           />
@@ -60,7 +89,7 @@ export default function Sidebar() {
           >
             FUR EVER
           </h1>
-        </div>
+        </Link>
       </div>
 
       <nav className="flex-1 py-6">

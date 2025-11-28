@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Bell, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import useGetAnnouncements from "../../api/useGetAnnouncements";
 
 const NavItem = ({ link, children, active = false, onClick }) => (
   <Link to={link}>
@@ -36,54 +37,149 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("HOME");
+  const [announcements, setAnnouncements] = useState([]);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const location = useLocation();
+  const { getAnnouncements, loadingForGetAnnouncements } =
+    useGetAnnouncements();
 
-  // Sample notifications - backend ready
-  const notifications = [
-    {
-      id: 1,
-      category: "Today",
-      items: [
-        {
-          id: 11,
-          title: "Leave Request",
-          message:
-            "Your Leave Request has been Approved (Sept 12, 2025, 10:15 AM)",
-          isNew: true,
-        },
-        {
-          id: 12,
-          title: "Schedule Reminder",
-          message:
-            "You are assigned for this Morning Shift (8:00 AM - 2:00 PM) tomorrow",
-          isNew: false,
-        },
-      ],
-    },
-    {
-      id: 2,
-      category: "Yesterday",
-      items: [
-        {
-          id: 21,
-          title: "Schedule Change",
-          message: "Afternoon shift on Sept 12 moved to Morning shift.",
-          isNew: false,
-        },
-      ],
-    },
-    {
-      id: 3,
-      category: "Last Week",
-      items: [
-        {
-          id: 31,
-          title: "Leave Request Declined:",
-          message: "Sept 18 (Reason: Schedule Conflict)",
-          isNew: false,
-        },
-      ],
-    },
-  ];
+  // Fetch announcements from custom hook
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await getAnnouncements();
+        if (response && response.data) {
+          setAnnouncements(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching announcements:", error);
+      }
+    };
+
+    fetchAnnouncements();
+  }, [getAnnouncements]);
+
+  // Sync activeNav with current route
+  useEffect(() => {
+    if (location.pathname === "/employee-schedule") {
+      setActiveNav("SCHEDULE");
+    } else if (location.pathname === "/employee-incentives") {
+      setActiveNav("INCENTIVES");
+    } else if (location.pathname === "/employee-analytics") {
+      setActiveNav("ANALYTICS");
+    } else if (location.pathname === "/employee-performance-rating") {
+      setActiveNav("PERFORMANCE");
+    }
+  }, [location.pathname]);
+
+  // Helper function to get date category
+  const getDateCategory = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+    const todayOnly = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    const yesterdayOnly = new Date(
+      yesterday.getFullYear(),
+      yesterday.getMonth(),
+      yesterday.getDate()
+    );
+
+    if (dateOnly.getTime() === todayOnly.getTime()) {
+      return "Today";
+    } else if (dateOnly.getTime() === yesterdayOnly.getTime()) {
+      return "Yesterday";
+    }
+
+    const daysAgo = Math.floor(
+      (todayOnly.getTime() - dateOnly.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (daysAgo <= 7) {
+      return "This Week";
+    } else if (daysAgo <= 30) {
+      return "This Month";
+    } else {
+      return "Earlier";
+    }
+  };
+
+  // Format announcements to display format
+  const formatAnnouncements = () => {
+    const announcementItems = announcements.map((ann) => {
+      const startDate = new Date(ann.start_date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+
+      let message = ann.content;
+      if (ann.type === "Meeting") {
+        const meetingTime = ann.meeting_time_start
+          ? ann.meeting_time_start.substring(0, 5)
+          : "";
+        message = `${ann.content} | Meeting at ${ann.location} at ${meetingTime}`;
+      }
+
+      return {
+        id: ann.announcement_id,
+        title: ann.title,
+        message: `${message} (${startDate})`,
+        isNew: false,
+        type: ann.type,
+        createdDate: ann.created_at,
+      };
+    });
+
+    // Sort announcements by creation date (newest first)
+    announcementItems.sort(
+      (a, b) => new Date(b.createdDate) - new Date(a.createdDate)
+    );
+
+    // Group announcements by date
+    const groupedAnnouncements = {};
+    announcementItems.forEach((item) => {
+      const category = getDateCategory(item.createdDate);
+      if (!groupedAnnouncements[category]) {
+        groupedAnnouncements[category] = [];
+      }
+      groupedAnnouncements[category].push(item);
+    });
+
+    // Create announcement categories in order
+    const announcementCategories = [];
+    const categoryOrder = [
+      "Today",
+      "Yesterday",
+      "This Week",
+      "This Month",
+      "Earlier",
+    ];
+    let categoryId = 0;
+
+    categoryOrder.forEach((category) => {
+      if (groupedAnnouncements[category]) {
+        announcementCategories.push({
+          id: categoryId++,
+          category: `Announcements - ${category}`,
+          items: groupedAnnouncements[category],
+        });
+      }
+    });
+
+    return announcementCategories;
+  };
+
+  const notifications = formatAnnouncements();
 
   const unreadCount = notifications.reduce(
     (count, category) =>
@@ -110,26 +206,22 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link
+            to="/"
+            className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+          >
             <img
-              src="src/assets/images/logo.png"
+              src="/images/logo.png"
               alt="Logo"
               className="w-10 h-10 object-contain"
             />
             <span className="text-blue-600 font-black text-xl tracking-wide">
               FUR EVER
             </span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            <NavItem
-              active={activeNav === "HOME"}
-              onClick={() => handleNavClick("HOME")}
-              link="/"
-            >
-              HOME
-            </NavItem>
             <NavItem
               active={activeNav === "SCHEDULE"}
               onClick={() => handleNavClick("SCHEDULE")}
@@ -150,6 +242,13 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
               link="/employee-analytics"
             >
               ANALYTICS
+            </NavItem>
+            <NavItem
+              active={activeNav === "PERFORMANCE"}
+              onClick={() => handleNavClick("PERFORMANCE")}
+              link="/employee-performance-rating"
+            >
+              PERFORMANCE RATING
             </NavItem>
           </div>
 
@@ -197,26 +296,51 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
                             {category.category}
                           </h4>
                         </div>
-                        {category.items.map((item) => (
-                          <div
-                            key={item.id}
-                            className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${
-                              item.isNew ? "bg-blue-50" : ""
-                            }`}
-                          >
-                            <div className="flex items-start gap-2">
-                              <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5 flex-shrink-0"></div>
-                              <div className="flex-1">
-                                <h5 className="text-sm font-bold text-gray-900 mb-1">
-                                  {item.title}
-                                </h5>
-                                <p className="text-xs text-gray-600 leading-relaxed">
-                                  {item.message}
-                                </p>
+                        {category.items.map((item) => {
+                          const announcement = announcements.find(
+                            (ann) => ann.announcement_id === item.id
+                          );
+                          return (
+                            <div
+                              key={item.id}
+                              className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                                item.isNew ? "bg-blue-50" : ""
+                              }`}
+                              onClick={() => {
+                                if (announcement) {
+                                  setSelectedAnnouncement(announcement);
+                                }
+                              }}
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5 flex-shrink-0"></div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h5 className="text-sm font-bold text-gray-900">
+                                      {item.title}
+                                    </h5>
+                                    {item.type && (
+                                      <span
+                                        className={`text-xs px-2 py-0.5 rounded font-semibold ${
+                                          item.type === "Meeting"
+                                            ? "bg-blue-100 text-blue-800"
+                                            : item.type === "Policy"
+                                            ? "bg-purple-100 text-purple-800"
+                                            : "bg-green-100 text-green-800"
+                                        }`}
+                                      >
+                                        {item.type}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+                                    {item.message}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ))}
                   </div>
@@ -275,26 +399,37 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
               <MobileNavItem
                 active={activeNav === "HOME"}
                 onClick={() => handleNavClick("HOME")}
+                link="/"
               >
                 HOME
               </MobileNavItem>
               <MobileNavItem
                 active={activeNav === "SCHEDULE"}
                 onClick={() => handleNavClick("SCHEDULE")}
+                link="/employee-schedule"
               >
                 SCHEDULE
               </MobileNavItem>
               <MobileNavItem
                 active={activeNav === "INCENTIVES"}
                 onClick={() => handleNavClick("INCENTIVES")}
+                link="/employee-incentives"
               >
                 INCENTIVES
               </MobileNavItem>
               <MobileNavItem
                 active={activeNav === "ANALYTICS"}
                 onClick={() => handleNavClick("ANALYTICS")}
+                link="/employee-analytics"
               >
                 ANALYTICS
+              </MobileNavItem>
+              <MobileNavItem
+                active={activeNav === "PERFORMANCE"}
+                onClick={() => handleNavClick("PERFORMANCE")}
+                link="/employee-performance-rating"
+              >
+                PERFORMANCE RATING
               </MobileNavItem>
 
               {/* Mobile Search */}
@@ -317,6 +452,154 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
           className="fixed inset-0 z-40"
           onClick={() => setIsNotificationOpen(false)}
         />
+      )}
+
+      {/* Announcement Detail Modal */}
+      {selectedAnnouncement && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-200 animate-in slide-in-from-bottom-4 duration-300">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {selectedAnnouncement.title}
+                </h2>
+                <span
+                  className={`text-xs px-3 py-1 rounded font-semibold ${
+                    selectedAnnouncement.type === "Meeting"
+                      ? "bg-blue-100 text-blue-800"
+                      : selectedAnnouncement.type === "Policy"
+                      ? "bg-purple-100 text-purple-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
+                >
+                  {selectedAnnouncement.type}
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedAnnouncement(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Content */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                  Content
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {selectedAnnouncement.content}
+                </p>
+              </div>
+
+              {/* Date Range */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                    Start Date
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {new Date(
+                      selectedAnnouncement.start_date
+                    ).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                    End Date
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {new Date(selectedAnnouncement.end_date).toLocaleDateString(
+                      "en-US",
+                      {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      }
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Meeting Details - Show only for Meeting type */}
+              {selectedAnnouncement.type === "Meeting" &&
+                selectedAnnouncement.meeting_date && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                      Meeting Details
+                    </h3>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div>
+                        <span className="font-medium text-gray-700">Date:</span>{" "}
+                        {new Date(
+                          selectedAnnouncement.meeting_date
+                        ).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </div>
+                      {selectedAnnouncement.meeting_time_start && (
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Time:
+                          </span>{" "}
+                          {selectedAnnouncement.meeting_time_start.substring(
+                            0,
+                            5
+                          )}{" "}
+                          {selectedAnnouncement.meeting_time_end &&
+                            `- ${selectedAnnouncement.meeting_time_end.substring(
+                              0,
+                              5
+                            )}`}
+                        </div>
+                      )}
+                      {selectedAnnouncement.location && (
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Location:
+                          </span>{" "}
+                          {selectedAnnouncement.location}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Status */}
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                  Status
+                </h3>
+                <div className="inline-flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="text-sm text-gray-600">
+                    {selectedAnnouncement.status || "Active"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t bg-gray-50 flex justify-end">
+              <button
+                onClick={() => setSelectedAnnouncement(null)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </nav>
   );

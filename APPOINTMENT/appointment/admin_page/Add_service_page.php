@@ -80,7 +80,9 @@
   </main>
 
  <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?>
 
   <script src="../script/index.js"></script>
 </body>

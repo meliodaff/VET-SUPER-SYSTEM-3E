@@ -58,19 +58,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // ✅ Execute the update
     if ($stmt->execute()) {
         if ($status === "Rescheduled") {
-            header("Location: ../Book_appointment_dashboard.php?status=reschedule");
+            header("Location: ../client_page/Book_appointment_dashboard.php?status=reschedule");
         } else {
-            header("Location: ../Book_appointment_dashboard.php?status=updated");
+            header("Location: ../client_page/Book_appointment_dashboard.php?status=updated");
         }
         exit;
     } else {
-         header("Location: ../Book_appointment_dashboard.php?status=error");
+         header("Location: ../client_page/Book_appointment_dashboard.php?status=error");
     }
 
     $stmt->close();
     $conn->close();
 } else {
-     header("Location: ../Book_appointment_dashboard.php?status=error");
+     header("Location: ../client_page/Book_appointment_dashboard.php?status=error");
     exit;
 }
 ?>

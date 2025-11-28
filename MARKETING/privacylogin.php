@@ -156,28 +156,6 @@
         </div>
     </section>
 
-    <footer class="main-footer">
-        <div class="footer-container">
-            <div class="footer-brand">
-                <img src="image/VETERINARY_LOGO_SYSTEM.png" alt="Fur-Ever Care Logo" class="footer-logo">
-            </div>
+    <?php include 'generalfooter.php'; ?>
 
-            <div class="footer-center">
-                <div class="footer-title">
-                    <h2>FUR-EVER CARE</h2>
-                    <p>VETERINARY SERVICES</p>
-                </div>
-
-                <div class="footer-schedule">
-                    <h3>SCHEDULE</h3>
-                    <div class="schedule-card">
-                        <div class="schedule-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#002d72"
-                                stroke-width="2" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M12 6v6l4 2" />
-                            </svg>
-                        </div>
-                        <div class="schedule-text">
-                            <p>Mon-Fri: 8:
                                 <?php include './includes/chatbot.php'; ?>

@@ -1,0 +1,162 @@
+body {
+  background-image: url("/images/background.png");
+  background-color: rgba(201, 228, 255, 1);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  padding: 0;
+}
+h1,
+p {
+  margin: 0;
+}
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.login-img {
+  height: 165px;
+  border-style: solid;
+  border-width: 8px;
+  border-color: white;
+  border-radius: 100px;
+  margin-bottom: -70px;
+  z-index: 10;
+}
+
+.login-bg {
+  background-image: url("/images/Rectangle 2397.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 409px;
+  height: 500px;
+  color: black;
+  font-size: 20px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-family: "Spline Sans";
+  color: rgba(2, 32, 122, 1);
+  font-size: 23px;
+  margin-top: 75px;
+}
+.subtitle {
+  font-family: "Spline Sans";
+  font-size: 20px;
+  font-weight: 300;
+  margin-top: 5px;
+  color: rgba(2, 32, 122, 1);
+}
+
+.email {
+  width: 330px;
+  height: 42px;
+  border-width: 1px;
+  border-color: rgba(196, 226, 255, 1);
+  border-style: solid;
+  border-radius: 30px;
+  padding-left: 15px;
+  outline: none;
+  margin-bottom: 19px;
+  font-size: 18px;
+  font-family: "Souliyo Unicode", arial;
+}
+.email::placeholder {
+  color: rgba(2, 32, 122, 1);
+  font-size: 15px;
+  font-family: "Souliyo Unicode", arial;
+}
+
+.password {
+  border-width: 1px;
+  border-color: rgba(196, 226, 255, 1);
+  border-style: solid;
+  border-radius: 30px;
+  padding-left: 13px;
+  width: 335px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.password-field {
+  width: 280px;
+  height: 30px;
+  border: none;
+  outline: none;
+  font-size: 18px;
+  font-family: "Souliyo Unicode", arial;
+}
+
+.password-field::placeholder {
+  color: rgba(2, 32, 122, 1);
+  font-size: 15px;
+  font-family: "Souliyo Unicode", arial;
+}
+
+.eye-button {
+  border: none;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 20px;
+  margin-right: 10px;
+  padding: 0 7px;
+  padding-bottom: 5px;
+}
+
+.eye-button:hover {
+  background-color: rgb(240, 240, 240);
+}
+
+.eye-image {
+  width: 15px;
+  height: 15px;
+}
+a {
+  text-decoration: none;
+}
+.forget-link {
+  font-size: 13px;
+  color: rgba(255, 0, 0, 0.5);
+  margin-left: 225px;
+  margin-bottom: 20px;
+  font-family: "Souliyo Unicode", arial;
+}
+
+.login-button {
+  width: 220px;
+  height: 38px;
+  border-radius: 13px;
+  border: none;
+  background-color: rgba(80, 128, 190, 1);
+  color: white;
+  font-weight: bold;
+  margin-bottom: 36px;
+  cursor: pointer;
+}
+.register {
+  font-size: 13px;
+  color: rgba(2, 32, 122, 1);
+  font-weight: 300;
+  margin-top: 26px;
+  margin-bottom: 10px;
+  font-family: Tajawal;
+}
+.register-link {
+  color: rgba(2, 32, 122, 1);
+  font-weight: bold;
+  font-family: "Tharlon", arial;
+}
+.heart {
+  width: 16px;
+  opacity: 0.6;
+}
