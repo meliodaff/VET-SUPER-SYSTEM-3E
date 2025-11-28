@@ -1,5 +1,5 @@
 <?php
-  require_once '../includes/session_id.php';
+  //require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
 // Get user data based on the logged-in user's ID

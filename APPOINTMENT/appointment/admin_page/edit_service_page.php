@@ -1,5 +1,5 @@
 <?php
-include '../includes/session_id.php';
+//include '../includes/session_id.php';
 include '../includes/db.php';
 
 // ✅ Check if ID is provided from POST
