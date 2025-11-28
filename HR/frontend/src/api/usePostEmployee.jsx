@@ -11,11 +11,12 @@ const usePostEmployee = () => {
       console.log(response.data);
       return response.data;
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data.error);
+      console.log(error.status);
       if (error.status >= 400) {
         return {
           success: false,
-          message: error.response.data.message,
+          message: error.response.data.error,
         };
       }
       return {

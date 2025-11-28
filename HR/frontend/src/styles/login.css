@@ -1,162 +1,463 @@
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+}
+
 body {
   background-image: url("/images/background.png");
-  background-color: rgba(201, 228, 255, 1);
+  background-color: #c9e4ff;
   background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   padding: 0;
+  margin: 0;
+  font-family: "Spline Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
+
 h1,
 p {
   margin: 0;
 }
+
+a {
+  text-decoration: none;
+}
+
+/* Login Container */
 .login-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  min-height: 100vh;
+  padding: 80px 20px 40px;
+  animation: fadeIn 0.6s ease-out;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Profile Image */
 .login-img {
   height: 165px;
-  border-style: solid;
-  border-width: 8px;
-  border-color: white;
-  border-radius: 100px;
+  width: 165px;
+  object-fit: cover;
+  border: 8px solid white;
+  border-radius: 50%;
   margin-bottom: -70px;
   z-index: 10;
+  box-shadow: 0 8px 24px rgba(2, 32, 122, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.login-img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(2, 32, 122, 0.25);
+}
+
+/* Login Card Background */
 .login-bg {
   background-image: url("/images/Rectangle 2397.png");
   background-size: cover;
   background-repeat: no-repeat;
-  width: 409px;
-  height: 500px;
-  color: black;
-  font-size: 20px;
+  background-position: center;
+  width: 100%;
+  max-width: 409px;
+  min-height: 500px;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(2, 32, 122, 0.15);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.login-bg:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 70px rgba(2, 32, 122, 0.2);
+}
+
+/* Form Container */
 .login-form {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0 20px;
 }
 
+/* Typography */
 .title {
-  font-family: "Spline Sans";
-  color: rgba(2, 32, 122, 1);
-  font-size: 23px;
+  font-family: "Spline Sans", sans-serif;
+  color: #02207a;
+  font-size: 26px;
+  font-weight: 600;
   margin-top: 75px;
+  letter-spacing: -0.5px;
 }
+
 .subtitle {
-  font-family: "Spline Sans";
-  font-size: 20px;
-  font-weight: 300;
-  margin-top: 5px;
-  color: rgba(2, 32, 122, 1);
-}
-
-.email {
-  width: 330px;
-  height: 42px;
-  border-width: 1px;
-  border-color: rgba(196, 226, 255, 1);
-  border-style: solid;
-  border-radius: 30px;
-  padding-left: 15px;
-  outline: none;
-  margin-bottom: 19px;
+  font-family: "Spline Sans", sans-serif;
   font-size: 18px;
-  font-family: "Souliyo Unicode", arial;
-}
-.email::placeholder {
-  color: rgba(2, 32, 122, 1);
-  font-size: 15px;
-  font-family: "Souliyo Unicode", arial;
+  font-weight: 400;
+  margin-top: 8px;
+  margin-bottom: 30px;
+  color: #4a6fa5;
+  letter-spacing: 0.2px;
 }
 
+/* Form */
+#form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Email Input */
+.email {
+  width: 100%;
+  max-width: 350px;
+  height: 56px;
+  border: 2px solid #e8f2ff;
+  border-radius: 28px;
+  padding: 0 24px;
+  outline: none;
+  margin-bottom: 16px;
+  font-size: 17px;
+  font-family: "Souliyo Unicode", arial, sans-serif;
+  background: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(2, 32, 122, 0.04);
+}
+
+.email:hover {
+  border-color: #c4e2ff;
+  box-shadow: 0 4px 12px rgba(2, 32, 122, 0.08);
+}
+
+.email:focus {
+  border-color: #5080be;
+  box-shadow: 0 4px 16px rgba(80, 128, 190, 0.2);
+  transform: translateY(-2px);
+}
+
+.email::placeholder {
+  color: #7a9cc6;
+  font-size: 15px;
+  font-family: "Souliyo Unicode", arial, sans-serif;
+}
+
+/* Password Container */
 .password {
-  border-width: 1px;
-  border-color: rgba(196, 226, 255, 1);
-  border-style: solid;
-  border-radius: 30px;
-  padding-left: 13px;
-  width: 335px;
-  height: 42px;
+  border: 2px solid #e8f2ff;
+  border-radius: 28px;
+  padding: 0 20px 0 24px;
+  width: 100%;
+  max-width: 350px;
+  height: 56px;
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 12px;
+  background: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(2, 32, 122, 0.04);
+}
+
+.password:hover {
+  border-color: #c4e2ff;
+  box-shadow: 0 4px 12px rgba(2, 32, 122, 0.08);
+}
+
+.password:focus-within {
+  border-color: #5080be;
+  box-shadow: 0 4px 16px rgba(80, 128, 190, 0.2);
+  transform: translateY(-2px);
 }
 
 .password-field {
-  width: 280px;
-  height: 30px;
+  flex: 1;
+  height: 100%;
   border: none;
   outline: none;
-  font-size: 18px;
-  font-family: "Souliyo Unicode", arial;
+  font-size: 17px;
+  font-family: "Souliyo Unicode", arial, sans-serif;
+  background: transparent;
 }
 
 .password-field::placeholder {
-  color: rgba(2, 32, 122, 1);
+  color: #7a9cc6;
   font-size: 15px;
-  font-family: "Souliyo Unicode", arial;
+  font-family: "Souliyo Unicode", arial, sans-serif;
 }
 
+/* Eye Toggle Button */
 .eye-button {
   border: none;
-  background-color: white;
+  background-color: transparent;
   cursor: pointer;
-  border-radius: 20px;
-  margin-right: 10px;
-  padding: 0 7px;
-  padding-bottom: 5px;
+  border-radius: 50%;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .eye-button:hover {
-  background-color: rgb(240, 240, 240);
+  background-color: #f0f7ff;
+  transform: scale(1.1);
+}
+
+.eye-button:active {
+  transform: scale(0.95);
+}
+
+.eye-button:focus {
+  outline: 2px solid #5080be;
+  outline-offset: 2px;
 }
 
 .eye-image {
-  width: 15px;
-  height: 15px;
-}
-a {
-  text-decoration: none;
-}
-.forget-link {
-  font-size: 13px;
-  color: rgba(255, 0, 0, 0.5);
-  margin-left: 225px;
-  margin-bottom: 20px;
-  font-family: "Souliyo Unicode", arial;
+  width: 20px;
+  height: 20px;
+  display: block;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
+.eye-button:hover .eye-image {
+  opacity: 1;
+}
+
+/* Forgot Password Link */
+.forget-link {
+  font-size: 13px;
+  color: #ff6b6b;
+  align-self: flex-end;
+  margin-right: 30px;
+  margin-bottom: 24px;
+  font-family: "Souliyo Unicode", arial, sans-serif;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.forget-link::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: #ff6b6b;
+  transition: width 0.3s ease;
+}
+
+.forget-link:hover {
+  color: #ff5252;
+}
+
+.forget-link:hover::after {
+  width: 100%;
+}
+
+/* Login Button */
 .login-button {
-  width: 220px;
-  height: 38px;
-  border-radius: 13px;
+  width: 240px;
+  height: 48px;
+  border-radius: 24px;
   border: none;
-  background-color: rgba(80, 128, 190, 1);
+  background: linear-gradient(135deg, #5080be 0%, #4068a0 100%);
   color: white;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
   margin-bottom: 36px;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(80, 128, 190, 0.3);
+  position: relative;
+  overflow: hidden;
 }
-.register {
-  font-size: 13px;
-  color: rgba(2, 32, 122, 1);
-  font-weight: 300;
-  margin-top: 26px;
-  margin-bottom: 10px;
-  font-family: Tajawal;
+
+.login-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
 }
-.register-link {
-  color: rgba(2, 32, 122, 1);
-  font-weight: bold;
-  font-family: "Tharlon", arial;
+
+.login-button:hover {
+  background: linear-gradient(135deg, #4068a0 0%, #325580 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(80, 128, 190, 0.4);
 }
-.heart {
-  width: 16px;
+
+.login-button:hover::before {
+  left: 100%;
+}
+
+.login-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(80, 128, 190, 0.3);
+}
+
+.login-button:focus {
+  outline: 3px solid rgba(80, 128, 190, 0.3);
+  outline-offset: 3px;
+}
+
+.login-button:disabled {
   opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Register Section */
+.register {
+  font-size: 14px;
+  color: #4a6fa5;
+  font-weight: 400;
+  margin-top: 26px;
+  margin-bottom: 12px;
+  font-family: "Tajawal", sans-serif;
+}
+
+.register-link {
+  color: #02207a;
+  font-weight: 700;
+  font-family: "Tharlon", arial, sans-serif;
+  transition: all 0.2s ease;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.register-link::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #02207a;
+  transition: width 0.3s ease;
+}
+
+.register-link:hover {
+  color: #5080be;
+}
+
+.register-link:hover::after {
+  width: 100%;
+  background-color: #5080be;
+}
+
+/* Heart Icon */
+.heart {
+  width: 18px;
+  height: 18px;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  animation: heartbeat 2s ease-in-out infinite;
+  margin-top: 8px;
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(1.1);
+  }
+  20% {
+    transform: scale(1);
+  }
+}
+
+.heart:hover {
+  opacity: 0.8;
+  transform: scale(1.2);
+  animation-play-state: paused;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .login-container {
+    padding-top: 40px;
+  }
+
+  .login-bg {
+    width: 90vw;
+    max-width: 409px;
+  }
+
+  .login-img {
+    width: 140px;
+    height: 140px;
+    margin-bottom: -60px;
+  }
+
+  .title {
+    font-size: 22px;
+    margin-top: 65px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .email,
+  .password {
+    width: 85%;
+    max-width: 330px;
+  }
+
+  .forget-link {
+    margin-right: 7%;
+  }
+
+  .login-button {
+    width: 200px;
+  }
+}
+
+@media (max-width: 360px) {
+  .login-img {
+    width: 120px;
+    height: 120px;
+    margin-bottom: -50px;
+  }
+
+  .title {
+    font-size: 20px;
+    margin-top: 55px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+  }
+
+  .login-button {
+    width: 180px;
+    height: 44px;
+    font-size: 14px;
+  }
 }
