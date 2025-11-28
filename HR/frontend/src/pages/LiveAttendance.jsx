@@ -461,7 +461,7 @@ const Attendance = () => {
               className="profile-pic"
               src={
                 rfidData
-                  ? `http://localhost/hr-information-system/backend/${rfidData.photo}`
+                  ? `http://localhost/VET-SUPER-SYSTEM-3E/HR/backend/${rfidData.photo}`
                   : ""
               }
               alt="No photo"

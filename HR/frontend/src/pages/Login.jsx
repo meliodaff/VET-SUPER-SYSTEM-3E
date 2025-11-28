@@ -47,6 +47,8 @@ export default function Login() {
 
     if (storedUser.role === "HR") {
       navigate("/dashboard");
+    } else if (storedUser.role === "Finance") {
+      window.location.href = "http://localhost:3000/finance-dashboard";
     }
   };
 
