@@ -2,11 +2,11 @@
 
     <?php
     session_start();
-    include $_SERVER['DOCUMENT_ROOT'] . '/appointment/includes/db.php';
+    include $_SERVER['DOCUMENT_ROOT'] . '/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/includes/db.php';
 
     // Make sure user is logged in
     if (!isset($_SESSION['user_id'])) {
-        header("Location: /appointment/login.php");
+        header("Location: /VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/login.php");
         exit;
     }
 
