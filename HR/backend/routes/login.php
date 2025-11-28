@@ -9,7 +9,7 @@ $REQUEST_METHOD = $_SERVER["REQUEST_METHOD"];
 
 if($REQUEST_METHOD === "POST"){
 
-    $formDetails = ["employeeId", "password"];
+    $formDetails = ["email", "password"];
 
    validateForm($formDetails);
 
@@ -18,12 +18,14 @@ if($REQUEST_METHOD === "POST"){
     if(!$response["success"]){
         http_response_code(500);
         echo json_encode([
+                "success" => $response["success"],
                 "error" => $response["message"]
             ]);
-        return;
-    }
-    http_response_code(200);
-    echo json_encode([
+            return;
+        }
+        http_response_code(200);
+        echo json_encode([
+        "success" => $response["success"],
         "message" => $response["message"]
     ]);
     

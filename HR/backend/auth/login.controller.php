@@ -1,62 +1,78 @@
 <?php
     
-    require_once __DIR__ . "/../utils/isEmployeeIdExists.php";
+    require_once __DIR__ . "/../utils/checkIfEmailExists.php";
 
-    function login($employee, $pdo){
+    function login($user, $pdo){
 
-        $iEmployeeIdExists = isEmployeeIdExists($employee["employeeId"], $pdo);
+        $iEmployeeEmailExists = checkIfEmailExists($user["email"], $pdo);
 
-        if(!$iEmployeeIdExists["isExist"]){
+        if(!$iEmployeeEmailExists["isExist"]){
             return $response = [
                 "success" => false,
-                "message" => $iEmployeeIdExists["message"]
+                "message" => $iEmployeeEmailExists["message"]
             ];
         }
-
-        $query = "SELECT employee_id, password_hash, department, system_role, Position
-FROM employees WHERE employee_id = :employee_id";
+        // if (password_verify($employee["password"], $employeeInformation["password_hash"])) {
+      
+        
+        $query = "SELECT * FROM users WHERE email = :email";
 
         try{
             $stmt = $pdo->prepare($query);
             $stmt->execute([
-                ":employee_id" => $employee["employeeId"]
+                ":email" => $user["email"]
             ]);
             
-            $employeeInformation = $stmt->fetch();
+            $userInformation = $stmt->fetch();
 
-            // if (password_verify($employee["password"], $employeeInformation["password_hash"])) {
-            if ($employee["password"] === $employeeInformation["password_hash"]) {
-                $response = [
-                "success" => true,
-                "message" => "credentials are true"
-            ];
 
-            // had to convert it since the employeeInformation has the password
-            $employeesInformationForCookie = [
-                "employee_id" => $employeeInformation["employee_id"],
-                "department" => $employeeInformation["department"],
-                "system_role" => $employeeInformation["system_role"],
-                "position" => $employeeInformation["Position"],
-            ];
+            if (password_verify($user["password"], $userInformation["password"])) {
+        $response = [
+        "success" => true,
+        "message" => "credentials are true"
+    ];
+    } else {
+        $response = [
+        "success" => false,
+        "message" => "wrong password",
+    ];
+        }
+
+            if($userInformation["role"] === "Patient"){
+                $userInformationForCookie = [
+                    "user_id" => $userInformation["user_id"],
+                    "email" => $userInformation["email"],
+                    "role" => $userInformation["role"],
+                ];
+            } else {
+                $queryToFetchEmployeeInformation = "SELECT * FROM employees WHERE contact_email = :contact_email";
+                $stmtForEmployeeInformation = $pdo->prepare($queryToFetchEmployeeInformation);
+                $stmtForEmployeeInformation->execute([
+                    ":contact_email" => $user["email"]
+                ]);
+                $employeeInformation = $stmtForEmployeeInformation->fetch();
+
+                $employeeInformationForCookie = [
+                    "employee_id" => $employeeInformation["employee_id"],
+                    "email" => $employeeInformation["contact_email"],
+                    "role" => $employeeInformation["Position"],
+                    "department" => $employeeInformation["department"],
+                ];
+            }
+
 
             setcookie(
                 "user",
-                json_encode($employeesInformationForCookie),
+                json_encode($userInformationForCookie ?? $employeeInformationForCookie),
                 [
                     "expires" => time() + 86400,   // 1 hour from now
                     "path" => "/",                // Available across the whole site
                     "domain" => "",               // Default = current domain
                     "secure" => true,             // Send only over HTTPS
-                    "httponly" => true,           // JavaScript cannot access it
+                    "httponly" => false,           // JavaScript cannot access it
                     "samesite" => "Strict"        // Prevent CSRF (Lax/Strict/None)
                 ]
             );
-            } else {
-                $response = [
-                "success" => false,
-                "message" => "wrong password",
-            ];
-            }
             
         } catch (PDOException $e) {
             $response = [

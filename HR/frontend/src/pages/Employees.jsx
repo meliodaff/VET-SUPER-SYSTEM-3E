@@ -21,7 +21,7 @@ export default function Employees() {
     email: "",
     phoneNumber: "",
     address: "",
-    employmentStatus: "",
+    employmentStatus: "Full-Time",
     jobTitle: "",
     password: "",
     confirmPassword: "",
@@ -658,6 +658,10 @@ export default function Employees() {
                       <option value="Receptionist">Receptionist</option>
                       <option value="Assistant">Assistant</option>
                       <option value="Manager">Manager</option>
+                      <option value="Appointment">Appointment</option>
+                      <option value="Inventory">Inventory</option>
+                      <option value="Finance">Finance</option>
+                      <option value="HR">HR</option>
                     </select>
                     {validationErrors.jobTitle && (
                       <p className="text-red-500 text-xs mt-1">
@@ -761,7 +765,7 @@ export default function Employees() {
                       alert("Please fill out all required fields correctly");
                       return;
                     }
-
+                    console.log(formData);
                     try {
                       console.log("Form Data:", formData);
                       const response = await postEmployee(formData);
@@ -786,6 +790,7 @@ export default function Employees() {
                           setEmployees(formattedData);
                         }
                       } else {
+                        console.log(response);
                         alert(response.message || "Failed to add employee");
                       }
                     } catch (error) {
