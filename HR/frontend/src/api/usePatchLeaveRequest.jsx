@@ -5,11 +5,11 @@ const usePatchLeaveRequest = () => {
   const [loadingForPatchLeaveRequest, setLoadingForPatchLeaveRequest] =
     useState(false);
 
-  const patchLeaveRequests = async (requestId, status, id) => {
+  const patchLeaveRequests = async (requestId, status, id, typeOfLeaveId) => {
     try {
       setLoadingForPatchLeaveRequest(true);
       const response = await axios.get(
-        `/patchLeaveRequest.php?id=${id}&requestId=${requestId}&status=${status}`
+        `/patchLeaveRequest.php?id=${id}&requestId=${requestId}&status=${status}&typeOfLeaveId=${typeOfLeaveId}`
       );
       return response.data;
     } catch (error) {

@@ -47,8 +47,8 @@
         return ["success" => false, "message" => "Document upload failed."];
     }
 
-        $query = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, status, reason_detail, submission_date, attachment_url)
-VALUES (:employee_id, :leave_type_id, :start_date, :end_date, 'Pending', :reason_detail, NOW(), :attachment_url)
+        $query = "INSERT INTO leave_requests (employee_id, leave_type_id, days_taken, start_date, end_date, status, reason_detail, submission_date, attachment_url)
+VALUES (:employee_id, :leave_type_id, :days_taken, :start_date, :end_date, 'Pending', :reason_detail, NOW(), :attachment_url)
 ";
 
         try {
@@ -58,6 +58,7 @@ VALUES (:employee_id, :leave_type_id, :start_date, :end_date, 'Pending', :reason
             $isInserted = $stmt->execute([
             ":employee_id"        => $leaveDetails["employeeId"],
             ":leave_type_id"      => $leaveDetails["leaveTypeId"],
+            ":days_taken"      => $leaveDetails["leaveDaysTaken"],
             ":start_date"         => $leaveDetails["startDate"],
             ":end_date"           => $leaveDetails["endDate"],
             ":reason_detail"      => $leaveDetails["reasonDetail"],
@@ -73,40 +74,40 @@ VALUES (:employee_id, :leave_type_id, :start_date, :end_date, 'Pending', :reason
              ];
              }
 
-             $query2 = "UPDATE leave_balances SET days_remaining = days_remaining - 1 WHERE employee_id = :employee_id AND leave_type_id = :leave_type_id";
+            //  $query2 = "UPDATE leave_balances SET days_remaining = days_remaining - 1 WHERE employee_id = :employee_id AND leave_type_id = :leave_type_id";
 
-             $stmt2 = $pdo->prepare($query2);
+            //  $stmt2 = $pdo->prepare($query2);
 
 
              // this should decrement on how many days the user has intended to take the leave
              // and this shouldnt decrement immediately, it should be decremented once the request was approved
-             $decrementLeaveBalancesResponse = $stmt2->execute([ 
-                ":employee_id" => $leaveDetails["employeeId"],
-                ":leave_type_id" => $leaveDetails["leaveTypeId"]
-             ]);
+            //  $decrementLeaveBalancesResponse = $stmt2->execute([ 
+            //     ":employee_id" => $leaveDetails["employeeId"],
+            //     ":leave_type_id" => $leaveDetails["leaveTypeId"]
+            //  ]);
 
-             $query3 = "UPDATE leave_balances SET days_taken = days_taken + 1 WHERE employee_id = :employee_id AND leave_type_id = :leave_type_id"; 
+            //  $query3 = "UPDATE leave_balances SET days_taken = days_taken + 1 WHERE employee_id = :employee_id AND leave_type_id = :leave_type_id"; 
 
-             $stmt3 = $pdo->prepare($query3);
+            //  $stmt3 = $pdo->prepare($query3);
 
-             if($stmt2->rowCount() <= 0){
-                $response = [
-                    "success" => false,
-                    "message" => "The decremention of the leave balances failed but the leave request might went in"
-                ];
-             }
+            //  if($stmt2->rowCount() <= 0){
+            //     $response = [
+            //         "success" => false,
+            //         "message" => "The decremention of the leave balances failed but the leave request might went in"
+            //     ];
+            //  }
              
-             $incrementDaysTaken = $stmt3->execute([
-                 ":employee_id" => $leaveDetails["employeeId"],
-                ":leave_type_id" => $leaveDetails["leaveTypeId"]
-                ]);
+            //  $incrementDaysTaken = $stmt3->execute([
+            //      ":employee_id" => $leaveDetails["employeeId"],
+            //     ":leave_type_id" => $leaveDetails["leaveTypeId"]
+            //     ]);
                 
-                if($stmt3->rowCount() <= 0){
-                   $response = [
-                       "success" => false,
-                       "message" => "The incrementation of the days taken failed but the leave request might went in"
-                   ];
-                }
+                // if($stmt3->rowCount() <= 0){
+                //    $response = [
+                //        "success" => false,
+                //        "message" => "The incrementation of the days taken failed but the leave request might went in"
+                //    ];
+                // }
 
                 // i think this architecture is not good
 

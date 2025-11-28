@@ -227,6 +227,7 @@ export default function AdminLeaveRequests() {
     setSelectedRequest(request);
     setActionType("approve");
     setIsModalOpen(true);
+    han;
     setActionNotes("");
   };
 
@@ -240,6 +241,16 @@ export default function AdminLeaveRequests() {
   const submitAction = async () => {
     if (!selectedRequest) return;
 
+    const typesOfLeaves = {
+      "Vacation Leave": 1,
+      "Sick Leave": 2,
+      "Maternity Leave": 3,
+      "Paternity Leave": 4,
+      "Emergency Leave": 5,
+    };
+
+    const leaveType = selectedRequest.leaveType;
+
     const requestId = selectedRequest.requestId
       .replace("LR-00", "")
       .replace("LR-0", "")
@@ -251,12 +262,12 @@ export default function AdminLeaveRequests() {
       employeeId: selectedRequest.employeeId,
       actionNotes,
     });
-
     try {
       const response = await patchLeaveRequests(
         requestId,
         actionType === "approve" ? "Approved" : "Rejected",
-        selectedRequest.employeeId
+        selectedRequest.employeeId,
+        typesOfLeaves[selectedRequest.leaveType]
       );
 
       console.log("API Response:", response);
@@ -603,9 +614,9 @@ export default function AdminLeaveRequests() {
           {/* Leave Requests Cards - Mobile */}
           <div className="md:hidden space-y-4">
             {filteredAndSortedRequests.length > 0 ? (
-              paginatedRequests.map((request) => (
+              paginatedRequests.map((request, index) => (
                 <div
-                  key={request.id}
+                  key={index}
                   className={`rounded-xl p-4 shadow-lg border-2 ${getLeaveTypeColor(
                     request.leaveType
                   )}`}
