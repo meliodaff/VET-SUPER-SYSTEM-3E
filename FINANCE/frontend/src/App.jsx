@@ -156,7 +156,7 @@ function App() {
               !isAuthenticated ? (
                 <AdminLogin onLogin={handleLogin} />
               ) : (
-                <Navigate to="/dashboard" replace />
+                <Navigate to="/finance-dashboard" replace />
               )
             } 
           />
@@ -166,14 +166,14 @@ function App() {
               !isAuthenticated ? (
                 <CreateAccount onCreateAccount={handleCreateAccount} />
               ) : (
-                <Navigate to="/dashboard" replace />
+                <Navigate to="/finance-dashboard" replace />
               )
             } 
           />
           
           {/* Protected Routes */}
           <Route 
-            path="/dashboard" 
+            path="/finance-dashboard" 
             element={
               isAuthenticated ? (
                 <Layout admin={admin} onLogout={handleLogout}>
@@ -224,7 +224,7 @@ function App() {
           {/* Default Route */}
           <Route 
             path="/" 
-            element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
+            element={<Navigate to={isAuthenticated ? "/finance-dashboard" : "/login"} replace />} 
           />
           </Routes>
         </div>

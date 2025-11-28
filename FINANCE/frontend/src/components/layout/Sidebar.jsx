@@ -23,7 +23,7 @@ const Sidebar = ({ onLogout }) => {
   const menuItems = [
     {
       name: 'Dashboard',
-      path: '/dashboard',
+      path: '/finance-dashboard',
       icon: LayoutDashboard
     },
     {
