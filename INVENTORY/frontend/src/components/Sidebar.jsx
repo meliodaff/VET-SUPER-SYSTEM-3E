@@ -8,10 +8,10 @@ import {
   ShoppingCart, 
   TrendingUp, 
   FileText, 
-  Settings,
-  Box
+  Settings
 } from 'lucide-react';
-import './Sidebar.css';
+import '../styles/sidebar.css';
+import logo from '../assets/VETERINARY_LOGO_SYSTEM 1.PNG';
 
 export default function Sidebar({ onNavigate, currentPage }) {
   const menuItems = [
@@ -31,8 +31,8 @@ export default function Sidebar({ onNavigate, currentPage }) {
     <aside className="sidebar">
       {/* Logo Section */}
       <div className="sidebar-logo">
-        <Box className="sidebar-logo-icon" />
-        <span className="sidebar-logo-text">FUR EVER CARE</span>
+        <img src={logo} alt="Fur Ever Care Logo" className="sidebar-logo-image" />
+        <span className="sidebar-logo-text">FUR EVER</span>
       </div>
 
       {/* Menu Items */}

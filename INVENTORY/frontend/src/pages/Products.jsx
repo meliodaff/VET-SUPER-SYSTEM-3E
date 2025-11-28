@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, Search, ChevronDown, X, Edit2, Eye, Trash2 } from 'lucide-react';
-import './products.css';
+import '../styles/products.css';
 
 // Mock data for different categories
 const mockData = {
-  equipment: [
+  equipment: [ 
     { id: 'EQP-0001', name: 'Endoscope', quantity: 10, expiry: 'N/A', category: 'Equipment', unit: 'Pack', cost: '200 PHP', sellingPrice: '300 PHP', description: 'Store in a cool, dry place', supplier: 'Zoetis', image: null },
     { id: 'EQP-0002', name: 'Stethoscope', quantity: 2, expiry: 'N/A', category: 'Equipment', unit: 'Pack', cost: '200 PHP', sellingPrice: '300 PHP', description: 'Store in a cool, dry place', supplier: 'Zoetis', image: null },
     { id: 'EQP-0003', name: 'X-ray', quantity: 54, expiry: 'N/A', category: 'Equipment', unit: 'Pack', cost: '200 PHP', sellingPrice: '300 PHP', description: 'Store in a cool, dry place', supplier: 'Zoetis', image: null },
@@ -200,7 +200,10 @@ function Products() {
       <div className="products-wrapper">
         {/* Header */}
         <div className="products-header">
-          <h1 className="products-title">INVENTORY</h1>
+          <div>
+            <h1 className="products-title">Products</h1>
+            <p className="product-subtitle">Welcome back! Here's what's happening with your inventory.</p>
+          </div>
           <button onClick={() => setShowAddModal(true)} className="btn-add-item">
             <Plus size={20} />
             <span>Add Item</span>
@@ -277,7 +280,7 @@ function Products() {
             </div>
           </div>
 
-          {/* Table */}
+        {/* Table */}
           <div className="table-container">
             <table className="products-table">
               <thead>
@@ -301,10 +304,10 @@ function Products() {
                         <button onClick={() => handleView(item)} className="btn-action btn-view-action" title="View">
                           <Eye size={16} />
                         </button>
-                        <button onClick={() => handleEditClick(item)} className="btn-action btn-edit" title="Edit">
+                        <button onClick={() => handleEditClick(item)} className="btn-action btn-edit-action" title="Edit">
                           <Edit2 size={16} />
                         </button>
-                        <button onClick={() => handleDelete(item)} className="btn-action btn-delete" title="Delete">
+                        <button onClick={() => handleDelete(item)} className="btn-action btn-delete-action" title="Delete">
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -427,7 +430,9 @@ function Products() {
                         <img src={formData.image} alt="Preview" className="view-image" />
                       ) : (
                         <div className="view-image-placeholder">
-                          <Plus size={48} />
+                          <label htmlFor="image-upload" className="image-upload-icon" style={{cursor: 'pointer'}}>
+                            <Plus size={48} />
+                          </label>
                         </div>
                       )}
                       <input
@@ -437,9 +442,6 @@ function Products() {
                         className="image-input"
                         id="image-upload"
                       />
-                      <label htmlFor="image-upload" className="image-upload-label">
-                        Click to upload
-                      </label>
                     </div>
                   </div>
                   <div className="view-description-section">
@@ -447,7 +449,7 @@ function Products() {
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Store in a cool, dry place or Used for post-surgery recovery"
+                      placeholder="Add description here..."
                       className="view-description-input"
                     />
                   </div>
@@ -461,7 +463,6 @@ function Products() {
                       type="text"
                       value={formData.itemName}
                       onChange={(e) => setFormData({ ...formData, itemName: e.target.value })}
-                      placeholder="Penicillin"
                       className="view-field-input"
                     />
                   </div>
@@ -485,7 +486,7 @@ function Products() {
                         type="number"
                         value={formData.quantity}
                         onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                        placeholder="12"
+                        placeholder=""
                         className="view-field-input"
                       />
                     </div>
@@ -496,6 +497,7 @@ function Products() {
                         onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                         className="view-field-input"
                       >
+                        <option></option>
                         <option>Pack</option>
                         <option>Box</option>
                         <option>Piece</option>
@@ -602,7 +604,6 @@ function Products() {
                         <p className="low-stock-value">{item.expiry}</p>
                       </div>
                     </div>
-                    <button className="btn-add-more">Add more</button>
                   </div>
                 ))}
               </div>

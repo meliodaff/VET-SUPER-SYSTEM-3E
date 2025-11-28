@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, Settings, LogOut, Box } from 'lucide-react';
-import './Navbar.css';
+import '../styles/navbar.css';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);

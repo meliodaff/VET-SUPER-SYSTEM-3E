@@ -1,6 +1,6 @@
 import React from 'react';
 import { Package, AlertCircle, FolderTree, Truck, DollarSign } from 'lucide-react';
-import './Dashboard.css';
+import '../styles/dashboard.css';
 
 export default function Dashboard() {
   const topStats = [

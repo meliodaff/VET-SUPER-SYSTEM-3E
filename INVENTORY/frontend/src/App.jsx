@@ -3,6 +3,8 @@ import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import Categories from './pages/Categories';
+import Suppliers from './pages/Suppliers';
 import './App.css';
 
 export default function App() {
@@ -14,6 +16,10 @@ export default function App() {
         return <Dashboard />;
       case 'Products':
         return <Products />;
+      case 'Categories':
+        return <Categories />;
+      case 'Suppliers':
+        return <Suppliers />;
       default:
         return <Dashboard />;
     }
