@@ -216,54 +216,58 @@ const Suppliers = () => {
                 <p className="modal-subtitle">
                   {editingSupplier 
                     ? 'Update supplier information' 
-                    : 'Add a new veterinary supplier to your inventory'}
+                    : 'Add a new supplier to your network'}
                 </p>
               </div>
               <button className="btn-close" onClick={() => setShowModal(false)}>×</button>
             </div>
             <div className="modal-body">
-              <div className="form-group">
-                <label>Supplier Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter supplier name"
-                />
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Supplier Name</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Enter supplier name"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Contact Person</label>
+                  <input
+                    type="text"
+                    value={formData.contactPerson}
+                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                    placeholder="Enter contact person name"
+                  />
+                </div>
               </div>
-              <div className="form-group">
-                <label>Contact Person</label>
-                <input
-                  type="text"
-                  value={formData.contactPerson}
-                  onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                  placeholder="Enter contact person name"
-                />
-              </div>
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="Enter email address"
-                />
-              </div>
-              <div className="form-group">
-                <label>Phone</label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="Enter phone number"
-                />
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="Enter email address"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Phone Number</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="Enter phone number"
+                  />
+                </div>
               </div>
               <div className="form-group">
                 <label>Address</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Enter supplier address"
+                  placeholder="Enter full address..."
                   rows="3"
                 />
               </div>

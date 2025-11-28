@@ -6,23 +6,44 @@ const Categories = () => {
   const [categories, setCategories] = useState([
     { 
       id: 1, 
-      name: 'Medicine', 
-      description: 'Veterinary medicines, pharmaceuticals, and medications for animals', 
+      name: 'Dog Food & Treats', 
+      description: 'Premium dog food, nutritious treats, and dietary sup...', 
       productCount: 12,
       createdDate: 'Oct 4, 2025'
     },
     { 
       id: 2, 
-      name: 'Supply', 
-      description: 'Medical supplies, consumables, and general veterinary supplies', 
+      name: 'Cat Food & Treats', 
+      description: 'Quality cat food, healthy treats, and nutritional su...', 
       productCount: 8,
       createdDate: 'Oct 4, 2025'
     },
     { 
       id: 3, 
-      name: 'Equipment', 
-      description: 'Veterinary equipment, tools, and diagnostic devices', 
-      productCount: 5,
+      name: 'Pet Grooming', 
+      description: 'Shampoos, brushes, nail clippers, and grooming tools', 
+      productCount: 15,
+      createdDate: 'Oct 4, 2025'
+    },
+    { 
+      id: 4, 
+      name: 'Pet Toys', 
+      description: 'Interactive toys, chew toys, and entertainment for pets', 
+      productCount: 20,
+      createdDate: 'Oct 4, 2025'
+    },
+    { 
+      id: 5, 
+      name: 'Pet Health & Medicine', 
+      description: 'Vitamins, supplements, flea control, and medications', 
+      productCount: 10,
+      createdDate: 'Oct 4, 2025'
+    },
+    { 
+      id: 6, 
+      name: 'Pet Accessories', 
+      description: 'Collars, leashes, bowls, beds, and carriers', 
+      productCount: 18,
       createdDate: 'Oct 4, 2025'
     },
   ]);
@@ -83,7 +104,7 @@ const Categories = () => {
       <div className="categories-header">
         <div className="header-left">
           <h1>Categories</h1>
-          <p className="subtitle">Organize your veterinary products into categories for better management</p>
+          <p className="subtitle">Organize your products into categories for better management</p>
         </div>
         <button className="btn-add" onClick={handleAddNew}>
           <Plus size={18} />
@@ -184,7 +205,7 @@ const Categories = () => {
                 <p className="modal-subtitle">
                   {editingCategory 
                     ? 'Update category information' 
-                    : 'Create a new category to organize your veterinary products'}
+                    : 'Create a new category to organize your products'}
                 </p>
               </div>
               <button className="btn-close" onClick={() => setShowModal(false)}>×</button>

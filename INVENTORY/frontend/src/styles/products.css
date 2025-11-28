@@ -222,7 +222,7 @@
 }
 
 .products-table th.text-center {
-  text-align: center;
+  text-align: center; 
 }
 
 .products-table td {
@@ -248,7 +248,6 @@
 
 .products-table tbody tr:last-child td {
   border-bottom: none;
-  
 }
 
 /* Action Buttons */
