@@ -16,10 +16,9 @@ const Sidebar = ({ onLogout }) => {
   // Ensure onLogout is defined
   const handleLogout = onLogout || (() => {
     console.warn('onLogout is not defined in Sidebar');
-    localStorage.removeItem('admin');
-    window.location.href = '/login';
+    // No-op since authentication is removed
   });
-
+  
   const menuItems = [
     {
       name: 'Dashboard',

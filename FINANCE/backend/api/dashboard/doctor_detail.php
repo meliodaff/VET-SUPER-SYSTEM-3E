@@ -3,12 +3,6 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-session_start();
-
-if (!isset($_SESSION['admin_id'])) {
-    Response::unauthorized('Please login first');
-}
-
 $database = new Database();
 $db = $database->getConnection();
 
