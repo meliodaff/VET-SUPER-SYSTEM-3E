@@ -3,7 +3,6 @@
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 
-// Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
@@ -15,7 +14,6 @@ if (!$conn) {
     exit();
 }
 
-// Helper to escape special characters for Manual JSON
 function clean($data)
 {
     global $conn;

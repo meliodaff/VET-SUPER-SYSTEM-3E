@@ -1,7 +1,6 @@
 <?php
 include 'db_connect.php';
 
-// Check if data was sent via POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = isset($_POST['itemName']) ? $_POST['itemName'] : '';
     $qty = isset($_POST['quantity']) ? $_POST['quantity'] : 0;

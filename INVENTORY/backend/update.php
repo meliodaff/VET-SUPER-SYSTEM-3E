@@ -1,13 +1,12 @@
 <?php
 include 'db_connect.php';
 
-// 1. Force the script to only accept POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo '{"success": false, "error": "Invalid Method. Use POST."}';
     exit();
 }
 
-// 2. Check if ID exists
+//Check if ID exists
 $id = isset($_POST['id']) ? $_POST['id'] : '';
 
 if (empty($id)) {
@@ -15,7 +14,7 @@ if (empty($id)) {
     exit();
 }
 
-// 3. Get other data
+//Get other data
 $name = isset($_POST['itemName']) ? $_POST['itemName'] : '';
 $qty = isset($_POST['quantity']) ? $_POST['quantity'] : 0;
 $unit = isset($_POST['unit']) ? $_POST['unit'] : '';
@@ -26,7 +25,7 @@ $supp = isset($_POST['supplier']) ? $_POST['supplier'] : '';
 $expiry = isset($_POST['expiryDate']) ? $_POST['expiryDate'] : '';
 $img = isset($_POST['image']) ? $_POST['image'] : '';
 
-// 4. Run Update
+//Run Update
 $sql = "UPDATE products SET 
         name='$name', quantity='$qty', unit='$unit', cost='$cost', 
         selling_price='$price', description='$desc', supplier='$supp', 

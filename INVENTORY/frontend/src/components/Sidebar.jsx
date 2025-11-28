@@ -4,11 +4,7 @@ import {
   Package, 
   FolderTree, 
   Truck, 
-  Users, 
-  ShoppingCart, 
-  TrendingUp, 
-  FileText, 
-  Settings
+  
 } from 'lucide-react';
 import '../styles/sidebar.css';
 import logo from '../assets/VETERINARY_LOGO_SYSTEM 1.PNG';
