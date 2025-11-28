@@ -27,7 +27,7 @@
 
         
 
-        $query = "INSERT INTO employees (first_name, middle_name, last_name, date_of_birth, gender, contact_email, phone_number, address, profile_image_url ,employment_type, Position, department, password_hash, is_admin) VALUES (:first_name, :middle_name, :last_name, :date_of_birth, :gender, :contact_email, :phone_number, :address, :profile_image_url, :employment_type, :Position, :department, :password_hash, :is_admin)";
+        $query = "INSERT INTO employees (first_name, middle_name, last_name, date_of_birth, gender, contact_email, phone_number, address, profile_image_url ,employment_type, Position, department, password_hash, is_admin, rfid, rate) VALUES (:first_name, :middle_name, :last_name, :date_of_birth, :gender, :contact_email, :phone_number, :address, :profile_image_url, :employment_type, :Position, :department, :password_hash, :is_admin, :rfid, :rate)";
 
         try {
             // i dont think if this is necessary
@@ -49,7 +49,9 @@
             ":Position"          => $employee["jobTitle"],
             ":department"        => $employee["department"] ?? "Vet Clinic",
             ":password_hash"     => $hashedPassword,
-            ":is_admin"          => 0
+            ":is_admin"          => 0,
+            ":rfid"          => $employee["rfidCode"] ?? null,
+            ":rate"          => $employee["rateSalary"] ?? 0
              ]);
 
             if(!$isInserted){

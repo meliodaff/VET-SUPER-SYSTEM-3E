@@ -25,6 +25,7 @@ export default function Employees() {
     jobTitle: "",
     password: "",
     confirmPassword: "",
+    rateSalary: "500",
     photo: null,
   });
   const [photoPreview, setPhotoPreview] = useState("");
@@ -140,6 +141,7 @@ export default function Employees() {
       jobTitle: "",
       password: "",
       confirmPassword: "",
+      rateSalary: "500",
       photo: null, // Reset file
     });
     setPhotoPreview(""); // Reset preview
@@ -416,90 +418,108 @@ export default function Employees() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6"></div>
                   {/* Row 1: First, Middle, Last Name */}
                   <label className="block text-sm font-bold text-gray-900 mb-3">
-                    RFID Code <span className="text-red-500">*</span>
+                    First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    value={formData.rfidCode}
+                    value={formData.firstName}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        rfidCode: e.target.value,
+                        firstName: e.target.value,
                       })
                     }
-                    placeholder="## ## ## ##"
+                    placeholder="John"
                     className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
                       validationErrors.firstName
                         ? "border-red-500 focus:border-red-500 focus:ring-red-100"
                         : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
                     }`}
                   />
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    Middle Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.middleName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        middleName: e.target.value,
+                      })
+                    }
+                    placeholder="Middle"
+                    className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
+                      validationErrors.middleName
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                    }`}
+                  />
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        lastName: e.target.value,
+                      })
+                    }
+                    placeholder="Joe"
+                    className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
+                      validationErrors.lastName
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                    }`}
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-3">
-                        First Name <span className="text-red-500">*</span>
+                        RFID Code <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
-                        value={formData.firstName}
+                        value={formData.rfidCode}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            firstName: e.target.value,
+                            rfidCode: e.target.value,
                           })
                         }
-                        placeholder="John"
+                        placeholder="## ## ## ##"
                         className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
                           validationErrors.firstName
                             ? "border-red-500 focus:border-red-500 focus:ring-red-100"
                             : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
                         }`}
                       />
-                      {validationErrors.firstName && (
+                      {validationErrors.rfidCode && (
                         <p className="text-red-500 text-xs mt-1">
-                          {validationErrors.firstName}
+                          {validationErrors.rfidCode}
                         </p>
                       )}
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-3">
-                        Middle Name
+                        Rate Salary
                       </label>
                       <input
                         type="text"
-                        value={formData.middleName}
-                        onChange={(e) =>
+                        value={formData.rateSalary}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^\d.]/g, ""); // Remove non-numeric except dot
+                          const formattedValue =
+                            Number(value).toLocaleString("en-US");
                           setFormData({
                             ...formData,
-                            middleName: e.target.value,
-                          })
-                        }
-                        placeholder="Middle"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm"
+                            rateSalary: formattedValue,
+                          });
+                        }}
+                        placeholder="Enter amount"
+                        className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm text-right placeholder:text-left"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
-                        Last Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.lastName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, lastName: e.target.value })
-                        }
-                        placeholder="Doe"
-                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
-                          validationErrors.lastName
-                            ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                            : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                        }`}
-                      />
-                      {validationErrors.lastName && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {validationErrors.lastName}
-                        </p>
-                      )}
                     </div>
                   </div>
 
