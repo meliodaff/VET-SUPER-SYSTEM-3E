@@ -33,7 +33,7 @@ function addAppointment($conn, $user_id, $fname, $phone, $email, $vetdoc, $pet_n
 
     if ($stmt->execute()) {
         // ✅ Redirect with success popup
-        header("Location: ../Book_appointment_dashboard.php?popup=success");
+        header("Location: ../client_page/Book_appointment_dashboard.php?popup=success");
         exit();
     } else {
         die("Error: " . $stmt->error);

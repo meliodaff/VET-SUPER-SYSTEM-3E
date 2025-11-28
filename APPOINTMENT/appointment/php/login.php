@@ -20,9 +20,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             // Check registration status
             if ($row['isRegister'] === "true") {
-                header("Location: /appointment/Book_appointment_dashboard.php");
+                header("Location: /appointment/client_page/Book_appointment_dashboard.php");
             } else {
-                header("Location: /appointment/Book_appointment_register.php");
+                header("Location: /appointment//client_page/Book_appointment_register.php");
             }
             exit;
         } else {

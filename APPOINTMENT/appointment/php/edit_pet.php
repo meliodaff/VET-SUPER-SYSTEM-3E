@@ -62,16 +62,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($stmt->execute()) {
         $stmt->close();
-        header("Location: /appointment/Book_appointment_my_pet.php?status=updated");
+        header("Location: /appointment/client_page/Book_appointment_my_pet.php?status=updated");
         exit;
     } else {
         $stmt->close();
-        header("Location: /appointment/Book_appointment_my_pet.php?status=error");
+        header("Location: /appointment/client_page/Book_appointment_my_pet.php?status=error");
         exit;
     }
 
 } else {
-        header("Location: /appointment/Book_appointment_my_pet.php?status=error");
+        header("Location: /appointment/client_page/Book_appointment_my_pet.php?status=error");
     exit;
 }
 ?>

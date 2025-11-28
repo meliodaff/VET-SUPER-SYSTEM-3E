@@ -25,20 +25,20 @@ if (isset($_GET['pet_id'])) {
         $stmt->bind_param("ii", $pet_id, $user_id);
 
         if ($stmt->execute()) {
-            header("Location: ../Book_appointment_my_pet.php?status=deleted");;
+            header("Location: ../client_page/Book_appointment_my_pet.php?status=deleted");;
             exit;
         } else {
-            header("Location: ../Book_appointment_my_pet.php?status=error");;
+            header("Location: ../client_page/Book_appointment_my_pet.php?status=error");;
         }
 
         $stmt->close();
     } else {
-        header("Location: ../Book_appointment_my_pet.php?status=error");;
+        header("Location: ../client_page/Book_appointment_my_pet.php?status=error");;
     }
 
     $check->close();
     $conn->close();
 } else {
-    header("Location: ../Book_appointment_my_pet.php?status=error");;
+    header("Location: /client_page/Book_appointment_my_pet.php?status=error");;
 }
 ?>

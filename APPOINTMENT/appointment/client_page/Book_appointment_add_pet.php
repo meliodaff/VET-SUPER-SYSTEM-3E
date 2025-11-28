@@ -1,7 +1,3 @@
-<?php
-
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,12 +9,12 @@
 </head>
 
 <!-- popup -->
-<?php include 'php/popup.php'; ?>
+<?php include '../php/popup.php'; ?>
 
 
 <body>
   <!-- Header -->
-    <?php include 'header_footer/Header/Header.php'; ?>
+    <?php include '../header_footer/Header/Header.php'; ?>
 
           <!-- Add Pet Form Page --> 
           <!--main-->
@@ -26,7 +22,7 @@
               <div class="container"> 
                   <div class="add-pet-form-wrapper"> 
                       <h1>Add Pet</h1> 
-                      <form action="php/add_pet.php" method="POST" enctype="multipart/form-data" class="add-pet-form"> 
+                      <form action="../php/add_pet.php" method="POST" enctype="multipart/form-data" class="add-pet-form"> 
                           <div class="form-group">
                               <label for="pet_name">Pet Name</label>
                               <input type="text" id="pet_name" name="pet_name" required>

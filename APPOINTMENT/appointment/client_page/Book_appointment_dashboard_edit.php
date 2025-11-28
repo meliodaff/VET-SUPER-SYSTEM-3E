@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
 // ✅ Check if appointment ID is provided
 if (!isset($_GET['id'])) {
@@ -40,19 +40,19 @@ $pets = $conn->query("SELECT pet_name FROM mypet WHERE user_id = $user_id");
 <head>
   <meta charset="UTF-8">
   <title>Edit Appointment</title>
-  <link rel="stylesheet" href="styles/Book_appointment_dashboard_edit.css">
+  <link rel="stylesheet" href="../styles/Book_appointment_dashboard_edit.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
 </head>
 <body>
   <!-- header -->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
   <main>
     <div class="container">
       <h1>Edit Appointment Details</h1>
       <p class="subtitle">Update any detail for your scheduled appointment below.</p>
 
-      <form class="reschedule-form" action="php/update_appointment.php" method="POST">
+      <form class="reschedule-form" action="../php/update_appointment.php" method="POST">
         <!-- Hidden ID -->
         <input type="hidden" name="id" value="<?= htmlspecialchars($appointment['id']) ?>">
 
@@ -128,7 +128,7 @@ $pets = $conn->query("SELECT pet_name FROM mypet WHERE user_id = $user_id");
 
 
   <!-- Confirmation Popup (reusable) -->
-  <?php include 'php/confirmation.php'; ?>
+  <?php include '../php/confirmation.php'; ?>
 
   <!-- Script -->
     <script>
@@ -150,6 +150,6 @@ $pets = $conn->query("SELECT pet_name FROM mypet WHERE user_id = $user_id");
 
 
   <!-- footer -->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 </body>
 </html>

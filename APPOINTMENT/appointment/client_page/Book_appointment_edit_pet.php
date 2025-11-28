@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
   // Get pet ID from query
   if (!isset($_GET['pet_id'])) {
@@ -19,7 +19,7 @@
   $pet = $result->fetch_assoc();
 
   if (!$pet) {
-      header("Location: ../Book_appointment_my_pet.php");
+      header("Location: Book_appointment_my_pet.php");
       exit;
   }
 ?>
@@ -30,25 +30,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Pet</title>
-    <link rel="stylesheet" href="/appointment/styles/Book_appointment_add_pet.css">
+    <link rel="stylesheet" href="../styles/Book_appointment_add_pet.css">
     <link rel="stylesheet" href="/appointment/styles/popup.css">
 </head>
 
 
 <!-- popup -->
-<?php include 'php/popup.php'; ?>
+<?php include '../php/popup.php'; ?>
 
 
 <body>
   <!-- Header -->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
   <!-- Edit Pet Form Page -->
   <main>
     <div class="container">
       <div class="add-pet-form-wrapper">
         <h1>Edit Pet</h1>
-        <form action="php/edit_pet.php" method="POST" enctype="multipart/form-data" class="add-pet-form">
+        <form action="../php/edit_pet.php" method="POST" enctype="multipart/form-data" class="add-pet-form">
             <input type="hidden" name="pet_id" value="<?php echo $pet['id']; ?>">
 
             <div class="form-group">
@@ -102,11 +102,11 @@
   </main>
 
   <!-- Footer -->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 
 
    <!-- Confirmation Popup (reusable) -->
-  <?php include 'php/confirmation.php'; ?>
+  <?php include '../php/confirmation.php'; ?>
 
 
   <!-- Script -->

@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
   function getTotalNotifications($conn) {
       $sql = "SELECT COUNT(*) AS total_read FROM notifications WHERE is_read > 0";
@@ -173,7 +173,7 @@
         <?php else: ?>
           <a href="notification.php">Notification</a>
         <?php endif; ?>
-        <a href="admin_page/index.html">Logout</a>
+        <a href="../admin_page/index.html">Logout</a>
       </div>
     </div>
   </header>

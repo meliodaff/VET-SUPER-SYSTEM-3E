@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
 $user_id = $_SESSION['user_id'];
 
@@ -21,17 +21,17 @@ $result = $stmt->get_result();
   <title>My Appointments</title>
   <link rel="stylesheet" href="header_footer/Header/Header.css">
   <link rel="stylesheet" href="header_footer/footer/Footer.css">
-  <link rel="stylesheet" href="styles/Book_appointment_dashboard.css">
+  <link rel="stylesheet" href="../styles/Book_appointment_dashboard.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
     <link rel="stylesheet" href="/appointment/styles/tabs.css">
 </head>
 <body>
   <!-- header -->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
 
   <!-- popup -->
-  <?php include 'php/popup.php'; ?>
+  <?php include '../php/popup.php'; ?>
 
   <!-- Main content -->
   <main>
@@ -39,7 +39,7 @@ $result = $stmt->get_result();
       <div class="appointments-header">
         <h1>My Appointments</h1>
         <button class="new-appointment" 
-          onclick="window.location.href='/appointment/Book_appointment_book.php'">
+          onclick="window.location.href='Book_appointment_book.php'">
           Book Another Appointment
         </button>
       </div>
@@ -83,7 +83,7 @@ $result = $stmt->get_result();
                 <td>
                   <!-- Pass appointment ID to edit and delete -->
                   <a href="Book_appointment_dashboard_edit.php?id=<?= $row['id'] ?>">Edit</a><br>
-                  <a href="php/cancel_book.php?id=<?= $row['id'] ?>"
+                  <a href="../php/cancel_book.php?id=<?= $row['id'] ?>"
                      class="open-confirmation"
                      data-action="Cancel">
                      Cancel
@@ -106,7 +106,7 @@ $result = $stmt->get_result();
   </main>
 
     <!-- Confirmation Popup (reusable) -->
-  <?php include 'php/confirmation.php'; ?>
+  <?php include '../php/confirmation.php'; ?>
 
 
   <script>
@@ -127,7 +127,7 @@ $result = $stmt->get_result();
 
 
   <!-- footer -->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 </body>
 </html>
 

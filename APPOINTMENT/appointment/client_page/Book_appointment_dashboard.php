@@ -1,13 +1,13 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
 $user_id = $_SESSION['user_id'];
 
 // ✅ Fetch appointments for the logged-in user (include id)
 $sql = "SELECT id, pet_name, date, time, vetdoc, service, status 
         FROM book_appointment 
-        WHERE user_id = ? AND status = 'rejected'
+        WHERE user_id = ? 
         ORDER BY date_create DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
@@ -19,19 +19,17 @@ $result = $stmt->get_result();
 <html>
 <head>
   <title>My Appointments</title>
-  <link rel="stylesheet" href="header_footer/Header/Header.css">
-  <link rel="stylesheet" href="header_footer/footer/Footer.css">
-  <link rel="stylesheet" href="styles/Book_appointment_dashboard.css">
+  <link rel="stylesheet" href="../styles/Book_appointment_dashboard.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
-    <link rel="stylesheet" href="/appointment/styles/tabs.css">
+  <link rel="stylesheet" href="/appointment/styles/tabs.css">
 </head>
 <body>
   <!-- header -->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
 
   <!-- popup -->
-  <?php include 'php/popup.php'; ?>
+  <?php include '../php/popup.php'; ?>
 
   <!-- Main content -->
   <main>
@@ -39,17 +37,17 @@ $result = $stmt->get_result();
       <div class="appointments-header">
         <h1>My Appointments</h1>
         <button class="new-appointment" 
-          onclick="window.location.href='/appointment/Book_appointment_book.php'">
+          onclick="window.location.href='Book_appointment_book.php'">
           Book Another Appointment
         </button>
       </div>
 
        <!-- Tabs -->
     <div class="tabs">
-      <a href="Book_appointment_dashboard.php" class="tab" data-tab="overview">Overview</a>
+      <a href="Book_appointment_dashboard.php" class="tab active" data-tab="overview">Overview</a>
       <a href="dashboard_pending.php" class="tab" data-tab="pending">Pending</a>
       <a href="dashboard_approved.php" class="tab" data-tab="approved">Approved</a>
-      <a href="dashboard_rejected.php" class="tab active" data-tab="rejected">Rejected</a>
+      <a href="dashboard_rejected.php" class="tab" data-tab="rejected">Rejected</a>
       <a href="dashboard_reschedule.php" class="tab" data-tab="reschedule">Reschedule</a>
       <a href="dashboard_done.php" class="tab" data-tab="done">Done</a>
     </div>
@@ -83,6 +81,11 @@ $result = $stmt->get_result();
                 <td>
                   <!-- Pass appointment ID to edit and delete -->
                   <a href="Book_appointment_dashboard_edit.php?id=<?= $row['id'] ?>">Edit</a><br>
+                  <a href="../php/cancel_book.php?id=<?= $row['id'] ?>"
+                     class="open-confirmation"
+                     data-action="Cancel">
+                     Cancel
+                  </a>
                   <br>
                   <?php if (strtolower($row['status']) === 'approved'): ?>
                     <a href="Book_appointment_dashboard_receipt.php?id=<?= $row['id'] ?>">View Receipt</a>
@@ -101,7 +104,7 @@ $result = $stmt->get_result();
   </main>
 
     <!-- Confirmation Popup (reusable) -->
-  <?php include 'php/confirmation.php'; ?>
+  <?php include '../php/confirmation.php'; ?>
 
 
   <script>
@@ -122,7 +125,7 @@ $result = $stmt->get_result();
 
 
   <!-- footer -->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 </body>
 </html>
 

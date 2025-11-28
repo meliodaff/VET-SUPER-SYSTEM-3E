@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
 // Get user data based on the logged-in user's ID
 $user_id = $_SESSION['user_id'];
@@ -17,7 +17,7 @@ $user = $user_result->fetch_assoc();
 <head>
   <meta charset="UTF-8">
   <title>Book Appointment</title>
-  <link rel="stylesheet" href="styles/Book_appointment_book.css">
+  <link rel="stylesheet" href="../styles/Book_appointment_book.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
   <style>
     .add-pet-btn {
@@ -51,11 +51,11 @@ $user = $user_result->fetch_assoc();
 
 <body>
   <!-- Header -->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
 
     <!-- popup -->
-    <?php include 'php/popup.php'; ?>
+    <?php include '../php/popup.php'; ?>
 
 
   <!-- Main Content -->
@@ -66,7 +66,7 @@ $user = $user_result->fetch_assoc();
       <h2 class="form-title">Book Appointment</h2>
 
       <!-- FORM -->
-      <form id="appointmentForm" method="POST" action="php/book.php">
+      <form id="appointmentForm" method="POST" action="../php/book.php">
         
         <!-- OWNER INFORMATION -->
         <div class="section owner-pet">
@@ -154,7 +154,7 @@ $user = $user_result->fetch_assoc();
   </main>
 
   <!-- Footer -->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 
   <!-- EXISTING/NEW PET BUTTON HANDLING -->
   <script>

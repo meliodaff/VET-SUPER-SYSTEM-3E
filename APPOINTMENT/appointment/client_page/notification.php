@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
 $user_id = $_SESSION['user_id'];
 
@@ -16,18 +16,16 @@ $result = $stmt->get_result();
 <html>
 <head>
   <title>Notifications</title>
-  <link rel="stylesheet" href="header_footer/Header/Header.css">
-  <link rel="stylesheet" href="header_footer/footer/Footer.css">
-  <link rel="stylesheet" href="styles/Book_appointment_dashboard.css">
+  <link rel="stylesheet" href="../styles/Book_appointment_dashboard.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
   <link rel="stylesheet" href="/appointment/styles/tabs.css">
 </head>
 <body>
   <!-- header -->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
   <!-- popup -->
-  <?php include 'php/popup.php'; ?>
+  <?php include '../php/popup.php'; ?>
 
   <!-- Main content -->
   <main>
@@ -66,10 +64,10 @@ $result = $stmt->get_result();
   </main>
 
   <!-- Confirmation Popup (reusable) -->
-  <?php include 'php/confirmation.php'; ?>
+  <?php include '../php/confirmation.php'; ?>
 
   <!-- footer -->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 </body>
 </html>
 
@@ -77,3 +75,4 @@ $result = $stmt->get_result();
 $stmt->close();
 $conn->close();
 ?>
+

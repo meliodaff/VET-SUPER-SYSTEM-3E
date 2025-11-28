@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
 $appointment_id = $_GET['id'] ?? null;
 
@@ -44,7 +44,7 @@ foreach ($items as $item) {
 ?>
 
 <!-- popup -->
-<?php include 'php/popup.php'; ?>
+<?php include '../php/popup.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -57,7 +57,7 @@ foreach ($items as $item) {
 </head>
 <body>
   <!-- header -->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
   <main>
     <div class="receipt-container">
@@ -130,6 +130,6 @@ foreach ($items as $item) {
   </main>
 
   <!-- footer -->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 </body>
 </html>

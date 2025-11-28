@@ -44,10 +44,10 @@ $stmt->bind_param(
 
 if ($stmt->execute()) {
   // Redirect back with success message
-  header("Location: ../Book_appointment_profile.php?status=updated");
+  header("Location: ../client_page/Book_appointment_profile.php?status=updated");
   exit();
 } else {
-  header("Location: ../Book_appointment_profile.php?status=error");
+  header("Location: ../client_page/Book_appointment_profile.php?status=error");
 }
 
 $stmt->close();

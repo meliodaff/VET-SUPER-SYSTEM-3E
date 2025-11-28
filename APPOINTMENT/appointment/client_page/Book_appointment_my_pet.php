@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
   // Fetch pets for logged-in user
   $sql = "SELECT id, pet_name, pet_image, species, breed, age FROM mypet WHERE user_id = ?";
   $stmt = $conn->prepare($sql);
@@ -12,7 +12,7 @@
 ?>
 
 <!-- popup -->
-<?php include 'php/popup.php'; ?>
+<?php include '../php/popup.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -20,19 +20,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>My Pets</title>
-  <link rel="stylesheet" href="styles/Book_appointment_my_pet.css" />
+  <link rel="stylesheet" href="../styles/Book_appointment_my_pet.css" />
   <link rel="stylesheet" href="/appointment/styles/popup.css">
 </head>
 <body>
   <!-- header-->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
   <!-- Main content -->
   <main>
     <div class="container">
       <div class="pets-header">
         <h1>My Pets</h1>
-        <button class="add-pet" onclick="window.location.href='/appointment/Book_appointment_add_pet.php'">
+        <button class="add-pet" onclick="window.location.href='Book_appointment_add_pet.php'">
           + Add Pet
         </button>
       </div>
@@ -57,7 +57,7 @@
                   </a>
 
                   <!-- Delete -->
-                  <a href="php/delete_pet.php?pet_id=<?php echo (int)$pet['id']; ?>"
+                  <a href="../php/delete_pet.php?pet_id=<?php echo (int)$pet['id']; ?>"
                     class="open-confirmation"
                     data-action="delete"
                     data-name="<?php echo htmlspecialchars($pet['pet_name']); ?>">
@@ -76,7 +76,7 @@
 
 
   <!-- Confirmation Popup (reusable) -->
-  <?php include 'php/confirmation.php'; ?>
+  <?php include '../php/confirmation.php'; ?>
 
 
   <!-- Script -->
@@ -100,6 +100,6 @@
 
 
   <!-- footer-->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 </body>
 </html>

@@ -1,6 +1,6 @@
 <?php
-  require_once 'includes/session_id.php';
-  require_once 'includes/db.php';
+  require_once '../includes/session_id.php';
+  require_once '../includes/db.php';
 
   // Get current logged-in user ID from session
   $user_id = $_SESSION['user_id'];
@@ -19,23 +19,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Update Details</title>
-  <link rel="stylesheet" href="styles/profile.css">
+  <link rel="stylesheet" href="../styles/profile.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
 </head>
 <body>
   
 
   <!-- Header -->
-  <?php include 'header_footer/Header/Header.php'; ?>
+  <?php include '../header_footer/Header/Header.php'; ?>
 
   <!-- popup -->
-  <?php include 'php/popup.php'; ?>
+  <?php include '../php/popup.php'; ?>
 
   <main>
     <section class="form-section">
       <h2>Update Details</h2>
 
-      <form class="details-form" method="POST" action="php/update_profile.php">
+      <form class="details-form" method="POST" action="../php/update_profile.php">
         <div class="form-group">
           <label>Full Name</label>
           <input type="text" name="fname" value="<?= htmlspecialchars($user['fname']) ?>">
@@ -91,7 +91,7 @@
   </main>
 
   <!-- Confirmation Popup (reusable) -->
-  <?php include 'php/confirmation.php'; ?>
+  <?php include '../php/confirmation.php'; ?>
 
 <script>
 document.querySelectorAll(".open-confirmation").forEach(btn => {
@@ -111,7 +111,7 @@ document.querySelectorAll(".open-confirmation").forEach(btn => {
 
 
   <!-- Footer -->
-  <iframe src="header_footer/footer/Footer.html" 
+  <iframe src="../header_footer/footer/Footer.html" 
   style="width:100%; height:523px; border:none;"></iframe>
 
 </body>

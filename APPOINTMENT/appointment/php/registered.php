@@ -35,9 +35,9 @@
             $update->execute();
             $update->close();
 
-            header("Location: ../Book_appointment_dashboard.php?status=registered");
+            header("Location: ../client_page/Book_appointment_dashboard.php?status=registered");
         } else {
-            header("Location: ../Book_appointment_dashboard.php?status=error");
+            header("Location: ../client_page/Book_appointment_dashboard.php?status=error");
         }
 
         $stmt->close();
