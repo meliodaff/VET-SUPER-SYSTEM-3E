@@ -1,25 +1,11 @@
 import React, { useState } from 'react';
-import { Edit, Eye, Calendar, Coins, User, FileText } from 'lucide-react';
+import { Eye, Calendar, Coins, User, FileText } from 'lucide-react';
 import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
-import EditInvoiceModal from './EditInvoiceModal';
 import ViewInvoiceModal from './ViewInvoiceModal';
 
 const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange, loading }) => {
-  const [editingInvoice, setEditingInvoice] = useState(null);
   const [viewingInvoice, setViewingInvoice] = useState(null);
   const currentPage = pagination?.current_page || 1;
-
-  const handleEdit = (invoice) => {
-    setEditingInvoice(invoice);
-  };
-
-  const handleUpdate = async (invoiceData) => {
-    const result = await onUpdateInvoice(invoiceData);
-    if (result.success) {
-      setEditingInvoice(null);
-    }
-    return result;
-  };
 
   const handleView = (invoice) => {
     setViewingInvoice(invoice);
@@ -65,6 +51,9 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
                 Client
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Service
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Date
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -101,6 +90,9 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{invoice.services || '—'}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 text-gray-400 mr-2" />
                     <div className="text-sm text-gray-900">{formatDate(invoice.date)}</div>
@@ -130,13 +122,6 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
                       title="View Transaction Details"
                     >
                       <Eye className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleEdit(invoice)}
-                      className="text-green-600 hover:text-green-900 p-1 rounded"
-                      title="Edit Invoice"
-                    >
-                      <Edit className="h-4 w-4" />
                     </button>
                   </div>
                 </td>
@@ -215,15 +200,6 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
             </div>
           </div>
         </div>
-      )}
-
-      {/* Edit Invoice Modal */}
-      {editingInvoice && (
-        <EditInvoiceModal
-          invoice={editingInvoice}
-          onClose={() => setEditingInvoice(null)}
-          onUpdateInvoice={handleUpdate}
-        />
       )}
 
       {/* View Invoice Modal */}

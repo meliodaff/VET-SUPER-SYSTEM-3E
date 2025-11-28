@@ -1,29 +1,13 @@
 import React, { useState } from 'react';
-import { Edit, Trash2, User, Mail, Phone, MapPin } from 'lucide-react';
+import { Eye, User, Mail, Phone, MapPin } from 'lucide-react';
 import { formatCurrency, getStatusColor } from '../../utils/helpers';
-import EditEmployeeModal from './EditEmployeeModal';
+import EmployeeProfileModal from './EmployeeProfileModal';
 
 const EmployeeDirectory = ({ employees, onUpdateEmployee, onDeleteEmployee }) => {
-  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [viewingEmployee, setViewingEmployee] = useState(null);
 
-  const handleEdit = (employee) => {
-    setEditingEmployee(employee);
-  };
-
-  const handleUpdate = async (employeeData) => {
-    try {
-      const result = await onUpdateEmployee(employeeData);
-      if (result.success) {
-        setEditingEmployee(null);
-      }
-      return result;
-    } catch (error) {
-      console.error('Update error in EmployeeDirectory:', error);
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Failed to update employee' 
-      };
-    }
+  const handleView = (employee) => {
+    setViewingEmployee(employee);
   };
 
   if (employees.length === 0) {
@@ -127,25 +111,11 @@ const EmployeeDirectory = ({ employees, onUpdateEmployee, onDeleteEmployee }) =>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end space-x-2">
                     <button
-                      onClick={() => handleEdit(employee)}
+                      onClick={() => handleView(employee)}
                       className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                      title="Edit Employee"
+                      title="View Employee Details"
                     >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        const deleteId = employee.id || employee.employee_id;
-                        if (deleteId) {
-                          onDeleteEmployee(deleteId);
-                        } else {
-                          alert('Cannot delete: Employee ID not found');
-                        }
-                      }}
-                      className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                      title="Delete Employee"
-                    >
-                      <Trash2 className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
                     </button>
                   </div>
                 </td>
@@ -155,12 +125,11 @@ const EmployeeDirectory = ({ employees, onUpdateEmployee, onDeleteEmployee }) =>
         </table>
       </div>
 
-      {/* Edit Employee Modal */}
-      {editingEmployee && (
-        <EditEmployeeModal
-          employee={editingEmployee}
-          onClose={() => setEditingEmployee(null)}
-          onUpdateEmployee={handleUpdate}
+      {/* Employee Profile Modal */}
+      {viewingEmployee && (
+        <EmployeeProfileModal
+          employee={viewingEmployee}
+          onClose={() => setViewingEmployee(null)}
         />
       )}
     </div>

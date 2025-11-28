@@ -1,0 +1,69 @@
+/* print.css - styles applied only when printing */
+@media print {
+  /* Remove page backgrounds and shadows */
+  body, .bg-white, .rounded-lg, .shadow-xl, .shadow-sm {
+    background: #fff !important;
+    box-shadow: none !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Make modal fill the page and remove overlay */
+  .fixed.inset-0.z-50.overflow-y-auto {
+    position: static !important;
+    overflow: visible !important;
+  }
+  .fixed.inset-0.bg-gray-500.bg-opacity-75 {
+    display: none !important;
+  }
+  .inline-block.align-bottom.bg-white.rounded-lg.text-left.overflow-hidden.shadow-xl.transform.transition-all.sm\:my-8.sm\:align-middle.sm\:max-w-md.sm\:w-full,
+  .inline-block.align-bottom.bg-white.rounded-lg.text-left.overflow-hidden.shadow-xl.transform.transition-all.sm\:my-8.sm\:align-middle.sm\:max-w-4xl.sm\:w-full {
+    position: relative !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Increase font sizes for print readability */
+  .text-2xl { font-size: 24px !important; }
+  .text-lg { font-size: 18px !important; }
+  .text-sm { font-size: 14px !important; }
+
+  /* Remove interactive elements (buttons/inputs) unless marked printable */
+  button, input, select, textarea, .print-hidden {
+    display: none !important;
+  }
+
+  /* If an element should stay visible in print add class .print-only to it */
+  .print-only { display: block !important; }
+
+  /* Receipt print styling */
+  .receipt-print {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 6mm;
+    color: #111;
+  }
+  .receipt-print .text-lg { font-size: 14px !important; }
+  .receipt-print hr { border: none; border-top: 1px dashed #999; }
+  .receipt-print .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Table and layout tweaks */
+  table { width: 100% !important; border-collapse: collapse !important; }
+  th, td { border: none !important; }
+
+  /* Page margins */
+  @page { size: auto; margin: 12mm; }
+
+  /* Avoid breaking rows across pages */
+  tr { page-break-inside: avoid !important; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+
+  /* Ensure totals appear at bottom of page if possible */
+  .no-break { page-break-inside: avoid !important; }
+}

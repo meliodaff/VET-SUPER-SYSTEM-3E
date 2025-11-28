@@ -12,39 +12,74 @@ if (!isset($_SESSION['admin_id'])) {
 $database = new Database();
 $db = $database->getConnection();
 
-$invoice_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-if ($invoice_id <= 0) {
-    Response::error('Invoice ID is required');
+// Accept either numeric invoice id or an invoice number string in the 'id' param
+$rawId = isset($_GET['id']) ? trim($_GET['id']) : '';
+if ($rawId === '') {
+    Response::error('Invoice identifier is required');
 }
 
 try {
-    // Get invoice details
-    $stmt = $db->prepare("
-        SELECT 
-            inv.id,
-            inv.invoice_number,
-            inv.invoice_date,
-            inv.due_date,
-            inv.total_amount,
-            inv.status,
-            inv.created_at,
-            COALESCE(p.owner_name, 'Walk-in Client') AS client_name,
-            p.contact_phone AS client_phone
-        FROM invoices inv
-        LEFT JOIN patients p ON inv.patient_id = p.id
-        WHERE inv.id = ?
-    ");
-    $stmt->execute([$invoice_id]);
-    $invoice = $stmt->fetch();
+    // Determine which primary key column the invoices table uses (id or invoice_id)
+    $colStmt = $db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'invoices'");
+    $colStmt->execute();
+    $columns = $colStmt->fetchAll(PDO::FETCH_COLUMN);
+    // default to 'id' if unknown
+    if (in_array('id', $columns)) {
+        $idCol = 'id';
+    } elseif (in_array('invoice_id', $columns)) {
+        $idCol = 'invoice_id';
+    } else {
+        $idCol = 'id';
+    }
+
+    // Determine whether identifier is numeric id or an invoice_number
+    if (ctype_digit($rawId)) {
+        $invoice_id = (int)$rawId;
+        $sql = "SELECT 
+                inv." . $idCol . " AS id,
+                inv.invoice_number,
+                inv.invoice_date,
+                inv.due_date,
+                inv.total_amount,
+                inv.status,
+                inv.created_at,
+                COALESCE(p.owner_name, 'Walk-in Client') AS client_name,
+                p.contact_phone AS client_phone
+            FROM invoices inv
+            LEFT JOIN patients p ON inv.patient_id = p.id
+            WHERE inv." . $idCol . " = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$invoice_id]);
+        $invoice = $stmt->fetch();
+    } else {
+        // treat as invoice_number
+        $invoice_number = $rawId;
+        $sql = "SELECT 
+                inv." . $idCol . " AS id,
+                inv.invoice_number,
+                inv.invoice_date,
+                inv.due_date,
+                inv.total_amount,
+                inv.status,
+                inv.created_at,
+                COALESCE(p.owner_name, 'Walk-in Client') AS client_name,
+                p.contact_phone AS client_phone
+            FROM invoices inv
+            LEFT JOIN patients p ON inv.patient_id = p.id
+            WHERE inv.invoice_number = ? LIMIT 1";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$invoice_number]);
+        $invoice = $stmt->fetch();
+    }
     
     if (!$invoice) {
         Response::error('Invoice not found');
     }
     
-    // Get invoice items (services/products)
-    $stmt = $db->prepare("
-        SELECT 
+    // Get invoice items (services/products) using the found invoice id
+    $invoice_id = (int)$invoice['id'];
+    $stmt = $db->prepare(
+        "SELECT 
             ii.id,
             ii.service_id,
             ii.quantity,
@@ -56,14 +91,14 @@ try {
         FROM invoice_items ii
         LEFT JOIN services s ON ii.service_id = s.id
         WHERE ii.invoice_id = ?
-        ORDER BY ii.id ASC
-    ");
+        ORDER BY ii.id ASC"
+    );
     $stmt->execute([$invoice_id]);
     $invoice_items = $stmt->fetchAll();
     
     // Get payments/transactions for this invoice
-    $stmt = $db->prepare("
-        SELECT 
+    $stmt = $db->prepare(
+        "SELECT 
             p.id,
             p.amount,
             p.payment_date,
@@ -72,8 +107,8 @@ try {
             p.created_at
         FROM payments p
         WHERE p.invoice_id = ?
-        ORDER BY p.payment_date DESC, p.id DESC
-    ");
+        ORDER BY p.payment_date DESC, p.id DESC"
+    );
     $stmt->execute([$invoice_id]);
     $payments = $stmt->fetchAll();
     

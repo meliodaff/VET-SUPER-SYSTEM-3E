@@ -7,18 +7,26 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [invoiceDetails, setInvoiceDetails] = useState(null);
+  const [addedItems, setAddedItems] = useState([]);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemPrice, setNewItemPrice] = useState('');
 
   useEffect(() => {
-    if (invoice && invoice.id) {
-      fetchInvoiceDetails();
+    // Determine best identifier available (id, invoice_id, invoice_number)
+    const identifier = invoice?.id || invoice?.invoice_id || invoice?.invoice_number;
+    if (identifier) {
+      fetchInvoiceDetails(identifier);
+    } else {
+      setError('Invoice identifier is missing. Cannot load details.');
+      setLoading(false);
     }
   }, [invoice]);
-
-  const fetchInvoiceDetails = async () => {
+  const fetchInvoiceDetails = async (identifier) => {
     try {
       setLoading(true);
       setError('');
-      const response = await invoicesAPI.getInvoiceDetails(invoice.id);
+      // Pass whatever identifier we have to the backend. Backend should support id or invoice_number.
+      const response = await invoicesAPI.getInvoiceDetails(identifier);
       if (response.data.success) {
         setInvoiceDetails(response.data.data);
       } else {
@@ -32,6 +40,32 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
     }
   };
 
+  const addInclusionItem = () => {
+    if (!newItemName.trim()) return;
+    const price = parseFloat(newItemPrice) || 0;
+    const item = {
+      id: `added-${Date.now()}`,
+      service_name: newItemName.trim(),
+      service_category: 'Inclusion',
+      quantity: 1,
+      unit_price: price,
+      line_total: price
+    };
+    setAddedItems((s) => [...s, item]);
+    setNewItemName('');
+    setNewItemPrice('');
+  };
+
+  const removeAddedItem = (id) => {
+    setAddedItems((s) => s.filter(i => i.id !== id));
+  };
+
+  const calculateTotal = () => {
+    const base = invoiceDetails?.summary?.total_amount || 0;
+    const added = addedItems.reduce((acc, it) => acc + (parseFloat(it.line_total) || 0), 0);
+    return base + added;
+  };
+
   if (!invoice) return null;
 
   return (
@@ -39,16 +73,28 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Invoice Details</h3>
+        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+          <div className="bg-white px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+            <div className="flex items-start justify-between">
+              <div className="text-center w-full">
+                <h2 className="text-2xl font-bold text-blue-900 tracking-wide">RECEIPT</h2>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 absolute right-4 top-4"
               >
                 <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Print button (screen only) */}
+            <div className="mt-2 flex justify-end">
+              <button
+                onClick={() => window.print()}
+                className="px-3 py-1 bg-gray-200 text-gray-800 rounded print:hidden"
+              >
+                Print
               </button>
             </div>
 
@@ -63,153 +109,124 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               </div>
             ) : invoiceDetails ? (
-              <div className="space-y-6">
-                {/* Invoice Header */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Invoice Information</h4>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-600">Invoice #:</span>
-                        <span className="text-sm font-semibold text-gray-900 ml-2">{invoiceDetails.invoice.invoice_number}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-600">Date:</span>
-                        <span className="text-sm text-gray-900 ml-2">{formatDate(invoiceDetails.invoice.invoice_date)}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-600">Due Date:</span>
-                        <span className="text-sm text-gray-900 ml-2">{formatDate(invoiceDetails.invoice.due_date)}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(invoiceDetails.invoice.status)}`}>
-                          {invoiceDetails.invoice.status}
-                        </span>
-                      </div>
-                    </div>
+              <div className="space-y-4">
+                {/* Printable receipt block (hidden on screen, visible when printing) */}
+                <div className="receipt-print print-only hidden">
+                  <div className="text-center">
+                    <div className="font-bold text-lg">Fur Ever Care</div>
+                    <div className="text-sm">RECEIPT</div>
+                    <div className="text-xs mt-2">{formatDateTime(invoiceDetails.invoice.invoice_date)}</div>
+                    <div className="text-xs">Invoice: {invoiceDetails.invoice.invoice_number}</div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Client Information</h4>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{invoiceDetails.invoice.client_name}</span>
-                      </div>
-                      {invoiceDetails.invoice.client_phone && (
-                        <div className="flex items-center">
-                          <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                          <span className="text-sm text-gray-600">{invoiceDetails.invoice.client_phone}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
 
-                {/* Invoice Items */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-3">Items & Services</h4>
-                  {invoiceDetails.items && invoiceDetails.items.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unit Price</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {invoiceDetails.items.map((item) => (
-                            <tr key={item.id}>
-                              <td className="px-4 py-3 text-sm text-gray-900">{item.service_name}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600">{item.service_category}</td>
-                              <td className="px-4 py-3 text-sm text-gray-900 text-right">{item.quantity}</td>
-                              <td className="px-4 py-3 text-sm text-gray-900 text-right">{formatCurrency(item.unit_price)}</td>
-                              <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">{formatCurrency(item.line_total)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 rounded-lg p-4 text-center">
-                      <p className="text-sm text-gray-500">No items found for this invoice</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Payment Transactions */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-3">Payment Transactions</h4>
-                  {invoiceDetails.payments && invoiceDetails.payments.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Method</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {invoiceDetails.payments.map((payment) => (
-                            <tr key={payment.id}>
-                              <td className="px-4 py-3 text-sm text-gray-900">{formatDate(payment.payment_date)}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600">
-                                <div className="flex items-center">
-                                  <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
-                                  {payment.payment_method}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 text-sm text-gray-600">{payment.reference_number || 'N/A'}</td>
-                              <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">{formatCurrency(payment.amount)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 rounded-lg p-4 text-center">
-                      <p className="text-sm text-gray-500">No payment transactions found</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Summary */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Total Amount:</span>
-                    <span className="text-lg font-bold text-gray-900">{formatCurrency(invoiceDetails.summary.total_amount)}</span>
+                  <hr className="my-2" />
+                  <div className="text-xs">
+                    {(invoiceDetails.items || []).concat(addedItems).map((it) => (
+                      <div key={it.id} className="flex justify-between">
+                        <div className="truncate pr-2">{it.service_name}</div>
+                        <div className="text-right">{formatCurrency(it.line_total || it.unit_price)}</div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Total Paid:</span>
-                    <span className="text-lg font-semibold text-green-600">{formatCurrency(invoiceDetails.summary.total_paid)}</span>
+
+                  <hr className="my-2" />
+                  <div className="flex justify-between text-sm font-semibold">
+                    <div>Total</div>
+                    <div>{formatCurrency(calculateTotal())}</div>
                   </div>
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-300">
-                    <span className="text-sm font-medium text-gray-700">Balance:</span>
-                    <span className={`text-lg font-bold ${invoiceDetails.summary.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      {formatCurrency(invoiceDetails.summary.balance)}
+                  <div className="text-center text-xs mt-3">Thank you for your business!</div>
+                </div>
+                {/* Top details: Schedule / Service / Price */}
+                <div className="grid grid-cols-1 gap-2 text-sm text-gray-800">
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Schedule:</span>
+                    <span>{formatDateTime(invoiceDetails.invoice.invoice_date)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Service:</span>
+                    <span className="font-medium">
+                      {invoiceDetails.items && invoiceDetails.items.length > 0
+                        ? invoiceDetails.items.map(it => it.service_name).join(', ')
+                        : (invoiceDetails.invoice?.description || '—')}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Service Price:</span>
+                    <span className="font-medium">{formatCurrency(invoiceDetails.summary.total_amount)}</span>
+                  </div>
+                </div>
+
+                {/* Inclusion input */}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-700">Inclusion</h4>
+                  <div className="flex items-center gap-2 mt-3">
+                    <input
+                      type="text"
+                      placeholder="Item Name"
+                      value={newItemName}
+                      onChange={(e) => setNewItemName(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Price"
+                      value={newItemPrice}
+                      onChange={(e) => setNewItemPrice(e.target.value)}
+                      className="w-28 px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                    <button
+                      onClick={addInclusionItem}
+                      className="px-3 py-2 bg-blue-700 text-white rounded-lg"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  <div className="mt-4">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="text-sm text-gray-600">
+                          <th>Item</th>
+                          <th className="text-right">Price</th>
+                          <th className="text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-sm">
+                        {((invoiceDetails.items || []).concat(addedItems)).length === 0 ? (
+                          <tr>
+                            <td colSpan={3} className="py-4 text-center text-gray-500">No items yet</td>
+                          </tr>
+                        ) : (
+                          (invoiceDetails.items || []).concat(addedItems).map((it) => (
+                            <tr key={it.id} className="border-t">
+                              <td className="py-2">{it.service_name}</td>
+                              <td className="py-2 text-right">{formatCurrency(it.line_total || it.unit_price)}</td>
+                              <td className="py-2 text-center">
+                                {it.id && String(it.id).startsWith('added-') ? (
+                                  <button onClick={() => removeAddedItem(it.id)} className="text-sm text-red-600">Remove</button>
+                                ) : (
+                                  <span className="text-sm text-gray-400">&nbsp;</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Total and actions */}
+                <div>
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <span className="text-lg font-medium">Total</span>
+                    <span className="text-lg font-bold">{formatCurrency(calculateTotal())}</span>
+                  </div>
+
+                  {/* Removed APPROVE and CANCEL buttons to make the receipt view-only/printable */}
                 </div>
               </div>
             ) : null}
-          </div>
-
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              Close
-            </button>
           </div>
         </div>
       </div>

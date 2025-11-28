@@ -32,6 +32,17 @@ $statusLabelMap = [
 ];
 
 try {
+    // Detect invoices primary key column (id or invoice_id) to support different schemas
+    $colStmt = $db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'invoices'");
+    $colStmt->execute();
+    $columns = $colStmt->fetchAll(PDO::FETCH_COLUMN);
+    if (in_array('id', $columns)) {
+        $idCol = 'id';
+    } elseif (in_array('invoice_id', $columns)) {
+        $idCol = 'invoice_id';
+    } else {
+        $idCol = 'id';
+    }
     // Build WHERE clause
     $where_conditions = [];
     $params = [];
@@ -78,18 +89,23 @@ try {
     $limit = max(1, min($limit, 100));
     $page = max(1, $page);
     $offset = ($page - 1) * $limit;
+    // Main invoice list query - join invoice_items/services to get service names per invoice
     $sql = "
         SELECT 
-            inv.id,
+            inv." . $idCol . " AS id,
             inv.invoice_number,
             inv.invoice_date,
             inv.due_date,
             inv.total_amount,
             inv.status,
-            COALESCE(p.owner_name, 'Walk-in Client') AS client_name
+            COALESCE(p.owner_name, 'Walk-in Client') AS client_name,
+            GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ') AS services
         $join_clause
+        LEFT JOIN invoice_items ii ON ii.invoice_id = inv." . $idCol . "
+        LEFT JOIN services s ON s.id = ii.service_id
         $where_clause
-        ORDER BY inv.invoice_date DESC, inv.id DESC
+        GROUP BY inv." . $idCol . "
+        ORDER BY inv.invoice_date DESC, inv." . $idCol . " DESC
         LIMIT $limit OFFSET $offset
     ";
     
@@ -103,6 +119,7 @@ try {
             'id' => (int) $invoice['id'],
             'invoice_number' => $invoice['invoice_number'],
             'client_name' => $invoice['client_name'],
+            'services' => isset($invoice['services']) ? $invoice['services'] : '',
             'date' => $invoice['invoice_date'],
             'due_date' => $invoice['due_date'],
             'amount' => (float) $invoice['total_amount'],

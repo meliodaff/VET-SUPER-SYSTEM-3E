@@ -123,13 +123,6 @@ const Invoices = () => {
           <h1 className="text-3xl font-bold text-gray-900">Invoice Management</h1>
           <p className="text-gray-600 mt-2">Track and manage your clinic's invoices</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Create Invoice
-        </button>
       </div>
 
       {/* Summary Cards */}
@@ -233,10 +226,6 @@ const Invoices = () => {
           </div>
           
           <div className="flex items-end">
-            <button className="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-              <Download className="h-5 w-5 mr-2" />
-              Export CSV
-            </button>
           </div>
         </div>
       </div>

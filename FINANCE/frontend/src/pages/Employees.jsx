@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Download } from 'lucide-react';
+import { Search, Filter, Download } from 'lucide-react';
 import { employeesAPI } from '../services/api';
 import EmployeeDirectory from '../components/employees/EmployeeDirectory';
 import DepartmentOverview from '../components/employees/DepartmentOverview';
@@ -220,13 +220,7 @@ const Employees = () => {
           <h1 className="text-3xl font-bold text-gray-900">Employee Management</h1>
           <p className="text-gray-600 mt-2">Manage your clinic's staff and departments</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Add Employee
-        </button>
+        {/* Add Employee button removed per request */}
       </div>
 
       {/* Error Message */}
