@@ -32,6 +32,9 @@
     <title>Edit Pet</title>
     <link rel="stylesheet" href="../styles/Book_appointment_add_pet.css">
     <link rel="stylesheet" href="/appointment/styles/popup.css">
+
+        <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+
 </head>
 
 
@@ -102,8 +105,9 @@
   </main>
 
   <!-- Footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?>
 
    <!-- Confirmation Popup (reusable) -->
   <?php include '../php/confirmation.php'; ?>

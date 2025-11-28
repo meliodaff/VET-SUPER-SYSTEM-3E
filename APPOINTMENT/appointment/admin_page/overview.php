@@ -12,6 +12,9 @@ include '../includes/db.php';
   <link rel="stylesheet" href="../styles/index.css">
   <link rel="stylesheet" href="../styles/index_Footer.css">
   <link rel="stylesheet" href="../styles/index_Header.css">
+
+  
+    <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 </head>
 <body>
 
@@ -106,8 +109,9 @@ include '../includes/db.php';
   </main>
 
  <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?>
   <script src="../script/index.js"></script>
 </body>
 </html>

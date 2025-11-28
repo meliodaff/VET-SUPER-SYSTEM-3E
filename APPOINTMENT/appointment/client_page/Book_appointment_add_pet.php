@@ -6,6 +6,9 @@
     <title>Document</title>
     <link rel="stylesheet" href="/appointment/styles/Book_appointment_add_pet.css">
     <link rel="stylesheet" href="/appointment/styles/popup.css">
+
+        <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+
 </head>
 
 <!-- popup -->
@@ -57,6 +60,7 @@
 
 
     <!-- Footer -->
-  <iframe src="header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-</body>
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?></body>
 </html>

@@ -2,7 +2,7 @@
   //require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
-$user_id = $_SESSION['user_id'];
+//$user_id = $_SESSION['user_id'];
 
 // ✅ Fetch appointments for the logged-in user (include id)
 $sql = "SELECT id, pet_name, date, time, vetdoc, service, status 
@@ -22,6 +22,9 @@ $result = $stmt->get_result();
   <link rel="stylesheet" href="../styles/Book_appointment_dashboard.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
   <link rel="stylesheet" href="/appointment/styles/tabs.css">
+
+      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+
 </head>
 <body>
   <!-- header -->
@@ -125,8 +128,9 @@ $result = $stmt->get_result();
 
 
   <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-</body>
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?></body>
 </html>
 
 <?php

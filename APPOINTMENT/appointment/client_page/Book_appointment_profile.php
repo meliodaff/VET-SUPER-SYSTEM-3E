@@ -3,7 +3,7 @@
   require_once '../includes/db.php';
 
   // Get current logged-in user ID from session
-  $user_id = $_SESSION['user_id'];
+  //$user_id = $_SESSION['user_id'];
 
   // Prepare query to fetch user details
   $query = "SELECT * FROM registered WHERE user_id = ?";
@@ -21,6 +21,9 @@
   <title>Update Details</title>
   <link rel="stylesheet" href="../styles/profile.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
+
+      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+
 </head>
 <body>
   
@@ -111,8 +114,8 @@ document.querySelectorAll(".open-confirmation").forEach(btn => {
 
 
   <!-- Footer -->
-  <iframe src="../header_footer/footer/Footer.html" 
-  style="width:100%; height:523px; border:none;"></iframe>
-
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?>
 </body>
 </html>
