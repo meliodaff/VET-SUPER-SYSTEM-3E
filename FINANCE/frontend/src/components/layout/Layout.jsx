@@ -11,8 +11,7 @@ const Layout = ({ children, admin, onLogout }) => {
   // Ensure onLogout is defined
   const handleLogout = onLogout || (() => {
     console.warn('onLogout is not defined');
-    localStorage.removeItem('admin');
-    window.location.href = '/login';
+    // No-op since authentication is removed
   });
 
   const toggleSidebar = () => {

@@ -10,7 +10,7 @@ module.exports = function(app) {
 			timeout: 30000, // 30 seconds timeout
 			proxyTimeout: 30000,
 			pathRewrite: {
-				'^/backend-api': '/fur-ever-care/backend/api',
+				'^/backend-api': '/VET-SUPER-SYSTEM-3E/FINANCE/backend/api',
 			},
 			onProxyReq: (proxyReq) => {
 				// Ensure cookies/sessions are forwarded

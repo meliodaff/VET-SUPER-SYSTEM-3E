@@ -56,11 +56,7 @@ api.interceptors.response.use(
       });
     }
     
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('admin');
-      window.location.href = '/login';
-    }
+    // Authentication removed - no redirect on 401
     return Promise.reject(error);
   }
 );
