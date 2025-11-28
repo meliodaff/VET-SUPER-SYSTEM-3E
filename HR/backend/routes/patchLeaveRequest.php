@@ -13,6 +13,7 @@ if($REQUEST_METHOD === "GET"){
     $requestId = isset($_GET["requestId"]) ? $_GET["requestId"] : null;
     $idParams = isset($_GET["id"]) ? $_GET["id"] : null;
     $status = isset($_GET["status"]) ? $_GET["status"] : null;
+    $typeOfLeaveId = isset($_GET["typeOfLeaveId"]) ? $_GET["typeOfLeaveId"] : null;
     if(!$idParams || !$status || !$requestId) {
         http_response_code(400);
         $response = [
@@ -21,7 +22,7 @@ if($REQUEST_METHOD === "GET"){
         echo json_encode($response);
         return;
     } else {
-        $response = patchLeaveRequest($requestId, $status, $idParams, $pdo);
+        $response = patchLeaveRequest($requestId, $status, $idParams, $typeOfLeaveId, $pdo);
     }
 
     if (!$response["success"]){

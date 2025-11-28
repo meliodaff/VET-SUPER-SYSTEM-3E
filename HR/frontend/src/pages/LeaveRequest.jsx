@@ -327,6 +327,7 @@ export default function LeaveRequest() {
         leaveTypeId: Number(formData.typeOfLeave),
         reasonDetail: formData.reason,
         attachmentUrl: formData.document || null,
+        leaveDaysTaken: workingDaysList.length,
       };
 
       console.log("Submitting leave request:", formDataToSend);
@@ -335,8 +336,8 @@ export default function LeaveRequest() {
         "Selected start date:",
         getLocalDateString(formData.startDate)
       );
+      console.log(formData);
       console.log("Selected end date:", getLocalDateString(formData.endDate));
-      return;
       const response = await insertLeaveRequest(formDataToSend);
       console.log(response);
       if (!response.success) {

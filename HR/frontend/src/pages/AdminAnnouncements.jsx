@@ -13,6 +13,7 @@ import {
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetAnnouncements from "../api/useGetAnnouncements";
 import usePostAnnouncement from "../api/usePostAnnouncement";
+import useUpdateAnnouncement from "../api/useUpdateAnnouncement";
 
 // {
 //       id: 1,
@@ -215,6 +216,9 @@ export default function AdminAnnouncements() {
   const { postAnnouncement, loadingForPostAnnouncement } =
     usePostAnnouncement();
 
+  const { updateAnnouncement, loadingForUpdateAnnouncement } =
+    useUpdateAnnouncement();
+
   const handleSubmit = async () => {
     if (
       !formData.title.trim() ||
@@ -251,6 +255,26 @@ export default function AdminAnnouncements() {
     }
 
     if (editingId) {
+      const updatedAnnouncement = {
+        ...announcements.find((ann) => ann.id === editingId),
+        title: formData.title,
+        content: formData.content,
+        type: formData.type,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        meetingDate: formData.type === "Meeting" ? formData.meetingDate : null,
+        meetingTimeStart:
+          formData.type === "Meeting" ? formData.meetingTimeStart : null,
+        meetingTimeEnd:
+          formData.type === "Meeting" ? formData.meetingTimeEnd : null,
+        location: formData.type === "Meeting" ? formData.location : null,
+      };
+      console.log(updatedAnnouncement);
+
+      const response = await updateAnnouncement(updatedAnnouncement);
+
+      console.log(response);
+
       // Edit existing announcement
       setAnnouncements(
         announcements.map((ann) =>
@@ -276,6 +300,7 @@ export default function AdminAnnouncements() {
             : ann
         )
       );
+      console.log("im here sa editing");
     } else {
       // Create new announcement
       const newAnnouncement = {

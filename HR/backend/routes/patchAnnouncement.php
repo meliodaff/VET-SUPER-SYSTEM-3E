@@ -1,0 +1,33 @@
+<?php
+// require_once __DIR__ . '/../config/config.php';
+include_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../controllers/patchAnnouncement.controller.php";
+include_once __DIR__ . "/../config/cors.php";
+
+
+
+$REQUEST_METHOD = $_SERVER["REQUEST_METHOD"];
+
+
+if($REQUEST_METHOD === "POST"){
+   
+    
+    $response = patchAnnouncement($_POST, $pdo);
+
+    if (!$response["success"]){
+        http_response_code(500);
+        $response = [
+            "success" => false,
+            "error" => $response["error"]
+        ];
+    } else {
+        http_response_code(200);
+        $response = [
+            "success" => true,
+            "message" => $response["message"]
+        ];
+    }
+    echo json_encode($response);
+}
+
+?>

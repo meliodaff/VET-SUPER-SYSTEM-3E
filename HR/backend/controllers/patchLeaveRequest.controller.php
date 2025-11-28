@@ -1,6 +1,6 @@
 <?php
 
-function patchLeaveRequest($requestId, $status, $employeeId, $pdo) {
+function patchLeaveRequest($requestId, $status, $employeeId, $typeOfLeaveId, $pdo) {
     try {
         // Validate status
         $validStatuses = ['Pending', 'Approved', 'Rejected', 'Cancelled'];
@@ -12,10 +12,12 @@ function patchLeaveRequest($requestId, $status, $employeeId, $pdo) {
         }
 
         // Check if leave request exists
-        $checkQuery = "SELECT request_id FROM leave_requests WHERE request_id = :request_id";
+        $checkQuery = "SELECT request_id, days_taken FROM leave_requests WHERE request_id = :request_id";
         $checkStmt = $pdo->prepare($checkQuery);
         $checkStmt->execute([":request_id" => $requestId]);
         
+        $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
         if ($checkStmt->rowCount() === 0) {
             return [
                 "success" => false,
@@ -23,6 +25,7 @@ function patchLeaveRequest($requestId, $status, $employeeId, $pdo) {
             ];
         }
 
+        $leaveDaysTaken = $result['days_taken'] ?? 0;
         // Update the leave request status
         $updateQuery = "UPDATE leave_requests 
                         SET status = :status 
@@ -32,6 +35,37 @@ function patchLeaveRequest($requestId, $status, $employeeId, $pdo) {
                         SET employment_type = 'On Leave' 
                         WHERE employee_id = :employee_id";
         
+        $query2 = "UPDATE leave_balances SET days_remaining = days_remaining - {$leaveDaysTaken} WHERE employee_id = :employee_id AND leave_type_id = :leave_type_id";
+
+        $stmt2 = $pdo->prepare($query2);
+
+        $decrementLeaveBalancesResponse = $stmt2->execute([ 
+            ":employee_id" => $employeeId,
+            ":leave_type_id" => $typeOfLeaveId
+            ]);
+
+            $query3 = "UPDATE leave_balances SET days_taken = days_taken + {$leaveDaysTaken} WHERE employee_id = :employee_id AND leave_type_id = :leave_type_id"; 
+
+            $stmt3 = $pdo->prepare($query3);
+
+            if($stmt2->rowCount() <= 0){
+            $response = [
+                "success" => false,
+                "message" => "The decremention of the leave balances failed but the leave request might went in"
+            ];
+            }
+            
+            $incrementDaysTaken = $stmt3->execute([
+                ":employee_id" => $employeeId,
+            ":leave_type_id" => $typeOfLeaveId
+            ]);
+            
+            if($stmt3->rowCount() <= 0){
+                $response = [
+                    "success" => false,
+                    "message" => "The incrementation of the days taken failed but the leave request might went in"
+                ];
+            }
         $updateStmt = $pdo->prepare($updateQuery);
         $updateStmt->execute([
             ":status" => $status,
@@ -44,10 +78,10 @@ function patchLeaveRequest($requestId, $status, $employeeId, $pdo) {
 
         return [
             "success" => true,
-            "message" => "Leave request status updated successfully",
             "data" => [
                 "request_id" => $requestId,
-                "new_status" => $status
+                "new_status" => $status,
+                "leaveDaysTaken" => $leaveDaysTaken
             ]
         ];
 

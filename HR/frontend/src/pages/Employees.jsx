@@ -12,18 +12,19 @@ export default function Employees() {
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({
-    firstName: "mytestings",
-    middleName: "mytestings",
-    lastName: "mytestings",
-    birthDate: "1990-09-01",
-    gender: "Male",
-    email: "mytestings@gmail.com",
-    phoneNumber: "09123456789",
-    address: "mytestings",
-    employmentStatus: "Full-Time",
-    jobTitle: "Veterinarian",
-    password: "123456",
-    confirmPassword: "123456",
+    rfidCode: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    birthDate: "",
+    gender: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
+    employmentStatus: "",
+    jobTitle: "",
+    password: "",
+    confirmPassword: "",
     photo: null,
   });
   const [photoPreview, setPhotoPreview] = useState("");
@@ -414,6 +415,25 @@ export default function Employees() {
                   {/* Row 1: First, Middle, Last Name */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6"></div>
                   {/* Row 1: First, Middle, Last Name */}
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    RFID Code <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.rfidCode}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        rfidCode: e.target.value,
+                      })
+                    }
+                    placeholder="## ## ## ##"
+                    className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
+                      validationErrors.firstName
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                    }`}
+                  />
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-3">
