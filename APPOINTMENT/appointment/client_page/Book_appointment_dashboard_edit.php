@@ -1,5 +1,5 @@
 <?php
-  require_once '../includes/session_id.php';
+  //require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
 // ✅ Check if appointment ID is provided
@@ -42,6 +42,9 @@ $pets = $conn->query("SELECT pet_name FROM mypet WHERE user_id = $user_id");
   <title>Edit Appointment</title>
   <link rel="stylesheet" href="../styles/Book_appointment_dashboard_edit.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
+
+      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+
 </head>
 <body>
   <!-- header -->
@@ -150,6 +153,7 @@ $pets = $conn->query("SELECT pet_name FROM mypet WHERE user_id = $user_id");
 
 
   <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-</body>
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?></body>
 </html>

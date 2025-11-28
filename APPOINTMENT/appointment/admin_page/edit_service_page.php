@@ -1,5 +1,5 @@
 <?php
-include '../includes/session_id.php';
+//include '../includes/session_id.php';
 include '../includes/db.php';
 
 // ✅ Check if ID is provided from POST
@@ -35,6 +35,9 @@ $service = $result->fetch_assoc();
   <link rel="stylesheet" href="/appointment/styles/popup.css">
   <link rel="stylesheet" href="../styles/index_Footer.css">
   <link rel="stylesheet" href="../styles/index_Header.css">
+
+  
+    <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 </head>
 <body>
 
@@ -107,8 +110,9 @@ $service = $result->fetch_assoc();
 </main>
 
  <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?>
 <!-- Confirmation Popup (reusable) -->
 <?php include '../php/confirmation.php'; ?>
 

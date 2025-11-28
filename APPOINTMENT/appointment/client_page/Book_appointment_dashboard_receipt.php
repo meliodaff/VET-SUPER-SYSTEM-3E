@@ -1,5 +1,5 @@
 <?php
-  require_once '../includes/session_id.php';
+  //require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
 $appointment_id = $_GET['id'] ?? null;
@@ -54,6 +54,9 @@ foreach ($items as $item) {
   <title>Receipt</title>
   <link rel="stylesheet" href="/appointment/styles/Book_appointment_dashboard_receipt.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
+
+      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+
 </head>
 <body>
   <!-- header -->
@@ -130,6 +133,7 @@ foreach ($items as $item) {
   </main>
 
   <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-</body>
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?></body>
 </html>

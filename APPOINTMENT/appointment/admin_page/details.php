@@ -1,5 +1,5 @@
 <?php
-include '../includes/session_id.php';
+//include '../includes/session_id.php';
 include '../includes/db.php';
 
 if (!isset($_GET['id'])) {
@@ -58,6 +58,9 @@ $grand_total = $service_price + $total_items_price;
   <link rel="stylesheet" href="../styles/admin_details.css">
   <link rel="stylesheet" href="../styles/index_Footer.css">
   <link rel="stylesheet" href="../styles/index_Header.css">
+
+  
+    <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 </head>
 <body>
 
@@ -164,8 +167,9 @@ $grand_total = $service_price + $total_items_price;
   <br>
   <br>
  <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?>
 <script src="../script/index.js"></script>
 </body>
 </html>
