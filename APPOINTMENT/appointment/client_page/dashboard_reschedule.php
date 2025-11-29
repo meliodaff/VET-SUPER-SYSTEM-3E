@@ -2,7 +2,7 @@
   require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
-// $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'];
 
 // ✅ Fetch appointments for the logged-in user (include id)
 $sql = "SELECT id, pet_name, date, time, vetdoc, service, status 

@@ -2,7 +2,7 @@
   require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
-//$user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'];
 
 // ✅ Fetch all notifications for the logged-in user
 $sql = "SELECT pet_name, service, message, date_time FROM notifications WHERE user_id = ?";
