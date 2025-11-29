@@ -1,7 +1,7 @@
 <?php
     
     require_once __DIR__ . "/../utils/checkIfEmailExists.php";
-
+    session_start();
     function login($user, $pdo){
 
         $iEmployeeEmailExists = checkIfEmailExists($user["email"], $pdo);
@@ -44,6 +44,9 @@
                     "email" => $userInformation["email"],
                     "role" => $userInformation["role"],
                 ];
+                $_SESSION["user_id"] = $userInformation["user_id"];
+                $_SESSION["email"] = $userInformation["email"];
+                $_SESSION["role"] = $userInformation["role"];
             } else {
                 $queryToFetchEmployeeInformation = "SELECT * FROM employees WHERE contact_email = :contact_email";
                 $stmtForEmployeeInformation = $pdo->prepare($queryToFetchEmployeeInformation);
@@ -58,7 +61,12 @@
                     "role" => $employeeInformation["Position"],
                     "department" => $employeeInformation["department"],
                 ];
+                $_SESSION["user_id"] = $employeeInformation["employee_id"];
+                $_SESSION["email"] = $employeeInformation["contact_email"];
+                $_SESSION["role"] = $employeeInformation["Position"];
+                $_SESSION["department"] = $employeeInformation["department"];
             }
+
 
 
             setcookie(
