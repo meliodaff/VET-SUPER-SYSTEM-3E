@@ -63,7 +63,7 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
+    <div className="login-container min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-sky-100 relative">
       <img
         className="login-img"
         src="/images/login-img.jpg"

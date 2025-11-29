@@ -63,7 +63,7 @@ export default function Register() {
   };
 
   return (
-    <div className="register-page">
+    <div className="register-page min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-sky-100 relative">
       <div className="register-card">
         <img className="card-image" src="/images/register-img.png" alt="Pet" />
         <h1 className="title">Fur-Ever Care</h1>

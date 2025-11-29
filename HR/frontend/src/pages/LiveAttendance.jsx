@@ -47,7 +47,7 @@ const Attendance = () => {
     },
     logoH1: {
       fontSize: "40px",
-      color: "#5080be",
+      color: "#5080BE", // Updated from #5080be
       fontWeight: 800,
     },
     form: {
@@ -57,7 +57,7 @@ const Attendance = () => {
     },
     title: {
       fontSize: "28px",
-      color: "#1d5e9e",
+      color: "#5080BE", // Updated from #1d5e9e
       marginBottom: "30px",
       fontWeight: 600,
     },
@@ -66,15 +66,22 @@ const Attendance = () => {
       width: "100%",
       marginBottom: "12px",
       padding: "10px 12px",
-      border: "1px solid #ccc",
+      border: "1px solid #e5e7eb", // Updated from #ccc (light gray)
       borderRadius: "8px",
       fontSize: "15px",
+      backgroundColor: "#fff",
+      transition: "all 0.2s",
+    },
+    inputFocus: {
+      borderColor: "#5080BE",
+      outline: "none",
+      boxShadow: "0 0 0 3px rgba(80, 128, 190, 0.1)",
     },
     label: {
       display: "block",
       textAlign: "left",
       fontWeight: 600,
-      color: "#1d5e9e",
+      color: "#4b5563", // Updated from #1d5e9e (gray-600)
       marginBottom: "5px",
       fontSize: "14px",
     },
@@ -93,16 +100,17 @@ const Attendance = () => {
       height: "40px",
       padding: "10px",
       border: "none",
-      backgroundColor: "#1d5e9e",
+      backgroundColor: "#5080BE", // Updated from #1d5e9e
       color: "#fff",
       fontWeight: 600,
       borderRadius: "8px",
       cursor: "pointer",
       marginTop: "10px",
       fontSize: "20px",
+      transition: "background-color 0.2s",
     },
     buttonHover: {
-      backgroundColor: "#164a7c",
+      backgroundColor: "#3d6aa2", // Darker shade for hover
     },
     imgBg: {
       width: "50%",
@@ -138,6 +146,7 @@ const Attendance = () => {
       textAlign: "center",
       position: "relative",
       animation: "fadeIn 0.3s ease",
+      boxShadow: "0 20px 50px rgba(0, 0, 0, 0.15)", // Softer shadow
     },
     close: {
       position: "absolute",
@@ -146,24 +155,51 @@ const Attendance = () => {
       fontSize: "24px",
       fontWeight: "bold",
       cursor: "pointer",
-      color: "#000",
+      color: "#6b7280", // Updated to gray-500
+      transition: "color 0.2s",
+    },
+    closeHover: {
+      color: "#374151", // gray-700
     },
     profilePic: {
       width: "150px",
       height: "150px",
-      backgroundColor: "#d3d3d3",
+      backgroundColor: "#f3f4f6", // Updated from #d3d3d3 (gray-100)
       borderRadius: "50%",
       margin: "0 auto 25px",
       objectFit: "cover",
+      border: "4px solid #e5e7eb", // Added subtle border
     },
     popupBoxH3: {
-      color: "#1d5e9e",
+      color: "#5080BE", // Updated from #1d5e9e
       marginBottom: "10px",
       fontSize: "50px",
+      fontWeight: 700,
     },
     popupBoxP: {
       fontSize: "20px",
       margin: "6px 0",
+      color: "#4b5563", // gray-600
+    },
+    statusConnected: {
+      textAlign: "center",
+      marginBottom: "10px",
+      padding: "8px",
+      backgroundColor: "#dbeafe", // blue-100
+      borderRadius: "5px",
+      fontSize: "14px",
+      color: "#1e40af", // blue-800
+      border: "1px solid #bfdbfe", // blue-200
+    },
+    statusDisconnected: {
+      textAlign: "center",
+      marginBottom: "10px",
+      padding: "8px",
+      backgroundColor: "#fee2e2", // red-100
+      borderRadius: "5px",
+      fontSize: "14px",
+      color: "#991b1b", // red-800
+      border: "1px solid #fecaca", // red-200
     },
   };
 
@@ -273,6 +309,20 @@ const Attendance = () => {
             }
           }
           
+          input:focus {
+            border-color: #5080BE !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(80, 128, 190, 0.1);
+          }
+          
+          button:hover {
+            background-color: #3d6aa2 !important;
+          }
+          
+          .close:hover {
+            color: #374151 !important;
+          }
+          
           @media (max-width: 768px) {
             .body {
               background-position: center;
@@ -358,15 +408,11 @@ const Attendance = () => {
 
           {/* WebSocket Status Indicator */}
           <div
-            style={{
-              textAlign: "center",
-              marginBottom: "10px",
-              padding: "8px",
-              backgroundColor:
-                connectionStatus === "Connected" ? "#d4edda" : "#f8d7da",
-              borderRadius: "5px",
-              fontSize: "14px",
-            }}
+            style={
+              connectionStatus === "Connected"
+                ? styles.statusConnected
+                : styles.statusDisconnected
+            }
           >
             <strong>RFID Status:</strong> {connectionStatus}
           </div>
@@ -470,7 +516,7 @@ const Attendance = () => {
             <h3 style={styles.popupBoxH3}>{popupData.name}</h3>
             <p
               style={{
-                color: "#1d5e9e",
+                color: "#5080BE",
                 fontWeight: "600",
                 fontSize: "18px",
                 marginBottom: "15px",

@@ -19,7 +19,7 @@ if($REQUEST_METHOD === "POST"){
         http_response_code(500);
         echo json_encode([
                 "success" => $response["success"],
-                "error" => $response["message"]
+                "message" => $response["message"]
             ]);
             return;
         }

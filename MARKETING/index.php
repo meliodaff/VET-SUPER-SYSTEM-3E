@@ -78,8 +78,8 @@ $slider_images = [
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#services">Services</a></li>
-                <li><a href="#" class="book-now">Book Now</a></li>
-                <?php if ($is_logged_in): ?>
+                <li><a href="http://localhost:5173/login" class="book-now">Book Now</a></li>
+                <?php if (!$is_logged_in): ?>
                     <li class="profile-menu">
                         <a href="profile.php" class="profile-icon" title="Go to Profile">
                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@ $slider_images = [
                         </ul>
                     </li>
                 <?php else: ?>
-                    <li><a href="signin.php" class="sign-in">Log In</a></li>
+                    <li><a href="http://localhost:5173/login" class="sign-in">Log In</a></li>
                 <?php endif; ?>
             </ul>
         </nav>
@@ -276,8 +276,8 @@ $slider_images = [
                     <h2>Take Care of Your<br>Pet's Health</h2>
                     <p>Did you know that it is advisable to examine your pet every six months? Book your appointment
                         now!</p>
-                    <button class="book-now-btn"
-                        onclick="window.location.href='<?php echo $is_logged_in ? 'book-appointment.php' : 'signin.php'; ?>'">
+                    <button class="book-now-btn" href="http://localhost:5173/login"
+                        onclick="window.location.href='<?php echo $is_logged_in ? 'http://localhost:5173/login' : 'http://localhost:5173/login'; ?>'">
                         <svg class="paw-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                             <path
                                 d="M226.5 92.9c14.3 42.9-.3 86.2-32.6 96.8s-70.1-15.6-84.4-58.5s.3-86.2 32.6-96.8s70.1 15.6 84.4 58.5zM100.4 198.6c18.9 32.4 14.3 70.1-10.2 84.1s-59.7-.9-78.5-33.3S-2.7 179.3 21.8 165.3s59.7 .9 78.5 33.3zM69.2 401.2C121.6 259.9 214.7 224 256 224s134.4 35.9 186.8 177.2c3.6 9.7 5.2 20.1 5.2 30.5v1.6c0 25.8-20.9 46.7-46.7 46.7c-11.5 0-22.9-1.4-34-4.2l-88-22c-15.3-3.8-31.3-3.8-46.6 0l-88 22c-11.1 2.8-22.5 4.2-34 4.2C84.9 480 64 459.1 64 433.3v-1.6c0-10.4 1.6-20.8 5.2-30.5zM421.8 282.7c-24.5-14-29.1-51.7-10.2-84.1s54-47.3 78.5-33.3s29.1 51.7 10.2 84.1s-54 47.3-78.5 33.3zM310.1 189.7c-32.3-10.6-46.9-53.9-32.6-96.8s52.1-69.1 84.4-58.5s46.9 53.9 32.6 96.8s-52.1 69.1-84.4 58.5z"

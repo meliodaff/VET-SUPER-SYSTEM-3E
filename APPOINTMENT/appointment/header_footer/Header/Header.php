@@ -173,7 +173,7 @@
         <?php else: ?>
           <a href="notification.php">Notification</a>
         <?php endif; ?>
-        <a href="http://localhost/vET-SUPER-SYSTEM-3E/MARKETING/index.php">Logout</a>
+        <a href="http://localhost/VET-SUPER-SYSTEM-3E/MARKETING/index.php">Logout</a>
       </div>
     </div>
   </header>
