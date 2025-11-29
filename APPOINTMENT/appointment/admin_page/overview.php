@@ -40,7 +40,7 @@ include '../includes/db.php';
       <div id="logoutConfirmPopup" class="logout-confirm-popup">
         <p>Are you sure to logout?</p>
         <div class="confirm-actions">
-          <button id="logoutYesBtn" class="yes-btn">Yes</button>
+          <a id="logoutYesBtn" class="yes-btn" href="http://localhost:5173/login">Yes</a>
           <button id="logoutNoBtn" class="no-btn">No</button>
         </div>
       </div>
