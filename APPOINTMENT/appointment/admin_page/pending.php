@@ -19,7 +19,7 @@ include '../includes/db.php';
 </head>
 <body>
 
-    <!-- Header Section -->
+  <!-- Header Section -->
   <header class="header">
     <div class="header-left">
       <div class="logo-wrapper">
@@ -29,11 +29,6 @@ include '../includes/db.php';
     </div>
     <div class="header-right">
       <nav class="nav-links">
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#services">Services</a>
-        <a href="#contact">Contact</a>
-        <h4 class="admin-btn">Admin</h4>
         <img src="../image/profile 1.png" alt="User" class="user-icon" />
       </nav>
 
@@ -143,9 +138,7 @@ include '../includes/db.php';
 
 
  <!-- footer -->
-  <?php
-    include '../../../MARKETING/generalfooter.php';
-  ?>
+
   <script src="../script/index.js"></script>
 </body>
 </html>

@@ -3,7 +3,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-
 if (!isset($_SESSION['user_id'])) {
     // If no user logged in, redirect to login
     header("Location: ../admin_page/index.html");
