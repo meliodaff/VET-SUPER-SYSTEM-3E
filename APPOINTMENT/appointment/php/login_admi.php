@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION['username'] = $row['username'];
 
             // Redirect to admin dashboard
-            header("Location: /appointment/admin_page/overview.php");
+            header("Location: /VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/admin_page/overview.php");
             exit;
         } else {
             echo "<script>alert('❌ Invalid password!'); window.history.back();</script>";

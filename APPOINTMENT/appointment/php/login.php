@@ -20,9 +20,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             // Check registration status
             if ($row['isRegister'] === "true") {
-                header("Location: /appointment/client_page/Book_appointment_dashboard.php");
+                header("Location: /VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php");
             } else {
-                header("Location: /appointment//client_page/Book_appointment_register.php");
+                header("Location: /VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_register.php");
             }
             exit;
         } else {
