@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../styles/Register.css";
-
+import usePostPatientAccount from "../api/usePostPatientAccount";
+import { useNavigate } from "react-router-dom";
 export default function Register() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -23,7 +24,10 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const { postPatientAccount, loadingForPostPatientAccount } =
+    usePostPatientAccount();
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
@@ -33,8 +37,29 @@ export default function Register() {
       alert("Please agree to the Terms and Privacy Policy");
       return;
     }
+
+    const response = await postPatientAccount(formData);
     console.log("Form submitted:", formData);
+
+    console.log(response);
+
+    if (!response.success) {
+      alert(response.message.message);
+      return;
+    }
+
+    setFormData(() => ({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      role: "Patient",
+      agreeToTerms: false,
+    }));
+
     alert("Registration successful!");
+    navigate("/login");
   };
 
   return (

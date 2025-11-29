@@ -49,6 +49,12 @@ export default function Login() {
       navigate("/dashboard");
     } else if (storedUser.role === "Finance") {
       window.location.href = "http://localhost:3000/finance-dashboard";
+    } else if (storedUser.role === "Appointment") {
+      window.location.href =
+        "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/admin_page/overview.php";
+    } else if (storedUser.role === "Patient") {
+      window.location.href =
+        "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php";
     }
   };
 

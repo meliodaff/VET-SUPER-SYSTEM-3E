@@ -145,7 +145,7 @@
   <header class="header">
     <!-- Logo -->
     <div class="logo">
-      <img src="/appointment/Image/logo.png" alt="Logo">
+      <img src="http://localhost/vET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/Image/logo.png" alt="Logo">
       FUR-EVER CARE
     </div>  
 
@@ -163,7 +163,7 @@
 
     <!-- Profile with dropdown -->
     <div class="profile">
-      <div class="profile-icon" id="profileIcon"><img src="/appointment/Image/profile 1.png" alt="Logo"></div>
+      <div class="profile-icon" id="profileIcon"><img src="http://localhost/vET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/Image/profile 1.png" alt="Logo"></div>
       <div class="dropdown" id="dropdown">
         <a href="Book_appointment_profile.php">My Profile</a>
         <a href="Book_appointment_dashboard.php">Dashboard</a>
@@ -173,7 +173,7 @@
         <?php else: ?>
           <a href="notification.php">Notification</a>
         <?php endif; ?>
-        <a href="../admin_page/index.html">Logout</a>
+        <a href="http://localhost/vET-SUPER-SYSTEM-3E/MARKETING/index.php">Logout</a>
       </div>
     </div>
   </header>
