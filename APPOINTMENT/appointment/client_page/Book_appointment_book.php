@@ -18,7 +18,7 @@ $user = $user_result->fetch_assoc();
   <meta charset="UTF-8">
   <title>Book Appointment</title>
   <link rel="stylesheet" href="../styles/Book_appointment_book.css">
-  <link rel="stylesheet" href="/appointment/styles/popup.css">
+  <link rel="stylesheet" href="../styles/popup.css">
 
       <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 
