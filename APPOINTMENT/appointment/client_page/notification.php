@@ -1,5 +1,5 @@
 <?php
-  //require_once '../includes/session_id.php';
+  require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
 //$user_id = $_SESSION['user_id'];

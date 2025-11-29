@@ -1,5 +1,5 @@
 <?php
-  //require_once '../includes/session_id.php';
+  require_once '../includes/session_id.php';
   require_once '../includes/db.php';
   // Fetch pets for logged-in user
   $sql = "SELECT id, pet_name, pet_image, species, breed, age FROM mypet WHERE user_id = ?";

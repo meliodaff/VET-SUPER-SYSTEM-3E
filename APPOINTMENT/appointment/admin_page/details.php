@@ -1,5 +1,5 @@
 <?php
-//include '../includes/session_id.php';
+include '../includes/session_id.php';
 include '../includes/db.php';
 
 if (!isset($_GET['id'])) {

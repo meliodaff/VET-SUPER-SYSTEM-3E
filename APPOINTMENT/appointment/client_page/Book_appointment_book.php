@@ -1,9 +1,9 @@
 <?php
-  //require_once '../includes/session_id.php';
+  require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
 // Get user data based on the logged-in user's ID
-//$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
 
 $user_query = $conn->prepare("SELECT * FROM registered WHERE user_id = ?");
 $user_query->bind_param("i", $user_id);
