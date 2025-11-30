@@ -48,6 +48,7 @@ export default function Employees() {
         position: record.Position,
         email: record.contact_email,
         photo: record.profile_image_url,
+        department: record.department,
       }));
       console.log(formattedData);
       setEmployees(formattedData);
@@ -236,6 +237,9 @@ export default function Employees() {
                       Position
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-black text-gray-900 uppercase tracking-wider">
+                      Department
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-black text-gray-900 uppercase tracking-wider">
                       Email
                     </th>
                   </tr>
@@ -256,6 +260,9 @@ export default function Employees() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {employee.position}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {employee.department}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {employee.email}

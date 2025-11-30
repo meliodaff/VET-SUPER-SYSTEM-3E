@@ -8,183 +8,119 @@ import {
   AlertCircle,
   Eye,
 } from "lucide-react";
-// import usePerformanceRating from "../api/usePerformanceRating";
+import useGetEmployees from "../api/useGetEmployee";
 import EmployeeNavbar from "../components/Sections/EmployeeNavbar";
+import usePostPerformanceReviews from "../api/usePostPerformanceReviews";
+import useGetPerformanceReviews from "../api/useGetPerformanceReviews"; // ADD THIS IMPORT
 
-export default function EmployeePerformanceRating() {
+export default function EmployeePerformanceRating({ employee }) {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [employees, setEmployees] = useState([]);
+  const [performanceReviews, setPerformanceReviews] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState("rate"); // "rate" or "view"
-  const [ratings, setRatings] = useState({
-    teamwork: 0,
-    communication: 0,
-    productivity: 0,
-    reliability: 0,
-    attitude: 0,
-  });
-  const [comments, setComments] = useState("");
+  const [viewMode, setViewMode] = useState("rate");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hoveredRating, setHoveredRating] = useState({});
   const [submitMessage, setSubmitMessage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [receivedRatings, setReceivedRatings] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
-  const itemsPerPage = 6;
-  //   const {
-  //     submitRating,
-  //     loadingForSubmitRating,
-  //     getEmployeesForRating,
-  //     getPerformanceRatings,
-  //   } = usePerformanceRating();
+  const [ratingForm, setRatingForm] = useState({
+    review_score: 0,
+    comments: "",
+  });
+  const [hoveredRating, setHoveredRating] = useState(0);
 
-  // Fetch employees
-  const mockData = [
-    {
-      employee_id: 1,
-      first_name: "John",
-      last_name: "Doe",
-      position: "Veterinarian",
-      department: "Clinical",
-      hire_date: "2023-01-15",
-    },
-    {
-      employee_id: 2,
-      first_name: "Jane",
-      last_name: "Smith",
-      position: "Receptionist",
-      department: "Front Desk",
-      hire_date: "2023-06-20",
-    },
-    {
-      employee_id: 3,
-      first_name: "Michael",
-      last_name: "Johnson",
-      position: "Nurse",
-      department: "Clinical",
-      hire_date: "2023-03-10",
-    },
-    {
-      employee_id: 4,
-      first_name: "Sarah",
-      last_name: "Williams",
-      position: "Lab Technician",
-      department: "Laboratory",
-      hire_date: "2023-05-05",
-    },
-    {
-      employee_id: 5,
-      first_name: "David",
-      last_name: "Brown",
-      position: "Groomer",
-      department: "Grooming",
-      hire_date: "2023-02-28",
-    },
-    {
-      employee_id: 6,
-      first_name: "Emily",
-      last_name: "Davis",
-      position: "Assistant",
-      department: "Front Desk",
-      hire_date: "2023-04-12",
-    },
-    {
-      employee_id: 7,
-      first_name: "Robert",
-      last_name: "Miller",
-      position: "Veterinarian",
-      department: "Clinical",
-      hire_date: "2022-12-01",
-    },
-    {
-      employee_id: 8,
-      first_name: "Lisa",
-      last_name: "Wilson",
-      position: "Receptionist",
-      department: "Front Desk",
-      hire_date: "2023-07-15",
-    },
-  ];
+  const { getEmployees } = useGetEmployees();
+  const { postPerformanceReviews, loadingForPostPerformanceReviews } =
+    usePostPerformanceReviews();
+  const { getPerformanceReviews, loadingForGetPerformanceReviews } =
+    useGetPerformanceReviews(); // ADD THIS
 
-  // Mock ratings data
-  const mockRatingsData = {
-    1: [
-      {
-        rater_name: "Jane Smith",
-        teamwork: 5,
-        communication: 4,
-        productivity: 5,
-        reliability: 5,
-        attitude: 4,
-        created_at: "2025-11-10",
-      },
-      {
-        rater_name: "Michael Johnson",
-        teamwork: 4,
-        communication: 5,
-        productivity: 4,
-        reliability: 5,
-        attitude: 5,
-        created_at: "2025-11-12",
-      },
-      {
-        rater_name: "Sarah Williams",
-        teamwork: 5,
-        communication: 5,
-        productivity: 5,
-        reliability: 4,
-        attitude: 5,
-        created_at: "2025-11-14",
-      },
-    ],
-    2: [
-      {
-        rater_name: "John Doe",
-        teamwork: 4,
-        communication: 4,
-        productivity: 3,
-        reliability: 4,
-        attitude: 4,
-        created_at: "2025-11-08",
-      },
-      {
-        rater_name: "David Brown",
-        teamwork: 5,
-        communication: 5,
-        productivity: 4,
-        reliability: 5,
-        attitude: 5,
-        created_at: "2025-11-13",
-      },
-    ],
-    3: [
-      {
-        rater_name: "John Doe",
-        teamwork: 5,
-        communication: 4,
-        productivity: 5,
-        reliability: 5,
-        attitude: 4,
-        created_at: "2025-11-11",
-      },
-    ],
-  };
+  // Get current user ID from localStorage
   useEffect(() => {
-    const fetchEmployees = async () => {
-      //   const response = await getEmployeesForRating();
-      //   if (!response.success) {
-      //     console.log(response.message);
-      //   }
-      //   setEmployees(response.data);
-      setEmployees(mockData);
-    };
-    fetchEmployees();
+    const user = JSON.parse(localStorage.getItem("user"));
+    console.log(user);
+    if (user && user.employee_id) {
+      setCurrentUserId(user.employee_id);
+    }
   }, []);
 
-  // Filter employees
+  // Fetch all employees
+  useEffect(() => {
+    const useGetEmployeesFunc = async () => {
+      const response = await getEmployees();
+
+      if (!response.success) {
+        alert(response.message);
+        return;
+      }
+
+      const formattedEmployees = response.data.map((data) => ({
+        employee_id: data.employee_id,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        position: data.Position,
+        department: data.department,
+        hire_date: data.hire_date,
+      }));
+      setEmployees(formattedEmployees);
+    };
+    useGetEmployeesFunc();
+  }, []);
+
+  // Fetch all performance reviews
+  useEffect(() => {
+    const fetchPerformanceReviews = async () => {
+      try {
+        const response = await getPerformanceReviews();
+
+        if (!response.success) {
+          console.error(
+            "Failed to fetch performance reviews:",
+            response.message
+          );
+          return;
+        }
+
+        // Format the reviews data
+        const formattedReviews = response.data.map((review) => ({
+          review_id: review.review_id,
+          employee_id: review.employee_id,
+          reviewer_id: review.reviewer_id,
+          review_date: review.review_date,
+          review_score: review.review_score,
+          comments: review.comments,
+        }));
+
+        setPerformanceReviews(formattedReviews);
+      } catch (error) {
+        console.error("Error fetching performance reviews:", error);
+      }
+    };
+
+    fetchPerformanceReviews();
+  }, []);
+
+  const itemsPerPage = 6;
+
+  const scoreToStars = (score) => {
+    if (score === 0) return 0;
+    return Math.round(score / 20);
+  };
+
+  const starsToScore = (stars) => {
+    return stars * 20;
+  };
+
   const filteredEmployees = useMemo(() => {
     return employees.filter((employee) => {
+      // Filter out current user's own card
+      if (currentUserId && employee.employee_id === currentUserId) {
+        return false;
+      }
+
       const query = searchQuery.toLowerCase();
       return (
         employee.employee_id?.toString().toLowerCase().includes(query) ||
@@ -193,124 +129,154 @@ export default function EmployeePerformanceRating() {
         employee.department?.toLowerCase().includes(query)
       );
     });
-  }, [employees, searchQuery]);
+  }, [employees, searchQuery, currentUserId]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
 
-  const ratingCategories = [
-    {
-      key: "teamwork",
-      label: "Teamwork",
-      description: "Ability to work effectively with others",
-    },
-    {
-      key: "communication",
-      label: "Communication",
-      description: "Clear and effective communication skills",
-    },
-    {
-      key: "productivity",
-      label: "Productivity",
-      description: "Output and task completion",
-    },
-    {
-      key: "reliability",
-      label: "Reliability",
-      description: "Dependability and consistency",
-    },
-    {
-      key: "attitude",
-      label: "Attitude",
-      description: "Professionalism and positive demeanor",
-    },
-  ];
+  const getEmployeeReceivedRatings = (employeeId) => {
+    return performanceReviews.filter((r) => r.employee_id === employeeId);
+  };
+
+  const getAverageRating = (employeeId) => {
+    const reviews = getEmployeeReceivedRatings(employeeId);
+    if (reviews.length === 0) return 0;
+    const avg =
+      reviews.reduce((sum, r) => sum + r.review_score, 0) / reviews.length;
+    return Math.round(avg);
+  };
+
+  const getReviewerName = (reviewerId) => {
+    const reviewer = employees.find((e) => e.employee_id === reviewerId);
+    return reviewer
+      ? `${reviewer.first_name} ${reviewer.last_name}`
+      : "Unknown";
+  };
+
+  // Check if current user has already rated an employee
+  const hasUserRatedEmployee = (employeeId) => {
+    if (!currentUserId) return false;
+
+    const hasRated = performanceReviews.some(
+      (review) =>
+        review.employee_id === employeeId &&
+        review.reviewer_id === currentUserId
+    );
+
+    console.log(
+      `User ${currentUserId} rated employee ${employeeId}:`,
+      hasRated
+    );
+    return hasRated;
+  };
+
+  const handleNavigation = (navName) => {
+    console.log("Navigate to:", navName);
+  };
 
   const handleSelectEmployee = (employee) => {
     setSelectedEmployee(employee);
     setViewMode("rate");
     setIsModalOpen(true);
-    setRatings({
-      teamwork: 0,
-      communication: 0,
-      productivity: 0,
-      reliability: 0,
-      attitude: 0,
+    setRatingForm({
+      review_score: 0,
+      comments: "",
     });
-    setComments("");
+    setHoveredRating(0);
     setSubmitMessage(null);
   };
 
-  const handleViewRatings = async (employee) => {
+  const handleViewRatings = (employee) => {
     setSelectedEmployee(employee);
     setViewMode("view");
     setIsModalOpen(true);
-    // Use mock ratings data
-    const ratings = mockRatingsData[employee.employee_id] || [];
-    setReceivedRatings(ratings);
+
+    // Only show the current user's own rating, not all ratings
+    const userRating = performanceReviews.filter(
+      (r) =>
+        r.employee_id === employee.employee_id &&
+        r.reviewer_id === currentUserId
+    );
+    setReceivedRatings(userRating);
   };
 
-  const handleRatingChange = (category, value) => {
-    setRatings((prev) => ({
+  const handleStarClick = (starNumber) => {
+    const score = starsToScore(starNumber);
+    setRatingForm((prev) => ({
       ...prev,
-      [category]: value,
+      review_score: score,
+    }));
+  };
+
+  const handleSliderChange = (value) => {
+    setRatingForm((prev) => ({
+      ...prev,
+      review_score: value,
     }));
   };
 
   const handleSubmitRating = async () => {
     if (!selectedEmployee) return;
 
-    // Validate all ratings are selected
-    if (Object.values(ratings).some((r) => r === 0)) {
+    if (ratingForm.review_score === 0) {
       setSubmitMessage({
         type: "error",
-        text: "Please rate all categories",
+        text: "Please rate the employee",
       });
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulate API call with mock data
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-
-      // Mock success response
-      const mockNewRating = {
-        rater_name: "Current User",
-        ...ratings,
-        created_at: new Date().toISOString().split("T")[0],
+      const newReview = {
+        employee_id: selectedEmployee.employee_id,
+        reviewer_id: currentUserId,
+        review_date: new Date().toISOString().split("T")[0],
+        review_score: ratingForm.review_score,
+        comments: ratingForm.comments,
       };
 
-      // Add to mock ratings data
-      if (!mockRatingsData[selectedEmployee.employee_id]) {
-        mockRatingsData[selectedEmployee.employee_id] = [];
+      const response = await postPerformanceReviews(newReview);
+
+      if (!response.success) {
+        setSubmitMessage({
+          type: "error",
+          text: response.message || "Failed to submit rating",
+        });
+        setIsSubmitting(false);
+        return;
       }
-      mockRatingsData[selectedEmployee.employee_id].push(mockNewRating);
+
+      console.log("Rating submitted successfully:", response);
+
+      // Add the new review to local state with the returned review_id
+      const reviewWithId = {
+        ...newReview,
+        review_id: response.data?.review_id || performanceReviews.length + 1,
+      };
+
+      setPerformanceReviews([...performanceReviews, reviewWithId]);
 
       setSubmitMessage({
         type: "success",
         text: "Rating submitted successfully!",
       });
 
-      // Reset form
       setTimeout(() => {
         setIsModalOpen(false);
         setSelectedEmployee(null);
-        setRatings({
-          teamwork: 0,
-          communication: 0,
-          productivity: 0,
-          reliability: 0,
-          attitude: 0,
+        setRatingForm({
+          review_score: 0,
+          comments: "",
         });
-        setComments("");
+        setHoveredRating(0);
         setSubmitMessage(null);
       }, 1500);
     } catch (error) {
+      console.error("Error submitting rating:", error);
       setSubmitMessage({
         type: "error",
         text: "Failed to submit rating",
@@ -323,22 +289,18 @@ export default function EmployeePerformanceRating() {
     setIsModalOpen(false);
     setSelectedEmployee(null);
     setViewMode("rate");
-    setRatings({
-      teamwork: 0,
-      communication: 0,
-      productivity: 0,
-      reliability: 0,
-      attitude: 0,
+    setRatingForm({
+      review_score: 0,
+      comments: "",
     });
-    setComments("");
+    setHoveredRating(0);
     setSubmitMessage(null);
     setReceivedRatings([]);
   };
 
-  const renderStarRating = (category, readonly = false) => {
-    const currentRating = ratings[category];
-    const hovered = hoveredRating[category] || 0;
-    const displayRating = hovered || currentRating;
+  const renderStarRating = (score, onlyView = false) => {
+    const currentStars = scoreToStars(score);
+    const displayStars = hoveredRating > 0 ? hoveredRating : currentStars;
 
     return (
       <div className="flex gap-2 items-center">
@@ -346,51 +308,59 @@ export default function EmployeePerformanceRating() {
           <button
             key={star}
             onMouseEnter={() => {
-              if (!readonly)
-                setHoveredRating((prev) => ({ ...prev, [category]: star }));
+              if (!onlyView) setHoveredRating(star);
             }}
             onMouseLeave={() => {
-              if (!readonly)
-                setHoveredRating((prev) => ({ ...prev, [category]: 0 }));
+              if (!onlyView) setHoveredRating(0);
             }}
             onClick={() => {
-              if (!readonly) handleRatingChange(category, star);
+              if (!onlyView) handleStarClick(star);
             }}
-            disabled={readonly}
+            disabled={onlyView}
             className={`transition-transform ${
-              !readonly && "hover:scale-110"
-            } ${readonly && "cursor-default"}`}
+              !onlyView && "hover:scale-110"
+            } ${onlyView && "cursor-default"}`}
           >
             <Star
-              className={`w-6 h-6 ${
-                star <= displayRating
+              className={`w-8 h-8 ${
+                star <= displayStars
                   ? "fill-yellow-400 text-yellow-400"
                   : "text-gray-300"
               }`}
             />
           </button>
         ))}
-        <span className="ml-2 text-sm font-semibold text-gray-700 min-w-8">
-          {currentRating > 0 ? `${currentRating}/5` : "-"}
+        <span className="ml-2 text-lg font-bold text-gray-700 min-w-16">
+          {score > 0 ? `${score}%` : "0%"}
         </span>
       </div>
     );
   };
 
-  const calculateAverageRating = (categoryKey) => {
-    if (receivedRatings.length === 0) return 0;
-    const sum = receivedRatings.reduce((acc, rating) => {
-      return acc + (rating[categoryKey] || 0);
-    }, 0);
-    return (sum / receivedRatings.length).toFixed(1);
+  const renderReadOnlyStars = (score) => {
+    const stars = scoreToStars(score);
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`w-5 h-5 ${
+              star <= stars
+                ? "fill-yellow-400 text-yellow-400"
+                : "text-gray-300"
+            }`}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
     <>
-      <EmployeeNavbar />
+      <EmployeeNavbar employee={employee} onNavigate={handleNavigation} />
+
       <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
               RATE YOUR COLLEAGUES
@@ -400,7 +370,6 @@ export default function EmployeePerformanceRating() {
             </p>
           </div>
 
-          {/* Search */}
           <div className="mb-6 flex gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -417,43 +386,61 @@ export default function EmployeePerformanceRating() {
             </div>
           </div>
 
-          {/* Employee Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {paginatedEmployees.length > 0 ? (
-              paginatedEmployees.map((employee) => (
-                <div
-                  key={employee.employee_id}
-                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 border border-gray-200"
-                >
-                  <div className="mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">
-                      {employee.first_name} {employee.last_name}
-                    </h3>
-                    <p className="text-sm text-gray-600">{employee.position}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      ID: {employee.employee_id}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {employee.department}
-                    </p>
+              paginatedEmployees.map((employee) => {
+                const avgRating = getAverageRating(employee.employee_id);
+                const reviewCount = getEmployeeReceivedRatings(
+                  employee.employee_id
+                ).length;
+
+                return (
+                  <div
+                    key={employee.employee_id}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 border border-gray-200"
+                  >
+                    <div className="mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {employee.first_name} {employee.last_name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {employee.position}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        ID: {employee.employee_id}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {employee.department}
+                      </p>
+                    </div>
+
+                    {/* Removed average rating display to keep reviews private */}
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSelectEmployee(employee)}
+                        disabled={hasUserRatedEmployee(employee.employee_id)}
+                        className={`flex-1 px-3 py-2 font-semibold rounded-lg transition-colors text-sm ${
+                          hasUserRatedEmployee(employee.employee_id)
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-blue-500 text-white hover:bg-blue-600"
+                        }`}
+                      >
+                        {hasUserRatedEmployee(employee.employee_id)
+                          ? "Already Rated"
+                          : "Rate"}
+                      </button>
+                      <button
+                        onClick={() => handleViewRatings(employee)}
+                        className="px-3 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors text-sm flex items-center gap-1"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleSelectEmployee(employee)}
-                      className="flex-1 px-3 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                    >
-                      Rate
-                    </button>
-                    <button
-                      onClick={() => handleViewRatings(employee)}
-                      className="px-3 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors text-sm flex items-center gap-1"
-                    >
-                      <Eye className="w-4 h-4" />
-                      View
-                    </button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
                 No employees found
@@ -461,7 +448,6 @@ export default function EmployeePerformanceRating() {
             )}
           </div>
 
-          {/* Pagination */}
           {filteredEmployees.length > itemsPerPage && (
             <div className="flex items-center justify-center gap-4 mb-8">
               <button
@@ -501,29 +487,19 @@ export default function EmployeePerformanceRating() {
           )}
         </div>
 
-        {/* Rating Modal */}
         {isModalOpen && selectedEmployee && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              {/* Modal Header */}
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-6 text-white sticky top-0">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-black">
-                      {viewMode === "rate"
-                        ? "Rate Employee"
-                        : "Ratings Received"}
-                    </h2>
-                    <p className="text-blue-100 text-sm mt-1">
-                      {selectedEmployee.first_name} {selectedEmployee.last_name}
-                    </p>
-                  </div>
-                </div>
+                <h2 className="text-2xl font-black">
+                  {viewMode === "rate" ? "Rate Employee" : "Your Rating"}
+                </h2>
+                <p className="text-blue-100 text-sm mt-1">
+                  {selectedEmployee.first_name} {selectedEmployee.last_name}
+                </p>
               </div>
 
-              {/* Modal Body */}
               <div className="p-6 space-y-6">
-                {/* Employee Info Card */}
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -557,39 +533,53 @@ export default function EmployeePerformanceRating() {
 
                 {viewMode === "rate" ? (
                   <>
-                    {/* Rating Categories */}
                     <div className="space-y-6">
-                      <h3 className="text-lg font-bold text-gray-900">
-                        Rating Criteria
-                      </h3>
-                      {ratingCategories.map((category) => (
-                        <div
-                          key={category.key}
-                          className="border-l-4 border-blue-500 pl-4"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                {category.label}
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                {category.description}
-                              </p>
-                            </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">
+                          Overall Rating
+                        </h3>
+                        <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                          <p className="text-sm text-gray-600 mb-4">
+                            Click stars or move slider (20, 40, 60, 80, 100%)
+                          </p>
+                          <div className="mb-6">
+                            {renderStarRating(ratingForm.review_score)}
                           </div>
-                          {renderStarRating(category.key)}
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="1"
+                            value={ratingForm.review_score}
+                            onChange={(e) =>
+                              handleSliderChange(parseInt(e.target.value))
+                            }
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                          />
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>0%</span>
+                            <span>20%</span>
+                            <span>40%</span>
+                            <span>60%</span>
+                            <span>80%</span>
+                            <span>100%</span>
+                          </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
 
-                    {/* Comments Section */}
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-2">
-                        Comments (Optional)
+                        Comments
                       </label>
                       <textarea
-                        value={comments}
-                        onChange={(e) => setComments(e.target.value)}
+                        value={ratingForm.comments}
+                        onChange={(e) =>
+                          setRatingForm({
+                            ...ratingForm,
+                            comments: e.target.value,
+                          })
+                        }
                         placeholder="Provide additional feedback or observations..."
                         rows={4}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
@@ -598,84 +588,65 @@ export default function EmployeePerformanceRating() {
                   </>
                 ) : (
                   <>
-                    {/* View Ratings */}
                     {receivedRatings.length > 0 ? (
                       <div className="space-y-6">
                         <h3 className="text-lg font-bold text-gray-900">
-                          Performance Ratings
+                          Your Rating
                         </h3>
-                        {ratingCategories.map((category) => (
-                          <div
-                            key={category.key}
-                            className="border-l-4 border-blue-500 pl-4"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <div>
-                                <p className="font-semibold text-gray-900">
-                                  {category.label}
-                                </p>
-                                <p className="text-xs text-gray-600">
-                                  {category.description}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2 items-center">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-6 h-6 ${
-                                    star <=
-                                    Math.round(
-                                      calculateAverageRating(category.key)
-                                    )
-                                      ? "fill-yellow-400 text-yellow-400"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                              <span className="ml-2 text-sm font-semibold text-gray-700">
-                                {calculateAverageRating(category.key)}/5 (
-                                {receivedRatings.length} ratings)
-                              </span>
-                            </div>
-                          </div>
-                        ))}
 
-                        {/* Raters Info */}
-                        <div className="mt-6 pt-6 border-t border-gray-200">
-                          <h4 className="font-semibold text-gray-900 mb-3">
-                            Ratings from:
-                          </h4>
-                          <div className="space-y-2">
-                            {receivedRatings.map((rating, idx) => (
-                              <div
-                                key={idx}
-                                className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                              >
-                                <span className="text-sm text-gray-700">
-                                  {rating.rater_name || `Colleague ${idx + 1}`}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {rating.created_at
-                                    ? new Date(
-                                        rating.created_at
-                                      ).toLocaleDateString()
-                                    : "N/A"}
-                                </span>
+                        <div className="space-y-3">
+                          {receivedRatings.map((rating, idx) => (
+                            <div
+                              key={idx}
+                              className="p-4 bg-blue-50 rounded-lg border border-blue-200"
+                            >
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <p className="font-semibold text-gray-900">
+                                    Your rating for{" "}
+                                    {selectedEmployee.first_name}{" "}
+                                    {selectedEmployee.last_name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {new Date(
+                                      rating.review_date
+                                    ).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {renderReadOnlyStars(rating.review_score)}
+                                  <span className="font-bold text-gray-900">
+                                    {rating.review_score}%
+                                  </span>
+                                </div>
                               </div>
-                            ))}
-                          </div>
+                              {rating.comments && (
+                                <div className="mt-3 pt-3 border-t border-blue-200">
+                                  <p className="text-xs font-semibold text-gray-600 mb-1">
+                                    Your Comments:
+                                  </p>
+                                  <p className="text-sm text-gray-700">
+                                    {rating.comments}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ) : (
                       <div className="text-center py-8 text-gray-500">
-                        No ratings received yet
+                        <p className="mb-2">
+                          You haven't rated this employee yet
+                        </p>
+                        <p className="text-sm">
+                          Click "Rate" to submit your feedback
+                        </p>
                       </div>
                     )}
                   </>
                 )}
 
-                {/* Message Display */}
                 {submitMessage && (
                   <div
                     className={`p-4 rounded-lg flex items-start gap-3 ${
@@ -704,7 +675,6 @@ export default function EmployeePerformanceRating() {
                 )}
               </div>
 
-              {/* Modal Footer */}
               <div className="flex gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 sticky bottom-0">
                 <button
                   onClick={handleCloseModal}

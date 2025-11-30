@@ -9,6 +9,7 @@ import {
   LogOut,
   Megaphone,
   IdCardLanyard,
+  Star,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Link, useLocation } from "react-router-dom";
@@ -27,6 +28,8 @@ export default function Sidebar() {
       "/admin-incentives": "Incentives",
       "/admin-analytics": "Analytics",
       "/admin-announcements": "Announcements",
+      "/admin-performance-rating": "Performance Rating", // ⬅️ Add this
+      "/employee-analytics": "Employee Portal",
     };
 
     const currentItem = pathToItemMap[location.pathname];
@@ -67,6 +70,12 @@ export default function Sidebar() {
       label: "Announcements",
       icon: Megaphone,
       link: "/admin-announcements",
+    },
+    {
+      id: "Performance Rating",
+      label: "Performance Rating",
+      icon: Star,
+      link: "/admin-performance-rating",
     },
     {
       id: "Employee Portal",

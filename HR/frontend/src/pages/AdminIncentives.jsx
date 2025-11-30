@@ -3,6 +3,7 @@ import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetIncentive from "../api/useGetIncentive";
 import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
 import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import useGetIncentiveAwards from "../api/useGetIncentiveAwards";
 
 export default function AdminIncentives() {
   const [activeTab, setActiveTab] = useState("request");
@@ -11,8 +12,24 @@ export default function AdminIncentives() {
     useGetIncentive();
   const { getOverAllAttendancePerMonth } = useGetAttendanceRecord();
 
+  const {
+    getIncentiveAwardsForTheMonth,
+    loadingForGetIncentiveAwardsForTheMonth,
+  } = useGetIncentiveAwards();
   const [claimRequests, setClaimRequests] = useState([]);
+  useEffect(() => {
+    const useGetClaimRequestsFunc = async () => {
+      const response = await getIncentiveAwardsForTheMonth();
+      if (!response.success) {
+        alert(response.message);
+        return;
+      }
 
+      console.log(response);
+      setClaimRequests(response.data);
+    };
+    useGetClaimRequestsFunc();
+  }, []);
   const [claimHistory, setClaimHistory] = useState([]);
   const [overAllAttendance, setOverAllAttendance] = useState(null);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
@@ -42,28 +59,28 @@ export default function AdminIncentives() {
     useGetClaimedIncentivesFunc(1);
   }, []);
 
-  useEffect(() => {
-    const useGetUnClaimedIncentivesFunc = async (isClaim) => {
-      const response = await getIncentives(isClaim);
-      console.log(response.data);
-      if (!response.success) {
-        alert(response.message);
-        return;
-      }
+  // useEffect(() => {
+  //   const useGetUnClaimedIncentivesFunc = async (isClaim) => {
+  //     const response = await getIncentives(isClaim);
+  //     console.log(response.data);
+  //     if (!response.success) {
+  //       alert(response.message);
+  //       return;
+  //     }
 
-      const formattedData = response.data.map((value) => ({
-        name: value.name,
-        reward: value.incentive_name,
-        dateAwarded: value.award_date,
-        awardBonus: value.bonus,
-        status: value.status,
-      }));
+  //     const formattedData = response.data.map((value) => ({
+  //       name: value.name,
+  //       reward: value.incentive_name,
+  //       dateAwarded: value.award_date,
+  //       awardBonus: value.bonus,
+  //       status: value.status,
+  //     }));
 
-      setClaimRequests(formattedData);
-      setPendingRequestCount(formattedData.length);
-    };
-    useGetUnClaimedIncentivesFunc(0);
-  }, []);
+  //     setClaimRequests(formattedData);
+  //     setPendingRequestCount(formattedData.length);
+  //   };
+  //   useGetUnClaimedIncentivesFunc(0);
+  // }, []);
 
   useEffect(() => {
     const useGetOverAllAttendancePerMonth = async () => {
@@ -153,14 +170,60 @@ export default function AdminIncentives() {
     setActiveMenu(activeMenu === index ? null : index);
   };
 
-  const handleStatusChange = (status, index) => {
+  useEffect(() => {
+    const useGetClaimRequestsFunc = async () => {
+      const response = await getIncentiveAwardsForTheMonth();
+      if (!response.success) {
+        alert(response.message);
+        return;
+      }
+
+      console.log("Full API Response:", response);
+      console.log("First item in response.data:", response.data[0]);
+
+      // Log all keys from the first item to see what fields are available
+      if (response.data && response.data.length > 0) {
+        console.log("Available fields:", Object.keys(response.data[0]));
+      }
+
+      // Keep all original fields from the API response
+      const formattedRequests = response.data.map((claim) => {
+        console.log("Individual claim object:", claim);
+        return {
+          ...claim, // Spread all original fields
+          // Map common field name variations
+          performance_review_id:
+            claim.performance_review_id ||
+            claim.performanceReviewId ||
+            claim.review_id ||
+            claim.reviewId ||
+            claim.incentive_award_id ||
+            claim.id,
+        };
+      });
+
+      console.log("Formatted requests:", formattedRequests);
+      setClaimRequests(formattedRequests);
+      setPendingRequestCount(formattedRequests.length);
+    };
+    useGetClaimRequestsFunc();
+  }, []);
+
+  // Update the handleStatusChange function
+  const handleStatusChange = (status, index, performanceReviewId) => {
     const updatedRequests = [...claimRequests];
     updatedRequests[index].status = status;
     setClaimRequests(updatedRequests);
     setActiveMenu(null);
+
     console.log(
       `Status changed to: ${status} for ${updatedRequests[index].name}`
     );
+    console.log(`Performance Review ID: ${performanceReviewId}`);
+
+    // Here you can make an API call to update the status in the backend
+    // Example:
+    // updateIncentiveStatus(performanceReviewId, status);
   };
 
   //status badge color
@@ -660,76 +723,66 @@ export default function AdminIncentives() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-blue-100">
-                    {currentClaimRequests.length > 0 ? (
-                      currentClaimRequests.map((claim, index) => (
-                        <tr
-                          key={index}
-                          className="hover:bg-white/50 transition-colors"
-                        >
-                          <td className="px-2 sm:px-4 py-3 text-gray-900">
-                            {claim.name}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3 text-gray-900">
-                            {claim.reward}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3 text-gray-900">
-                            {claim.dateAwarded}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3 text-gray-900">
-                            {claim.awardBonus}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3">
-                            {claim.status && (
-                              <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                                  claim.status
-                                )}`}
-                              >
-                                {claim.status}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3">
-                            <div className="relative">
-                              <button
-                                onClick={() => toggleMenu(startIndex + index)}
-                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                              >
-                                <MoreVertical className="w-5 h-5 text-gray-600" />
-                              </button>
+                    {currentClaimRequests.map((claim, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-white/50 transition-colors"
+                      >
+                        <td className="px-2 sm:px-4 py-3 text-gray-900">
+                          {claim.name}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3 text-gray-900">
+                          {claim.reward}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3 text-gray-900">
+                          {claim.dateAwarded}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3 text-gray-900">
+                          {claim.awardBonus}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3">
+                          {claim.status && (
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                                claim.status
+                              )}`}
+                            >
+                              {claim.status}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3">
+                          <div className="relative">
+                            <button
+                              onClick={() => toggleMenu(startIndex + index)}
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                              <MoreVertical className="w-5 h-5 text-gray-600" />
+                            </button>
 
-                              {activeMenu === startIndex + index && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                                  {menuOptions.map((option, optIndex) => (
-                                    <button
-                                      key={optIndex}
-                                      onClick={() =>
-                                        handleStatusChange(
-                                          option,
-                                          startIndex + index
-                                        )
-                                      }
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                                    >
-                                      {option}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="6"
-                          className="px-4 py-8 text-center text-gray-500"
-                        >
-                          No claim requests found.
+                            {activeMenu === startIndex + index && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                                {menuOptions.map((option, optIndex) => (
+                                  <button
+                                    key={optIndex}
+                                    onClick={() =>
+                                      handleStatusChange(
+                                        option,
+                                        startIndex + index,
+                                        claim.performance_review_id // Pass the correct ID here
+                                      )
+                                    }
+                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                  >
+                                    {option}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </td>
                       </tr>
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>

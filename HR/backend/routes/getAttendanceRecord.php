@@ -17,10 +17,15 @@ if($REQUEST_METHOD === "GET"){
     $month = isset($_GET["month"]) ? $_GET["month"] : null;
     $attendanceSummary = isset($_GET["attendanceSummary"]) ? $_GET["attendanceSummary"] : null;
     $overAllAttendance = isset($_GET["overAllAttendance"]) ? $_GET["overAllAttendance"] : null;
+    $forThisMonth = isset($_GET["forThisMonth"]) ? $_GET["forThisMonth"] : null;
     $all = isset($_GET["all"]) ? $_GET["all"] : null; // what a variable name xD
 
     if($idParams && $date) {
         $response = getAttendanceRecord($idParams, $date, $pdo);
+    } else if ($forThisMonth === "true"){
+        $response = getAttendanceRecordForTheMonthOnly($pdo);
+    
+    
     }
     else if ($idParams && $month){
         $response = getAttendanceRecordForTheMonth($idParams, $month, $pdo);
