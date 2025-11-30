@@ -28,8 +28,10 @@ export default function EmployeeIncentives({ employee }) {
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, "0");
 
+      const user = JSON.parse(localStorage.getItem("user"));
+
       const data = {
-        id: 2,
+        id: user.employee_id,
         date: `${year}-${month}-01`,
         year: year,
         month: parseInt(month),
@@ -39,7 +41,7 @@ export default function EmployeeIncentives({ employee }) {
       console.log(response);
       setEmployeeInformation(() => {
         return {
-          name: response.data.name,
+          name: response.data.name || user.firstName + " " + user.lastName,
         };
       });
       setAttendancePercentage(response.data);
@@ -50,7 +52,9 @@ export default function EmployeeIncentives({ employee }) {
 
   useEffect(() => {
     const useGetIncentivesFunc = async () => {
-      const response = await getIncentive(2);
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      const response = await getIncentive(user.employee_id);
       console.log(response);
       if (!response.success) {
         alert(response.message);
@@ -223,7 +227,7 @@ export default function EmployeeIncentives({ employee }) {
               {/* Header Section */}
               <div className="bg-white rounded-xl p-6 mb-6 shadow-md">
                 <h2 className="text-xl font-black text-gray-900 mb-2">
-                  Hi! Doc. {employeeInformation?.name || "Sphene"}
+                  Hi! {employeeInformation?.name || "Sphene"}
                 </h2>
                 <p className="text-sm text-gray-600 mb-4">
                   here are your rewards
@@ -234,7 +238,7 @@ export default function EmployeeIncentives({ employee }) {
                   <p className="text-sm text-gray-700">
                     You're{" "}
                     <span className="font-bold">
-                      {attendancePercentage.days_attended_percentage}%
+                      {attendancePercentage.days_attended_percentage || 0}%
                     </span>{" "}
                     {+attendancePercentage.days_attended_percentage >= 100
                       ? "perfect attendance this month"

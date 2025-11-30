@@ -45,14 +45,14 @@ export default function Login() {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     console.log(storedUser);
 
-    if (storedUser.role === "HR") {
+    if (storedUser.department === "HR") {
       navigate("/dashboard");
-    } else if (storedUser.role === "Finance") {
+    } else if (storedUser.department === "Finance") {
       window.location.href = "http://localhost:3000/finance-dashboard";
-    } else if (storedUser.role === "Appointment") {
+    } else if (storedUser.department === "Appointment") {
       window.location.href =
         "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/admin_page/overview.php";
-    } else if (storedUser.role === "Patient") {
+    } else if (storedUser.department === "Patient") {
       window.location.href =
         "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php";
     }

@@ -26,6 +26,7 @@ export default function Employees() {
     password: "",
     confirmPassword: "",
     rateSalary: "500",
+    department: "",
     photo: null,
   });
   const [photoPreview, setPhotoPreview] = useState("");
@@ -47,6 +48,7 @@ export default function Employees() {
         position: record.Position,
         email: record.contact_email,
         photo: record.profile_image_url,
+        department: record.department,
       }));
       console.log(formattedData);
       setEmployees(formattedData);
@@ -114,6 +116,7 @@ export default function Employees() {
       errors.phoneNumber = "Phone must be in format 09123456789";
     if (!formData.address.trim()) errors.address = "Address is required";
     if (!formData.jobTitle) errors.jobTitle = "Job title is required";
+    if (!formData.department) errors.department = "Department is required";
     if (!formData.password.trim()) errors.password = "Password is required";
     else if (formData.password.length < 6)
       errors.password = "Password must be at least 6 characters";
@@ -142,6 +145,7 @@ export default function Employees() {
       password: "",
       confirmPassword: "",
       rateSalary: "500",
+      department: "",
       photo: null, // Reset file
     });
     setPhotoPreview(""); // Reset preview
@@ -233,6 +237,9 @@ export default function Employees() {
                       Position
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-black text-gray-900 uppercase tracking-wider">
+                      Department
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-black text-gray-900 uppercase tracking-wider">
                       Email
                     </th>
                   </tr>
@@ -253,6 +260,9 @@ export default function Employees() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {employee.position}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {employee.department}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {employee.email}
@@ -673,19 +683,51 @@ export default function Employees() {
                       }`}
                     >
                       <option value="">Select Job Title</option>
-                      <option value="Veterinarian">Veterinarian</option>
+                      <option value="Senior Veterinarian">
+                        Senior Veterinarian
+                      </option>
                       <option value="Groomer">Groomer</option>
+                      <option value="HR Officer">HR Officer</option>
+                      <option value="HR Assistant">HR Assistant</option>
+                      <option value="Finance Manager">Finance Manager</option>
+                      <option value="Accounting Clerk">Accounting Clerk</option>
                       <option value="Receptionist">Receptionist</option>
-                      <option value="Assistant">Assistant</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Appointment">Appointment</option>
-                      <option value="Inventory">Inventory</option>
-                      <option value="Finance">Finance</option>
-                      <option value="HR">HR</option>
+                      <option value="Inventory Clerk">Inventory Clerk</option>
+                      <option value="Inventory Assistant">
+                        Inventory Assistant
+                      </option>
                     </select>
                     {validationErrors.jobTitle && (
                       <p className="text-red-500 text-xs mt-1">
                         {validationErrors.jobTitle}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-3">
+                      Department <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={formData.department}
+                      onChange={(e) =>
+                        setFormData({ ...formData, department: e.target.value })
+                      }
+                      className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm appearance-none cursor-pointer ${
+                        validationErrors.department
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                          : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                      }`}
+                    >
+                      <option value="">Select Department</option>
+                      <option value="Employee">Employee</option>
+                      <option value="HR">HR</option>
+                      <option value="Inventory">Inventory</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Appointment">Appointment</option>
+                    </select>
+                    {validationErrors.department && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {validationErrors.department}
                       </p>
                     )}
                   </div>

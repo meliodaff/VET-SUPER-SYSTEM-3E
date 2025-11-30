@@ -1,11 +1,23 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../utils/checkIfEmailExists.php';
+require_once __DIR__ . '/../utils/checkIfStatusActive.php';
 
 
 function insertPatientAccount($pdo, $postData) {
     // Absolute paths for saving
+    
+         $isUserStatusActive = checkIfStatusActive($postData["email"], $pdo);
+    
+            if(!$isUserStatusActive["isStatusActive"]){
+                return $response = [
+                    "success" => false,
+                    "message" => "Your email is already registered yet inactive. Kindly verify it through your email."
+                ];
+            }
+            
     $isDuplicateEmail = checkIfEmailExists($postData["email"], $pdo);
+
     if ($isDuplicateEmail["isExist"]) {
         http_response_code(409);
         return [
@@ -14,12 +26,13 @@ function insertPatientAccount($pdo, $postData) {
         ];
     }
 
+
     try {
         $stmt = $pdo->prepare("
             INSERT INTO users 
-                (first_name, middle_name, last_name, email, password, role) 
+                (first_name, middle_name, last_name, email, password, role, status) 
             VALUES 
-                (:firstName, :middleName, :lastName, :email, :password, 'Patient')
+                (:firstName, :middleName, :lastName, :email, :password, 'Patient', 'Inactive')
         ");
 
         $hashedPassword = password_hash($postData["password"], PASSWORD_BCRYPT);
