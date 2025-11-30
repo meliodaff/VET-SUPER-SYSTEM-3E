@@ -16,8 +16,7 @@ export default function AdminIncentives() {
   const [claimHistory, setClaimHistory] = useState([]);
   const [overAllAttendance, setOverAllAttendance] = useState(null);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
-  const [allIncentivesForTheMonth, setAllIncentivesForTheMonth] =
-    useState(false);
+  const [allIncentivesForTheMonth, setAllIncentivesForTheMonth] = useState([]);
 
   useEffect(() => {
     const useGetClaimedIncentivesFunc = async (isClaim) => {
@@ -319,6 +318,78 @@ export default function AdminIncentives() {
     return pages;
   };
 
+  // Add these state variables at the top of your component
+  const [currentPageIncentives, setCurrentPageIncentives] = useState(1);
+  const [itemsPerPageIncentives, setItemsPerPageIncentives] = useState(3);
+
+  // Add pagination calculations
+  const totalPagesIncentives = Math.ceil(
+    (Array.isArray(allIncentivesForTheMonth)
+      ? allIncentivesForTheMonth.length
+      : 0) / itemsPerPageIncentives
+  );
+  const startIndexIncentives =
+    (currentPageIncentives - 1) * itemsPerPageIncentives;
+  const endIndexIncentives = startIndexIncentives + itemsPerPageIncentives;
+  const currentIncentives = Array.isArray(allIncentivesForTheMonth)
+    ? allIncentivesForTheMonth.slice(startIndexIncentives, endIndexIncentives)
+    : [];
+
+  // Reset to page 1 when items per page changes
+  useEffect(() => {
+    setCurrentPageIncentives(1);
+  }, [itemsPerPageIncentives]);
+
+  // Pagination handlers
+  const goToPageIncentives = (page) => {
+    if (page >= 1 && page <= totalPagesIncentives) {
+      setCurrentPageIncentives(page);
+    }
+  };
+
+  const goToPreviousPageIncentives = () => {
+    if (currentPageIncentives > 1) {
+      setCurrentPageIncentives(currentPageIncentives - 1);
+    }
+  };
+
+  const goToNextPageIncentives = () => {
+    if (currentPageIncentives < totalPagesIncentives) {
+      setCurrentPageIncentives(currentPageIncentives + 1);
+    }
+  };
+
+  // Generate page numbers
+  const getPageNumbersIncentives = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    if (totalPagesIncentives <= maxPagesToShow) {
+      for (let i = 1; i <= totalPagesIncentives; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPageIncentives <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPagesIncentives);
+      } else if (currentPageIncentives >= totalPagesIncentives - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPagesIncentives - 3; i <= totalPagesIncentives; i++)
+          pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPageIncentives - 1);
+        pages.push(currentPageIncentives);
+        pages.push(currentPageIncentives + 1);
+        pages.push("...");
+        pages.push(totalPagesIncentives);
+      }
+    }
+    return pages;
+  };
+
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -350,31 +421,119 @@ export default function AdminIncentives() {
 
               {/* Employee of the Month */}
               {allIncentivesForTheMonth &&
-              allIncentivesForTheMonth.length > 1 ? (
-                allIncentivesForTheMonth.map((record, index) => (
-                  <div
-                    className="bg-white rounded-xl shadow-md p-6"
-                    key={index}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-xl overflow-hidden flex-shrink-0">
-                        <img
-                          src={`http://localhost/HR-Information-System/backend/${record.photo}`}
-                          alt="Employee of the Month"
-                          className="w-full h-full object-cover"
-                        />
+              allIncentivesForTheMonth.length > 0 ? (
+                <div>
+                  {/* Items per page selector */}
+                  <div className="mb-4 flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show:</span>
+                    <select
+                      value={itemsPerPageIncentives}
+                      onChange={(e) =>
+                        setItemsPerPageIncentives(Number(e.target.value))
+                      }
+                      className="border rounded-md p-1 text-sm"
+                    >
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                      <option value={3}>3</option>
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                    </select>
+                    <span className="text-sm text-gray-600">per page</span>
+                  </div>
+
+                  {/* Incentive cards */}
+                  <div className="space-y-4">
+                    {currentIncentives.map((record, index) => (
+                      <div
+                        className="bg-white rounded-xl shadow-md p-6"
+                        key={startIndexIncentives + index}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-xl overflow-hidden flex-shrink-0">
+                            <img
+                              src={`http://localhost/VET-SUPER-SYSTEM-3E/HR/backend/${record.photo}`}
+                              alt="Employee of the Month"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">
+                              {record.awardName} - {record.awardDate}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-gray-600">
+                              {record.notes}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">
-                          {record.awardName} - {record.awardDate}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          {record.notes}
-                        </p>
+                    ))}
+                  </div>
+
+                  {/* Pagination Controls */}
+                  <div className="flex flex-col gap-4 mt-6">
+                    {/* Results info */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">
+                        Showing {startIndexIncentives + 1} to{" "}
+                        {Math.min(
+                          endIndexIncentives,
+                          allIncentivesForTheMonth.length
+                        )}{" "}
+                        of {allIncentivesForTheMonth.length} results
+                      </span>
+                    </div>
+
+                    {/* Pagination buttons */}
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Previous button */}
+                      <button
+                        onClick={goToPreviousPageIncentives}
+                        disabled={currentPageIncentives === 1}
+                        className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+
+                      {/* Page numbers */}
+                      <div className="flex gap-1">
+                        {getPageNumbersIncentives().map((page, index) =>
+                          typeof page === "number" ? (
+                            <button
+                              key={index}
+                              onClick={() => goToPageIncentives(page)}
+                              className={`min-w-[40px] px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                                page === currentPageIncentives
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-white text-gray-700 hover:bg-gray-50 border"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ) : (
+                            <span
+                              key={index}
+                              className="px-2 py-2 text-gray-400 text-sm"
+                            >
+                              {page}
+                            </span>
+                          )
+                        )}
                       </div>
+
+                      {/* Next button */}
+                      <button
+                        onClick={goToNextPageIncentives}
+                        disabled={
+                          currentPageIncentives === totalPagesIncentives
+                        }
+                        className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
                     </div>
                   </div>
-                ))
+                </div>
               ) : (
                 <div className="bg-white rounded-xl shadow-md p-6">
                   <div className="flex items-center gap-4">
