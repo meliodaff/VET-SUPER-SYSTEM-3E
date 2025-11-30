@@ -8,8 +8,9 @@ import {
   BarChart3,
   LogOut,
   Megaphone,
+  IdCardLanyard,
 } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 import { Link, useLocation } from "react-router-dom";
 
 export default function Sidebar() {
@@ -33,7 +34,7 @@ export default function Sidebar() {
       setActiveItem(currentItem);
     }
   }, [location.pathname]);
-
+  const navigate = useNavigate();
   const menuItems = [
     { id: "Dashboard", label: "Dashboard", icon: Home, link: "/dashboard" },
     {
@@ -67,6 +68,12 @@ export default function Sidebar() {
       icon: Megaphone,
       link: "/admin-announcements",
     },
+    {
+      id: "Employee Portal",
+      label: "Employee Portal",
+      icon: IdCardLanyard,
+      link: "/employee-analytics",
+    },
   ];
 
   return (
@@ -83,12 +90,20 @@ export default function Sidebar() {
             className="w-12 h-12 rounded-full object-cover"
           />
 
-          <h1
-            className="text-xl font-bold text-gray-700 tracking-wide"
-            style={{ color: "#5080BE" }}
-          >
-            FUR EVER
-          </h1>
+          <div className="flex flex-col">
+            <h1
+              className="text-xl font-bold tracking-wide"
+              style={{ color: "#5080BE" }}
+            >
+              FUR EVER
+            </h1>
+            <p
+              className="text-sm font-semibold tracking-wide"
+              style={{ color: "#5080BE" }}
+            >
+              HR Department
+            </p>
+          </div>
         </Link>
       </div>
 
@@ -125,13 +140,22 @@ export default function Sidebar() {
 
       {/* Logout Button */}
       <div className="p-4 border-t border-gray-100">
-        <a
+        <button
           className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-800 rounded-lg transition-all duration-200"
-          href="/"
+          onClick={() => {
+            navigate("/");
+            localStorage.clear();
+            document.cookie.split(";").forEach((cookie) => {
+              document.cookie = cookie.replace(
+                /=.*/,
+                "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/"
+              );
+            });
+          }}
         >
           <LogOut size={20} className="text-gray-500" />
           <span className="font-medium">LOGOUT</span>
-        </a>
+        </button>
       </div>
     </div>
   );
