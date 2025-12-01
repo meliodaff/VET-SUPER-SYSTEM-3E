@@ -3,8 +3,9 @@ import {
   LayoutDashboard, 
   Package, 
   FolderTree, 
-  Truck, 
-  
+  Truck,
+  User
+
 } from 'lucide-react';
 import '../styles/sidebar.css';
 import logo from '../assets/VETERINARY_LOGO_SYSTEM 1.PNG';
@@ -15,6 +16,7 @@ export default function Sidebar({ onNavigate, currentPage }) {
     { name: 'Products', icon: Package, component: 'Products' },
     { name: 'Categories', icon: FolderTree, component: 'Categories' },
     { name: 'Suppliers', icon: Truck, component: 'Suppliers' },
+    { name: 'Employee Portal', icon: User, component: '' },
   ];
 
   const handleClick = (componentName) => {
