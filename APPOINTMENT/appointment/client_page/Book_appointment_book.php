@@ -141,6 +141,7 @@ $user = $user_result->fetch_assoc();
               ?>
             </select>
           </div>
+          <p style = " margin-left: 655px; margin-top: 4px; color:red; font-size: 13px;">*Some services do not include additional items (e.g., syringes)</p>
         </div>
 
         <!-- SUBMIT -->

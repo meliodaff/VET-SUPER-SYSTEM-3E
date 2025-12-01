@@ -2,12 +2,12 @@
   require_once '../includes/session_id.php';
   require_once '../includes/db.php';
 
-$user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'];
 
 // ✅ Fetch appointments for the logged-in user (include id)
 $sql = "SELECT id, pet_name, date, time, vetdoc, service, status 
         FROM book_appointment 
-        WHERE user_id = ? 
+        WHERE user_id = ? AND status = 'Cancelled' 
         ORDER BY date_create DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
@@ -19,11 +19,13 @@ $result = $stmt->get_result();
 <html>
 <head>
   <title>My Appointments</title>
+  <link rel="stylesheet" href="header_footer/Header/Header.css">
+  <link rel="stylesheet" href="header_footer/footer/Footer.css">
   <link rel="stylesheet" href="../styles/Book_appointment_dashboard.css">
   <link rel="stylesheet" href="/appointment/styles/popup.css">
-  <link rel="stylesheet" href="/appointment/styles/tabs.css">
+    <link rel="stylesheet" href="/appointment/styles/tabs.css">
 
-      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+        <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 
 </head>
 <body>
@@ -47,12 +49,12 @@ $result = $stmt->get_result();
 
        <!-- Tabs -->
     <div class="tabs">
-      <a href="Book_appointment_dashboard.php" class="tab active" data-tab="overview">Overview</a>
+      <a href="Book_appointment_dashboard.php" class="tab " data-tab="overview">Overview</a>
       <a href="dashboard_pending.php" class="tab" data-tab="pending">Pending</a>
-      <a href="dashboard_approved.php" class="tab" data-tab="approved">Approved</a>
+      <a href="dashboard_approved.php" class="tab " data-tab="approved">Approved</a>
       <a href="dashboard_rejected.php" class="tab" data-tab="rejected">Rejected</a>
       <a href="dashboard_reschedule.php" class="tab" data-tab="reschedule">Reschedule</a>
-      <a href="cancelled.php" class="tab" data-tab="cancelled">cancelled</a>
+      <a href="cancelled.php" class="tab active" data-tab="cancelled">cancelled</a>
       <a href="dashboard_done.php" class="tab" data-tab="done">Done</a>
     </div>
 
@@ -117,7 +119,8 @@ $result = $stmt->get_result();
   <!-- footer -->
   <?php
     include '../../../MARKETING/generalfooter.php';
-  ?></body>
+  ?>
+</body>
 </html>
 
 <?php

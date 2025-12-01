@@ -48,11 +48,12 @@ $result = $stmt->get_result();
 
        <!-- Tabs -->
     <div class="tabs">
-      <a href="Book_appointment_dashboard.php" class="tab" data-tab="overview">Overview</a>
+      <a href="Book_appointment_dashboard.php" class="tab " data-tab="overview">Overview</a>
       <a href="dashboard_pending.php" class="tab" data-tab="pending">Pending</a>
-      <a href="dashboard_approved.php" class="tab" data-tab="approved">Approved</a>
+      <a href="dashboard_approved.php" class="tab " data-tab="approved">Approved</a>
       <a href="dashboard_rejected.php" class="tab" data-tab="rejected">Rejected</a>
       <a href="dashboard_reschedule.php" class="tab active" data-tab="reschedule">Reschedule</a>
+      <a href="cancelled.php" class="tab" data-tab="cancelled">cancelled</a>
       <a href="dashboard_done.php" class="tab" data-tab="done">Done</a>
     </div>
 

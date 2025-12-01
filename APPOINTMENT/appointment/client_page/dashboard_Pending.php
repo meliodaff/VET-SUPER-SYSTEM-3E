@@ -54,6 +54,7 @@ $result = $stmt->get_result();
       <a href="dashboard_approved.php" class="tab" data-tab="approved">Approved</a>
       <a href="dashboard_rejected.php" class="tab" data-tab="rejected">Rejected</a>
       <a href="dashboard_reschedule.php" class="tab" data-tab="reschedule">Reschedule</a>
+      <a href="cancelled.php" class="tab" data-tab="cancelled">cancelled</a>
       <a href="dashboard_done.php" class="tab" data-tab="done">Done</a>
     </div>
 
