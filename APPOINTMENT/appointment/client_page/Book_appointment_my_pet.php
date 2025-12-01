@@ -45,7 +45,7 @@
           <?php foreach ($pets as $pet): ?>
             <div class="pet-card">
               <div class="pet-image">
-                <img src="/appointment/uploads/pets/<?php echo htmlspecialchars($pet['pet_image']); ?>" alt="<?php echo htmlspecialchars($pet['pet_name']); ?>" />
+                <img src="../uploads/pets/<?php echo htmlspecialchars($pet['pet_image']); ?>" alt="<?php echo htmlspecialchars($pet['pet_name']); ?>" />
               </div>
               <div class="pet-info">
                 <h3><?php echo htmlspecialchars($pet['pet_name']); ?></h3>

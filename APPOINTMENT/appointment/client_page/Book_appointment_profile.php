@@ -36,7 +36,7 @@
 
   <main>
     <section class="form-section">
-      <h2>Update Details</h2>
+      <h2>Details</h2>
 
       <form class="details-form" method="POST" action="../php/update_profile.php">
         <div class="form-group">

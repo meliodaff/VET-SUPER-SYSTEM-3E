@@ -62,16 +62,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($stmt->execute()) {
         $stmt->close();
-        header("Location: VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_my_pet.php?status=updated");
+        header("Location: ..\client_page\Book_appointment_my_pet.php?status=updated");
         exit;
     } else {
         $stmt->close();
-        header("Location: /VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_my_pet.php?status=error");
+        header("Location: ..\client_page\Book_appointment_my_pet.php?status=error");
         exit;
     }
 
 } else {
-        header("Location: /VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_my_pet.php?status=error");
+        header("Location: ..\client_page\Book_appointment_my_pet.php?status=error");
     exit;
 }
 ?>
