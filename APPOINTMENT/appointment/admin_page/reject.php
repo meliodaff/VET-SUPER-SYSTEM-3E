@@ -92,6 +92,8 @@ include '../includes/db.php';
       </a>
   </div>
 
+  
+
   <main class="appointments-section">
     <h2 class="appointments-title">Rejected</h2>
 
