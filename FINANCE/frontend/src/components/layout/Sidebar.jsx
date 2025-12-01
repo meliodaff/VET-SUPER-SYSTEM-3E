@@ -7,6 +7,7 @@ import {
   CreditCard,
   LogOut,
   Globe,
+  Activity,
 } from "lucide-react";
 
 const Sidebar = ({ onLogout }) => {
@@ -23,7 +24,12 @@ const Sidebar = ({ onLogout }) => {
 
   const menuItems = [
     {
-      name: "Dashboard",
+      name: "Sales Monitoring",
+      path: "/sales-monitoring",
+      icon: Activity,
+    },
+    {
+      name: "Finance Dashboard",
       path: "/finance-dashboard",
       icon: LayoutDashboard,
     },
@@ -77,7 +83,7 @@ const Sidebar = ({ onLogout }) => {
             >
               FUR-EVER CARE
             </h1>
-            <p className="text-xs text-gray-500">Sales And Finance</p>
+            <p className="text-xs text-gray-500">Sales & Monitoring</p>
           </div>
         </div>
       </div>
