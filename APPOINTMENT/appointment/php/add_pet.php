@@ -4,10 +4,21 @@ include '../includes/db.php'; // your database connection (mysqli)
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    // Collect and sanitize inputs
     $pet_name = trim($_POST['pet_name']);
     $species = trim($_POST['species']);
     $breed = trim($_POST['breed']);
     $age = intval($_POST['age']);
+
+    // If "Other" species is selected, use the typed values
+    if ($species === "Other") {
+        if (!empty($_POST['other_species'])) {
+            $species = trim($_POST['other_species']);
+        }
+        if (!empty($_POST['other_breed'])) {
+            $breed = trim($_POST['other_breed']);
+        }
+    }
 
     // Handle image upload
     $target_dir = "../uploads/pets/";
@@ -38,14 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
             header("Location: ../client_page/Book_appointment_add_pet.php?status=added");
             exit;
-        }else {
+        } else {
+            $stmt->close();
             header("Location: ../client_page/Book_appointment_add_pet.php?status=error");
+            exit;
         }
 
-        $stmt->close();
     } else {
-        header("Location: ../client_page/ook_appointment_add_pet.php?status=error");
+        header("Location: ../client_page/Book_appointment_add_pet.php?status=error");
+        exit;
     }
+
 } else {
     header("Location: ../client_page/Book_appointment_add_pet.php?status=error");
     exit;
