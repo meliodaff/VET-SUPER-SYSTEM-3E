@@ -15,7 +15,8 @@
     e.employment_type,
     es.day_of_week,
     e.gender,
-    e.profile_image_url AS photo
+    e.profile_image_url AS photo,
+    e.contact_email AS email
 
 FROM employees e
 LEFT JOIN employee_schedules es
@@ -52,7 +53,8 @@ e.hire_date,
 e.employment_type,
 es.day_of_week,
 e.gender,
-e.profile_image_url AS photo
+e.profile_image_url AS photo,
+e.contact_email AS email
 
 
 FROM employees e

@@ -55,6 +55,8 @@ export default function Login() {
     } else if (storedUser.department === "Patient") {
       window.location.href =
         "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php";
+    } else if (storedUser.department === "Inventory") {
+      window.location.href = "http://localhost:3000";
     }
   };
 

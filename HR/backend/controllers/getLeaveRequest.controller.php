@@ -13,6 +13,7 @@ function getLeaveRequests($pdo){
     lr.start_date,
     lr.end_date,
     lr.status,
+    lr.days_taken,
     DATEDIFF(lr.end_date, lr.start_date) + 1 as leave_days,
     lr.attachment_url
     FROM leave_requests lr
