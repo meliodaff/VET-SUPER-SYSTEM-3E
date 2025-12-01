@@ -121,9 +121,9 @@ $grand_total = $service_price + $total_items_price;
   <h3>Book Information</h3>
 
   <!-- User Info Section -->
-  <div class="field"><label>Client Name: </label><span><?= htmlspecialchars($user['fname'] . ' ' . $user['lname']) ?></span></div>
-  <div class="field"><label>Phone Number: </label><span><?= htmlspecialchars($user['phone']) ?></span></div>
-  <div class="field"><label>Email Address: </label><span><?= htmlspecialchars($user['email']) ?></span></div>
+  <div class="field"><label>Client Name: </label><span><?= htmlspecialchars($appointment['fname']) ?></span></div>
+  <div class="field"><label>Phone Number: </label><span><?= htmlspecialchars($appointment['phone']) ?></span></div>
+  <div class="field"><label>Email Address: </label><span><?= htmlspecialchars($appointment['email']) ?></span></div>
 
   <!-- Appointment Info Section -->
   <div class="field"><label>Pet Name: </label><span><?= htmlspecialchars($appointment['pet_name']) ?></span></div>
@@ -149,6 +149,7 @@ $grand_total = $service_price + $total_items_price;
   <div class="field"><label>Vet Doctor: </label><span><?= htmlspecialchars($appointment['vetdoc']) ?></span></div>
   <div class="field"><label>Date: </label><span><?= htmlspecialchars($appointment['date']) ?></span></div>
   <div class="field"><label>Time: </label><span><?= htmlspecialchars($appointment['time']) ?></span></div>
+  <div class="field"><label>Payment Method: </label><span><?= htmlspecialchars($appointment['payment_method']) ?></span></div>
 
   <div class="field">
     <label>Total (Service + Items):</label>

@@ -93,7 +93,7 @@ $result = $stmt->get_result();
                   </a>
                   <br>
                   <?php if (strtolower($row['status']) === 'approved'): ?>
-                    <a href="Book_appointment_dashboard_receipt.php?id=<?= $row['id'] ?>">View Receipt</a>
+                    <a href="pay_reciept.php?id=<?= $row['id'] ?>">View Receipt</a>
                   <?php endif; ?>
                 </td>
               </tr>
