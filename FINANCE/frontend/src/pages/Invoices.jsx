@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Download, FileText } from 'lucide-react';
+import { Search, FileText } from 'lucide-react';
 import { invoicesAPI } from '../services/api';
 import InvoiceManagement from '../components/invoices/InvoiceManagement';
 import CreateInvoiceModal from '../components/invoices/CreateInvoiceModal';
@@ -9,7 +9,6 @@ const Invoices = () => {
   const [summary, setSummary] = useState({});
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateRange, setDateRange] = useState('0');
@@ -18,6 +17,7 @@ const Invoices = () => {
 
   useEffect(() => {
     fetchInvoices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, dateRange, currentPage, searchTerm]);
 
   const fetchInvoices = async () => {
@@ -36,17 +36,14 @@ const Invoices = () => {
       if (response?.data?.success && response?.data?.data) {
         setInvoices(response.data.data.invoices || []);
         setSummary(response.data.data.summary || {});
-        setPagination(response.data.data.pagination || {});
-        setError(''); // Clear errors on success
+        setPagination(response.data.data.pagination || []);
       } else {
-        setError(response?.data?.message || 'Failed to load invoices');
         setInvoices([]);
         setSummary({});
         setPagination({});
       }
     } catch (error) {
       console.error('Error fetching invoices:', error);
-      setError(error?.response?.data?.message || error?.message || 'Failed to load invoices. Please check if XAMPP is running.');
       setInvoices([]);
       setSummary({});
       setPagination({});

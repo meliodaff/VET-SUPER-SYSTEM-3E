@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, TrendingUp, Coins } from 'lucide-react';
+import { Users, Coins } from 'lucide-react';
 import { formatCurrency } from '../../utils/helpers';
 
 const DepartmentOverview = ({ departments }) => {

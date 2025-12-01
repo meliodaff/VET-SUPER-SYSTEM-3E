@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Mail, Phone, MapPin, Coins } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import { generateEmployeeId } from '../../utils/helpers';
 
 const CreateEmployeeModal = ({ onClose, onCreateEmployee }) => {
@@ -12,7 +12,6 @@ const CreateEmployeeModal = ({ onClose, onCreateEmployee }) => {
     rate: '',
     employment_type: 'Active Full-Time'
   });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -25,7 +24,6 @@ const CreateEmployeeModal = ({ onClose, onCreateEmployee }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
     try {
@@ -35,8 +33,6 @@ const CreateEmployeeModal = ({ onClose, onCreateEmployee }) => {
       }
     } catch (error) {
       setError('An unexpected error occurred');
-    } finally {
-      setLoading(false);
     }
   };
 

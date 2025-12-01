@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { Eye, CheckCircle, Clock, AlertTriangle, CreditCard } from 'lucide-react';
-import { formatCurrency } from '../../utils/helpers';
 import ViewInvoiceModal from '../invoices/ViewInvoiceModal';
 
 const PaymentList = ({ payments, pagination, onUpdatePaymentStatus, onPageChange, loading }) => {
-  const [updatingPayment, setUpdatingPayment] = useState(null);
   const [viewingInvoice, setViewingInvoice] = useState(null);
   const currentPage = pagination?.current_page || 1;
 
   const handleStatusUpdate = async (paymentId, status, paymentMethod = null) => {
-    setUpdatingPayment(paymentId);
     try {
       const result = await onUpdatePaymentStatus(paymentId, status, paymentMethod);
       if (result.success) {
@@ -21,8 +18,6 @@ const PaymentList = ({ payments, pagination, onUpdatePaymentStatus, onPageChange
       console.error('Status update error:', error);
       const errorMsg = error?.response?.data?.message || 'An unexpected error occurred';
       alert(errorMsg);
-    } finally {
-      setUpdatingPayment(null);
     }
   };
 
@@ -36,19 +31,6 @@ const PaymentList = ({ payments, pagination, onUpdatePaymentStatus, onPageChange
       });
     } else {
       alert('Invoice ID not found for this payment');
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Paid':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'Pending':
-        return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'Overdue':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
 
@@ -156,7 +138,7 @@ const PaymentList = ({ payments, pagination, onUpdatePaymentStatus, onPageChange
                     {/* Mark Paid Button */}
                     <button
                       onClick={() => handleStatusUpdate(payment.id, 'Paid', payment.payment_method)}
-                      disabled={updatingPayment === payment.id || payment.status?.toLowerCase() === 'paid' || payment.raw_status === 'paid'}
+                      disabled={payment.status?.toLowerCase() === 'paid' || payment.raw_status === 'paid'}
                       className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Mark Paid"
                     >
@@ -167,7 +149,7 @@ const PaymentList = ({ payments, pagination, onUpdatePaymentStatus, onPageChange
                     {/* Mark Pending Button */}
                     <button
                       onClick={() => handleStatusUpdate(payment.id, 'Pending')}
-                      disabled={updatingPayment === payment.id || payment.status?.toLowerCase() === 'pending' || payment.raw_status === 'pending'}
+                      disabled={payment.status?.toLowerCase() === 'pending' || payment.raw_status === 'pending'}
                       className="inline-flex items-center px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Mark Pending"
                     >
@@ -178,7 +160,7 @@ const PaymentList = ({ payments, pagination, onUpdatePaymentStatus, onPageChange
                     {/* Mark Overdue Button */}
                     <button
                       onClick={() => handleStatusUpdate(payment.id, 'Overdue')}
-                      disabled={updatingPayment === payment.id || payment.status?.toLowerCase() === 'overdue' || payment.raw_status === 'overdue'}
+                      disabled={payment.status?.toLowerCase() === 'overdue' || payment.raw_status === 'overdue'}
                       className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Mark Overdue"
                     >

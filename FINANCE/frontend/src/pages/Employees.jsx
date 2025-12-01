@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { employeesAPI } from '../services/api';
 import EmployeeDirectory from '../components/employees/EmployeeDirectory';
 import DepartmentOverview from '../components/employees/DepartmentOverview';

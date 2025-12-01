@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, User, Calendar, Coins, CreditCard, Phone } from 'lucide-react';
-import { formatCurrency, formatDate, formatDateTime, getStatusColor } from '../../utils/helpers';
+import { X } from 'lucide-react';
+import { formatCurrency, formatDateTime } from '../../utils/helpers';
 import { invoicesAPI } from '../../services/api';
 
 const ViewInvoiceModal = ({ invoice, onClose }) => {
