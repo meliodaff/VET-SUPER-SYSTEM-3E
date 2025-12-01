@@ -47,9 +47,14 @@ export default function LeaveRequest() {
         console.log(response);
         if (response.success && response.data && response.data.length > 0) {
           // Get the first unique employee from schedule data
-          const firstRecord = response.data[1];
-          const employeeId = firstRecord.employee_id;
+          const user = JSON.parse(localStorage.getItem("user"));
+          const firstRecordRawData = response.data.filter(
+            (data) => data.employee_id === user.employee_id
+          );
 
+          const firstRecord = firstRecordRawData[0];
+
+          const employeeId = firstRecord.employee_id;
           // Get all schedules for this employee
           const employeeSchedules = response.data.filter(
             (record) => record.employee_id === employeeId
@@ -59,7 +64,7 @@ export default function LeaveRequest() {
           setEmployee({
             name: `${firstRecord.first_name} ${firstRecord.last_name}`,
             position: firstRecord.Position,
-            email: "employee@example.com",
+            email: firstRecord.email,
             gender: firstRecord.gender || "Unknown",
             id: employeeId,
             department: firstRecord.department,
