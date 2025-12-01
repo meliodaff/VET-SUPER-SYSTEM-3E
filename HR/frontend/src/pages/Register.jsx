@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../styles/Register.css";
-
+import usePostPatientAccount from "../api/usePostPatientAccount";
+import { useNavigate } from "react-router-dom";
 export default function Register() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -23,7 +24,10 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const { postPatientAccount, loadingForPostPatientAccount } =
+    usePostPatientAccount();
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
@@ -33,12 +37,33 @@ export default function Register() {
       alert("Please agree to the Terms and Privacy Policy");
       return;
     }
+
+    const response = await postPatientAccount(formData);
     console.log("Form submitted:", formData);
+
+    console.log(response);
+
+    if (!response.success) {
+      alert(response.message.message || response.message);
+      return;
+    }
+
+    setFormData(() => ({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      role: "Patient",
+      agreeToTerms: false,
+    }));
+
     alert("Registration successful!");
+    navigate("/login");
   };
 
   return (
-    <div className="register-page">
+    <div className="register-page min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-sky-100 relative">
       <div className="register-card">
         <img className="card-image" src="/images/register-img.png" alt="Pet" />
         <h1 className="title">Fur-Ever Care</h1>

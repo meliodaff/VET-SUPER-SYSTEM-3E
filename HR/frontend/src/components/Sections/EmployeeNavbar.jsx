@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Search, Bell, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import useGetAnnouncements from "../../api/useGetAnnouncements";
-
+import { useNavigate } from "react-router-dom";
 const NavItem = ({ link, children, active = false, onClick }) => (
   <Link to={link}>
     <button
@@ -58,6 +58,12 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
 
     fetchAnnouncements();
   }, [getAnnouncements]);
+
+  const [photo, setPhoto] = useState("");
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    setPhoto(user.photo);
+  }, []);
 
   // Sync activeNav with current route
   useEffect(() => {
@@ -199,6 +205,23 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
     // Backend API call to mark all as read
     console.log("Mark all notifications as read");
     setIsNotificationOpen(false);
+  };
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    // Add your logout logic here
+    console.log("Logging out...");
+    localStorage.clear();
+    document.cookie.split(";").forEach((cookie) => {
+      document.cookie = cookie.replace(
+        /=.*/,
+        "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/"
+      );
+    });
+    navigate("/");
+    setIsOpen(false);
   };
 
   return (
@@ -349,18 +372,68 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
             </div>
 
             {/* Profile Picture */}
-            <div className="relative">
+            {/* <div className="relative">
               <button className="w-10 h-10 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-colors">
                 <img
-                  src={
-                    employee?.profilePicture || "src/assets/images/profile.jpg"
-                  }
+                  src={`http://localhost/VET-SUPER-SYSTEM-3E/HR/backend/${photo}`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
               </button>
-            </div>
+            </div> */}
 
+            <div className="relative">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-10 h-10 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-colors"
+              >
+                <img
+                  src={`http://localhost/VET-SUPER-SYSTEM-3E/HR/backend/${photo}`}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <button
+                    onClick={() => {
+                      const user = JSON.parse(localStorage.getItem("user"));
+                      if (user.department === "HR") {
+                        navigate("/dashboard");
+                      } else if (user.department === "Finance") {
+                        window.location.href =
+                          "http://localhost:3000/finance-dashboard";
+                      } else if (user.department === "Appointment") {
+                        window.location.href =
+                          "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/admin_page/overview.php";
+                      } else if (user.department === "Patient") {
+                        window.location.href =
+                          "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php";
+                      }
+                    }}
+                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors rounded-lg"
+                  >
+                    Go back to Dashboard
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors rounded-lg"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+
+              {/* Overlay to close dropdown when clicking outside */}
+              {isOpen && (
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsOpen(false)}
+                />
+              )}
+            </div>
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

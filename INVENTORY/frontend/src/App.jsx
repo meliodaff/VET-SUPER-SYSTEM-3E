@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
-import Sidebar from './components/Sidebar';
-import Navbar from './components/Navbar';
-import Dashboard from './pages/Dashboard';
-import Products from './pages/Products';
-import Categories from './pages/Categories';
-import Suppliers from './pages/Suppliers';
-import './App.css';
+import React, { useState } from "react";
+import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
+import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import Categories from "./pages/Categories";
+import Suppliers from "./pages/Suppliers";
+import "./App.css";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('Dashboard');
+  const [currentPage, setCurrentPage] = useState("Dashboard");
 
   const renderPage = () => {
-    switch(currentPage) {
-      case 'Dashboard':
+    switch (currentPage) {
+      case "Dashboard":
         return <Dashboard />;
-      case 'Products':
+      case "Products":
         return <Products />;
-      case 'Categories':
+      case "Categories":
         return <Categories />;
-      case 'Suppliers':
+      case "Suppliers":
         return <Suppliers />;
       default:
         return <Dashboard />;
@@ -27,15 +27,10 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Sidebar 
-        onNavigate={setCurrentPage} 
-        currentPage={currentPage}
-      />
+      <Sidebar onNavigate={setCurrentPage} currentPage={currentPage} />
       <div className="app-main">
         <Navbar currentPage={currentPage} />
-        <main className="main-content">
-          {renderPage()}
-        </main>
+        <main className="main-content">{renderPage()}</main>
       </div>
     </div>
   );

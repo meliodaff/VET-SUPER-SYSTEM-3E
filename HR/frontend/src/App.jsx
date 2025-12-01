@@ -20,6 +20,7 @@ import LiveAttendance from "./pages/LiveAttendance";
 import EmployeePerformanceRating from "./pages/EmployeePerformanceRating";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import AdminPerformanceRatingApproval from "./pages/AdminPerformanceRatingApproval.jsx";
 export default function App() {
   return (
     <>
@@ -33,6 +34,10 @@ export default function App() {
         <Route element={<AdminIncentives />} path="/admin-incentives" />
         <Route element={<AdminLeaveRequests />} path="/admin-leave-requests" />
         <Route element={<AdminAnnouncements />} path="/admin-announcements" />
+        <Route
+          element={<AdminPerformanceRatingApproval />}
+          path="/admin-performance-rating"
+        />
         <Route element={<Employees />} path="/employees" />
         <Route element={<Applicant />} path="/applicant" />
 

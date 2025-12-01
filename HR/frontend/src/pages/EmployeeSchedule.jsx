@@ -5,7 +5,10 @@ import { Link } from "react-router-dom";
 import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
 export default function EmployeeSchedule({ employee }) {
   const [activeTab, setActiveTab] = useState("attendance");
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 8, 1)); // September 2025
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
   const [hoveredDate, setHoveredDate] = useState(null);
 
   const [scheduleData, setScheduleData] = useState([]);
@@ -274,7 +277,10 @@ export default function EmployeeSchedule({ employee }) {
       setScheduleData(completeData);
     };
 
-    fetchAndFormatAttendance(1);
+    const user = JSON.parse(localStorage.getItem("user"));
+    console.log(user.employee_id);
+
+    fetchAndFormatAttendance(user.employee_id);
   }, []);
 
   // Helper function to format a single attendance record

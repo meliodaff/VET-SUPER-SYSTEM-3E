@@ -1,464 +1,472 @@
 <?php
 
 // BY MONTH PAPALA
-    function getAllPaidHoursOfTheFirstCutOff($pdo) {
+   function getAllPaidHoursOfTheFirstCutOff($pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND DAY(check_in_time) <= 15
---   AND MONTH(check_in_time) = MONTH(CURDATE())
---   AND YEAR(check_in_time) = YEAR(CURDATE());
-";
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) <= 15";
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute();
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute();
 
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
+    return $response;
+}
 
-    function getPaidHoursOfTheFirstCutOff($id, $pdo) {
-        $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+function getPaidHoursOfTheFirstCutOff($id, $pdo) {
+    $query = "SELECT 
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE employee_id = :employee_id
-  AND check_out_time IS NOT NULL
-  AND DAY(check_in_time) <= 15
---   AND MONTH(check_in_time) = MONTH(CURDATE())
---   AND YEAR(check_in_time) = YEAR(CURDATE());
-";
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
+WHERE taa.employee_id = :employee_id
+  AND taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) <= 15";
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([
-                ":employee_id" => $id
-            ]);
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            ":employee_id" => $id
+        ]);
 
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
+    return $response;
+}
 
 
-    function getAllPaidHoursOfTheSecondCutOff($pdo) {
+function getAllPaidHoursOfTheSecondCutOff($pdo) {
 
-        $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    $query = "SELECT 
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND DAY(check_in_time) > 15
---   AND MONTH(check_in_time) = MONTH(CURDATE())
---   AND YEAR(check_in_time) = YEAR(CURDATE());
-";
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) > 15";
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute();
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute();
 
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
+    return $response;
+}
 
-        function getPaidHoursOfTheSecondCutOff($id, $pdo) {
-        $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+function getPaidHoursOfTheSecondCutOff($id, $pdo) {
+    $query = "SELECT 
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE employee_id = :employee_id
-  AND check_out_time IS NOT NULL
-  AND DAY(check_in_time) > 15
---   AND MONTH(check_in_time) = MONTH(CURDATE())
---   AND YEAR(check_in_time) = YEAR(CURDATE());
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
+WHERE taa.employee_id = :employee_id
+  AND taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) > 15";
 
-";
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            ":employee_id" => $id
+        ]);
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([
-                ":employee_id" => $id
-            ]);
-
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
+    return $response;
+}
 
 
 
 
-    function getAllPaidHoursOfTheFirstCutOffByYear($year, $pdo) {
-    
-        $query = "SELECT
-attendance_id,
-employee_id,
-check_in_time,
-check_out_time,
+function getAllPaidHoursOfTheFirstCutOffByYear($year, $pdo) {
+
+    $query = "SELECT
+taa.attendance_id,
+taa.employee_id,
+taa.check_in_time,
+taa.check_out_time,
+e.rate,
 TIMESTAMPDIFF(
 HOUR,
 CASE
-WHEN TIME(check_in_time) <= '09:15:00'
-THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+WHEN TIME(taa.check_in_time) <= '09:15:00'
+THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
 ELSE DATE_FORMAT(
-check_in_time + INTERVAL 1 HOUR,
+taa.check_in_time + INTERVAL 1 HOUR,
 '%Y-%m-%d %H:00:00'
 )
 END,
-LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
 ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-AND DAY(check_in_time) <= 15
-AND MONTH(check_in_time) = MONTH(CURDATE())
-AND YEAR(check_in_time) = :year;
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
+WHERE taa.check_out_time IS NOT NULL
+AND DAY(taa.check_in_time) <= 15
+AND MONTH(taa.check_in_time) = MONTH(CURDATE())
+AND YEAR(taa.check_in_time) = :year";
 
-";
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            ":year" => $year
+        ]);
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([
-                ":year" => $year
-            ]);
-
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
+    return $response;
+}
 
 
-    function getAllPaidHoursOfTheSecondCutOffByYear($year, $pdo) {
-    
-        $query = "SELECT
-attendance_id,
-employee_id,
-check_in_time,
-check_out_time,
+function getAllPaidHoursOfTheSecondCutOffByYear($year, $pdo) {
+
+    $query = "SELECT
+taa.attendance_id,
+taa.employee_id,
+taa.check_in_time,
+taa.check_out_time,
+e.rate,
 TIMESTAMPDIFF(
 HOUR,
 CASE
-WHEN TIME(check_in_time) <= '09:15:00'
-THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+WHEN TIME(taa.check_in_time) <= '09:15:00'
+THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
 ELSE DATE_FORMAT(
-check_in_time + INTERVAL 1 HOUR,
+taa.check_in_time + INTERVAL 1 HOUR,
 '%Y-%m-%d %H:00:00'
 )
 END,
-LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
 ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-AND DAY(check_in_time) > 15
-AND MONTH(check_in_time) = MONTH(CURDATE())
-AND YEAR(check_in_time) = :year
-";
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
+WHERE taa.check_out_time IS NOT NULL
+AND DAY(taa.check_in_time) > 15
+AND MONTH(taa.check_in_time) = MONTH(CURDATE())
+AND YEAR(taa.check_in_time) = :year";
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([
-                ":year" => $year
-            ]);
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            ":year" => $year
+        ]);
 
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
+    return $response;
+}
 
 
 
-    function getAllPaidHoursOfTheFirstCutOffByYearAndId($id, $year, $pdo) {
-    
-        $query = "SELECT
-attendance_id,
-employee_id,
-check_in_time,
-check_out_time,
+function getAllPaidHoursOfTheFirstCutOffByYearAndId($id, $year, $pdo) {
+
+    $query = "SELECT
+taa.attendance_id,
+taa.employee_id,
+taa.check_in_time,
+taa.check_out_time,
+e.rate,
 TIMESTAMPDIFF(
 HOUR,
 CASE
-WHEN TIME(check_in_time) <= '09:15:00'
-THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+WHEN TIME(taa.check_in_time) <= '09:15:00'
+THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
 ELSE DATE_FORMAT(
-check_in_time + INTERVAL 1 HOUR,
+taa.check_in_time + INTERVAL 1 HOUR,
 '%Y-%m-%d %H:00:00'
 )
 END,
-LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
 ) AS paid_hours
-FROM time_and_attendance
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
 WHERE
-employee_id = :employee_id 
-AND check_out_time IS NOT NULL
-AND DAY(check_in_time) <= 15
--- AND MONTH(check_in_time) = MONTH(CURDATE())
-AND YEAR(check_in_time) = :year;
-";
+taa.employee_id = :employee_id 
+AND taa.check_out_time IS NOT NULL
+AND DAY(taa.check_in_time) <= 15
+AND YEAR(taa.check_in_time) = :year";
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([
-                ":employee_id" => $id,
-                ":year" => $year
-            ]);
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            ":employee_id" => $id,
+            ":year" => $year
+        ]);
 
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
+    return $response;
+}
 
-    function getAllPaidHoursOfTheSecondCutOffByYearAndId($id, $year, $pdo) {
-    
-        $query = "SELECT
-attendance_id,
-employee_id,
-check_in_time,
-check_out_time,
+function getAllPaidHoursOfTheSecondCutOffByYearAndId($id, $year, $pdo) {
+
+    $query = "SELECT
+taa.attendance_id,
+taa.employee_id,
+taa.check_in_time,
+taa.check_out_time,
+e.rate,
 TIMESTAMPDIFF(
 HOUR,
 CASE
-WHEN TIME(check_in_time) <= '09:15:00'
-THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+WHEN TIME(taa.check_in_time) <= '09:15:00'
+THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
 ELSE DATE_FORMAT(
-check_in_time + INTERVAL 1 HOUR,
+taa.check_in_time + INTERVAL 1 HOUR,
 '%Y-%m-%d %H:00:00'
 )
 END,
-LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
 ) AS paid_hours
-FROM time_and_attendance
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
 WHERE
-employee_id = :employee_id 
-AND check_out_time IS NOT NULL
-AND DAY(check_in_time) > 15
--- AND MONTH(check_in_time) = MONTH(CURDATE())
-AND YEAR(check_in_time) = :year;
-";
+taa.employee_id = :employee_id 
+AND taa.check_out_time IS NOT NULL
+AND DAY(taa.check_in_time) > 15
+AND YEAR(taa.check_in_time) = :year";
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([
-                ":employee_id" => $id,
-                ":year" => $year
-            ]);
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            ":employee_id" => $id,
+            ":year" => $year
+        ]);
 
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
+    return $response;
+}
 
 
-    function getAllPaidHoursOfTheFirstCutOffByYearMonthId($id, $year, $month, $pdo) {
-    
-        $query = "SELECT
-attendance_id,
-employee_id,
-check_in_time,
-check_out_time,
+function getAllPaidHoursOfTheFirstCutOffByYearMonthId($id, $year, $month, $pdo) {
+
+    $query = "SELECT
+taa.attendance_id,
+taa.employee_id,
+taa.check_in_time,
+taa.check_out_time,
+e.rate,
 TIMESTAMPDIFF(
 HOUR,
 CASE
-WHEN TIME(check_in_time) <= '09:15:00'
-THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+WHEN TIME(taa.check_in_time) <= '09:15:00'
+THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
 ELSE DATE_FORMAT(
-check_in_time + INTERVAL 1 HOUR,
+taa.check_in_time + INTERVAL 1 HOUR,
 '%Y-%m-%d %H:00:00'
 )
 END,
-LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
 ) AS paid_hours
-FROM time_and_attendance
+FROM time_and_attendance taa
+JOIN employees e
+ON e.employee_id = taa.employee_id
 WHERE
-employee_id = :employee_id 
-AND check_out_time IS NOT NULL
-AND DAY(check_in_time) <= 15
-AND MONTH(check_in_time) = :month
-AND YEAR(check_in_time) = :year;
-";
+taa.employee_id = :employee_id 
+AND taa.check_out_time IS NOT NULL
+AND DAY(taa.check_in_time) <= 15
+AND MONTH(taa.check_in_time) = :month
+AND YEAR(taa.check_in_time) = :year";
 
-        try {
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([
-                ":employee_id" => $id,
-                ":year" => $year,
-                ":month" => $month
-            ]);
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            ":employee_id" => $id,
+            ":year" => $year,
+            ":month" => $month
+        ]);
 
-            $datas = $stmt->fetchAll();
-            $response = [
-                "success" => true,
-                "data" => $datas 
-            ];
-        } catch (PDOException $e) {
-            $response = [
-                "success" => false,
-                "error" => $e->getMessage()
-            ];
-            }
-            return $response;
+        $datas = $stmt->fetchAll();
+        $response = [
+            "success" => true,
+            "data" => $datas 
+        ];
+    } catch (PDOException $e) {
+        $response = [
+            "success" => false,
+            "error" => $e->getMessage()
+        ];
     }
-
+    return $response;
+}
 
 
     function getAllPaidHoursOfTheSecondCutOffByYearMonthId($id, $year, $month, $pdo) {
     
         $query = "SELECT
-attendance_id,
-employee_id,
-check_in_time,
-check_out_time,
+taa.attendance_id,
+taa.employee_id,
+taa.check_in_time,
+taa.check_out_time,
+e.rate,
 TIMESTAMPDIFF(
 HOUR,
 CASE
-WHEN TIME(check_in_time) <= '09:15:00'
-THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+WHEN TIME(taa.check_in_time) <= '09:15:00'
+THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
 ELSE DATE_FORMAT(
 check_in_time + INTERVAL 1 HOUR,
 '%Y-%m-%d %H:00:00'
 )
 END,
-LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
 ) AS paid_hours
-FROM time_and_attendance
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
 WHERE
-employee_id = :employee_id 
+taa.employee_id = :employee_id 
 AND check_out_time IS NOT NULL
-AND DAY(check_in_time) > 15
-AND MONTH(check_in_time) = :month
-AND YEAR(check_in_time) = :year;
+AND DAY(taa.check_in_time) > 15
+AND MONTH(taa.check_in_time) = :month
+AND YEAR(taa.check_in_time) = :year;
 ";
 
         try {
@@ -486,26 +494,29 @@ AND YEAR(check_in_time) = :year;
     function getAllPaidHoursOfTheFirstCutOffByMonth($month, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND DAY(check_in_time) <= 15
-  AND MONTH(check_in_time) = :month
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) <= 15
+  AND MONTH(taa.check_in_time) = :month
 --   AND YEAR(check_in_time) = YEAR(CURDATE());
 ";
 
@@ -533,26 +544,29 @@ WHERE check_out_time IS NOT NULL
     function getAllPaidHoursOfTheSecondCutOffByMonth($month, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND DAY(check_in_time) > 15
-  AND MONTH(check_in_time) = :month
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) > 15
+  AND MONTH(taa.check_in_time) = :month
 --   AND YEAR(check_in_time) = YEAR(CURDATE());
 ";
 
@@ -581,27 +595,30 @@ WHERE check_out_time IS NOT NULL
     function getAllPaidHoursOfTheFirstCutOffByMonthId($id, $month, $pdo) {
     
     $query = "SELECT 
-attendance_id,
-employee_id,
-check_in_time,
-check_out_time,
+taa.attendance_id,
+taa.employee_id,
+taa.check_in_time,
+taa.check_out_time,
+e.rate,
 TIMESTAMPDIFF(
 HOUR,
 CASE 
-WHEN TIME(check_in_time) <= '09:15:00' 
-THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+WHEN TIME(taa.check_in_time) <= '09:15:00' 
+THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
 ELSE DATE_FORMAT(
-check_in_time + INTERVAL 1 HOUR, 
+taa.check_in_time + INTERVAL 1 HOUR, 
 '%Y-%m-%d %H:00:00'
 )
 END,
-LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
 ) AS paid_hours
-FROM time_and_attendance
-WHERE employee_id = :employee_id
-AND check_out_time IS NOT NULL
-AND DAY(check_in_time) <= 15
-AND MONTH(check_in_time) = :month
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.employee_id = :employee_id
+AND taa.check_out_time IS NOT NULL
+AND DAY(taa.check_in_time) <= 15
+AND MONTH(taa.check_in_time) = :month
 --   AND YEAR(check_in_time) = YEAR(CURDATE());
 ";
 
@@ -630,27 +647,30 @@ AND MONTH(check_in_time) = :month
      function getAllPaidHoursOfTheSecondCutOffByMonthId($id, $month, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE employee_id = :employee_id
-  AND check_out_time IS NOT NULL
-  AND DAY(check_in_time) > 15
-  AND MONTH(check_in_time) = :month
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.employee_id = :employee_id
+  AND taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) > 15
+  AND MONTH(taa.check_in_time) = :month
 --   AND YEAR(check_in_time) = YEAR(CURDATE());
 ";
 
@@ -680,27 +700,30 @@ WHERE employee_id = :employee_id
      function getAllYearPaidHoursOfTheFirstCutOffByMonth($month, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND DAY(check_in_time) <= 15
-  AND MONTH(check_in_time) = :month
-  AND YEAR(check_in_time) = YEAR(CURDATE());
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) <= 15
+  AND MONTH(taa.check_in_time) = :month
+  AND YEAR(taa.check_in_time) = YEAR(CURDATE());
 ";
 
         try {
@@ -729,25 +752,28 @@ WHERE check_out_time IS NOT NULL
     function getAllPaidHoursByMonth($month, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND MONTH(check_in_time) = :month
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND MONTH(taa.check_in_time) = :month
 --   AND YEAR(check_in_time) = YEAR(CURDATE());
 ";
 
@@ -776,27 +802,30 @@ WHERE check_out_time IS NOT NULL
     function getAllPaidHoursByFirstPeriodYearMonth($year, $month, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND DAY(check_in_time) <= 15
-  AND MONTH(check_in_time) = :month
-  AND YEAR(check_in_time) = :year;
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) <= 15
+  AND MONTH(taa.check_in_time) = :month
+  AND YEAR(taa.check_in_time) = :year;
 ";
 
         try {
@@ -824,27 +853,30 @@ WHERE check_out_time IS NOT NULL
     function getAllPaidHoursBySecondPeriodYearMonth($year, $month, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND DAY(check_in_time) > 15
-  AND MONTH(check_in_time) = :month
-  AND YEAR(check_in_time) = :year;
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) > 15
+  AND MONTH(taa.check_in_time) = :month
+  AND YEAR(taa.check_in_time) = :year;
 ";
 
         try {
@@ -872,26 +904,29 @@ WHERE check_out_time IS NOT NULL
      function getAllPaidHoursByFirstPeriodYear($year, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-  AND DAY(check_in_time) > 15
-  AND YEAR(check_in_time) = :year;
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
+  AND DAY(taa.check_in_time) > 15
+  AND YEAR(taa.check_in_time) = :year;
 ";
 
         try {
@@ -918,26 +953,29 @@ WHERE check_out_time IS NOT NULL
     function getAllPaidHoursByIdMonth($id, $month, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE employee_id = :employee_id 
-  AND check_out_time IS NOT NULL
-  AND MONTH(check_in_time) = :month
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.employee_id = :employee_id 
+  AND taa.check_out_time IS NOT NULL
+  AND MONTH(taa.check_in_time) = :month
 --   AND YEAR(check_in_time) = YEAR(CURDATE());
 ";
 
@@ -967,26 +1005,29 @@ WHERE employee_id = :employee_id
     function getAllPaidHoursByYearMonth($year, $month, $pdo) {
     
     $query = "SELECT
-attendance_id,
-employee_id,
-check_in_time,
-check_out_time,
+taa.attendance_id,
+taa.employee_id,
+taa.check_in_time,
+taa.check_out_time,
+e.rate,
 TIMESTAMPDIFF(
 HOUR,
 CASE
-WHEN TIME(check_in_time) <= '09:15:00'
-THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+WHEN TIME(taa.check_in_time) <= '09:15:00'
+THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
 ELSE DATE_FORMAT(
-check_in_time + INTERVAL 1 HOUR,
+taa.check_in_time + INTERVAL 1 HOUR,
 '%Y-%m-%d %H:00:00'
 )
 END,
-LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
 ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
-AND MONTH(check_in_time) = :month
-AND YEAR(check_in_time) = :year;
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
+AND MONTH(taa.check_in_time) = :month
+AND YEAR(taa.check_in_time) = :year;
 ";
 
         try {
@@ -1014,26 +1055,29 @@ AND YEAR(check_in_time) = :year;
     function getPaidHoursByIdYear($id, $year, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE employee_id = :employee_id 
-  AND check_out_time IS NOT NULL
-  AND YEAR(check_in_time) = :year;
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.employee_id = :employee_id 
+  AND taa.check_out_time IS NOT NULL
+  AND YEAR(taa.check_in_time) = :year;
 ";
 
         try {
@@ -1062,26 +1106,29 @@ WHERE employee_id = :employee_id
      function getAllPaidHoursByYear($year, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE check_out_time IS NOT NULL
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.check_out_time IS NOT NULL
 --   AND MONTH(check_in_time) = :month
-  AND YEAR(check_in_time) = :year;
+  AND YEAR(taa.check_in_time) = :year;
 ";
 
         try {
@@ -1107,25 +1154,28 @@ WHERE check_out_time IS NOT NULL
     function getAllPaidHoursById($id, $pdo) {
     
     $query = "SELECT 
-    attendance_id,
-    employee_id,
-    check_in_time,
-    check_out_time,
+    taa.attendance_id,
+    taa.employee_id,
+    taa.check_in_time,
+    taa.check_out_time,
+    e.rate,
     TIMESTAMPDIFF(
         HOUR,
         CASE 
-            WHEN TIME(check_in_time) <= '09:15:00' 
-                THEN DATE_FORMAT(check_in_time, '%Y-%m-%d 09:00:00')
+            WHEN TIME(taa.check_in_time) <= '09:15:00' 
+                THEN DATE_FORMAT(taa.check_in_time, '%Y-%m-%d 09:00:00')
             ELSE DATE_FORMAT(
-                check_in_time + INTERVAL 1 HOUR, 
+                taa.check_in_time + INTERVAL 1 HOUR, 
                 '%Y-%m-%d %H:00:00'
             )
         END,
-        LEAST(check_out_time, DATE_FORMAT(check_out_time, '%Y-%m-%d 17:00:00'))
+        LEAST(taa.check_out_time, DATE_FORMAT(taa.check_out_time, '%Y-%m-%d 17:00:00'))
     ) AS paid_hours
-FROM time_and_attendance
-WHERE employee_id = :employee_id 
-     AND check_out_time IS NOT NULL
+FROM time_and_attendance taa
+JOIN employees e
+ON taa.employee_id = e.employee_id
+WHERE taa.employee_id = :employee_id 
+     AND taa.check_out_time IS NOT NULL
 --   AND MONTH(check_in_time) = :month
 --   AND YEAR(check_in_time) = :year;
 ";

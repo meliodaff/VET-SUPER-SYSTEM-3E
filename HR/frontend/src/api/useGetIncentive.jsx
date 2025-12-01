@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "./axiosInstance";
 
 const useGetIncentive = () => {
+  const [loadingForGetIncentiveItems, setLoadingForGetIncentiveItems] =
+    useState(false);
   const [loadingForGetIncentives, setLoadingForGetIncentives] = useState(false);
   const [loadingForGetIncentive, setLoadingForGetIncentive] = useState(false);
   const [
@@ -10,6 +12,27 @@ const useGetIncentive = () => {
   ] = useState(false);
   const [loadingForGetTopPerformer, setLoadingForGetTopPerformer] =
     useState(false);
+
+  const getIncentiveItems = async () => {
+    try {
+      setLoadingForGetIncentiveItems(true);
+      const response = await axios.get(`/getIncentive.php?items=true`);
+      return response.data;
+    } catch (error) {
+      if (error.status >= 400) {
+        return {
+          success: false,
+          message: error.response.data.message,
+        };
+      }
+      return {
+        success: false,
+        message: "API calling failed",
+      };
+    } finally {
+      setLoadingForGetIncentiveItems(false);
+    }
+  };
 
   const getIncentives = async (isClaim) => {
     try {
@@ -104,6 +127,8 @@ const useGetIncentive = () => {
     loadingForGetAllIncentiveForTheMonth,
     getTopPerformer,
     loadingForGetTopPerformer,
+    getIncentiveItems,
+    loadingForGetIncentiveItems,
   };
 };
 

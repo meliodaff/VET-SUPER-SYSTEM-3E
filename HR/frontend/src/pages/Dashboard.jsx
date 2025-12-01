@@ -13,11 +13,347 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetAdminAnalytics from "../api/useGetAdminAnalytics";
-
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
+import useGetEmployees from "../api/useGetEmployee";
 export default function Dashboard() {
   const [statsData, setStatsData] = useState(null);
   const { getAdminAnalytics } = useGetAdminAnalytics();
+  const {
+    getAttendanceRecordsForThisMonth,
+    loadingForGetAttendanceForThisMonth,
+  } = useGetAttendanceRecord();
 
+  const { getEmployees, loadingForGetEmployees } = useGetEmployees();
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportEmployees = async () => {
+    try {
+      setExporting(true);
+      const response = await getEmployees();
+
+      // Your API returns { data: [...] }
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        alert("No employee data available");
+        return;
+      }
+
+      const employees = response.data;
+
+      if (employees.length === 0) {
+        alert("No employee data to export");
+        return;
+      }
+
+      // Create PDF in landscape mode for more columns
+      const doc = new jsPDF("landscape");
+
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(22, 163, 74);
+      doc.text("Employee Attendance Report", 14, 20);
+
+      // Metadata
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Total Records: ${employees.length}`, 14, 28);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 34);
+
+      // Define columns to display
+      const columns = [
+        { header: "ID", dataKey: "employee_id" },
+        { header: "First Name", dataKey: "first_name" },
+        { header: "Last Name", dataKey: "last_name" },
+        { header: "Department", dataKey: "department" },
+        { header: "Position", dataKey: "position" },
+        { header: "Day", dataKey: "day_of_week" },
+        { header: "Scheduled Start", dataKey: "scheduled_start" },
+        { header: "Scheduled End", dataKey: "scheduled_end" },
+        { header: "Check In", dataKey: "check_in_time" },
+        { header: "Check Out", dataKey: "check_out_time" },
+        { header: "Status", dataKey: "attendance_status" },
+        { header: "Notes", dataKey: "notes" },
+      ];
+      console.log(employees);
+
+      // Prepare data - handle null values
+      const tableData = employees.map((emp) => ({
+        employee_id: emp.employee_id || "N/A",
+        first_name: emp.first_name?.trim() || "N/A",
+        last_name: emp.last_name?.trim() || "N/A",
+        department: emp.department || "N/A",
+        position: emp.Position || "N/A",
+        day_of_week: emp.day_of_week || "N/A",
+        scheduled_start: emp.scheduled_start || "N/A",
+        scheduled_end: emp.scheduled_end || "N/A",
+        check_in_time: emp.check_in_time || "N/A",
+        check_out_time: emp.check_out_time || "N/A",
+        attendance_status: emp.attendance_status || "N/A",
+        notes: emp.notes || "-",
+      }));
+
+      // Create table
+      autoTable(doc, {
+        columns: columns,
+        body: tableData,
+        startY: 40,
+        styles: {
+          fontSize: 7,
+          cellPadding: 2,
+        },
+        headStyles: {
+          fillColor: [22, 163, 74],
+          textColor: 255,
+          fontStyle: "bold",
+          fontSize: 8,
+        },
+        alternateRowStyles: {
+          fillColor: [240, 253, 244],
+        },
+        margin: { top: 40, left: 10, right: 10 },
+        columnStyles: {
+          0: { cellWidth: 15 }, // ID
+          1: { cellWidth: 25 }, // First Name
+          2: { cellWidth: 25 }, // Last Name
+          3: { cellWidth: 25 }, // Department
+          4: { cellWidth: 30 }, // Position
+        },
+      });
+
+      // Add page numbers
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          doc.internal.pageSize.width / 2,
+          doc.internal.pageSize.height - 10,
+          { align: "center" }
+        );
+      }
+
+      // Save PDF
+      doc.save(
+        `employee_attendance_${new Date().toISOString().split("T")[0]}.pdf`
+      );
+    } catch (error) {
+      console.error("Export error:", error);
+      alert(`Failed to export: ${error.message}`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const generatePDFReport = async () => {
+    setIsGenerating(true);
+    try {
+      // Fetch attendance data
+      const response = await getAttendanceRecordsForThisMonth();
+
+      if (!response.success) {
+        alert(response.message || "Failed to fetch attendance data");
+        return;
+      }
+
+      const attendanceData = response.data;
+
+      // Group data by employee
+      const employeeMap = new Map();
+
+      attendanceData.forEach((record) => {
+        const key = record.employee_id;
+        if (!employeeMap.has(key)) {
+          employeeMap.set(key, {
+            employee_id: record.employee_id,
+            name: `${record.first_name} ${record.last_name}`,
+            department: record.department,
+            position: record.position,
+            records: [],
+          });
+        }
+        employeeMap.get(key).records.push(record);
+      });
+
+      // Calculate statistics for each employee
+      const reportData = Array.from(employeeMap.values()).map((emp) => {
+        const totalDays = emp.records.length;
+        const presentDays = emp.records.filter(
+          (r) => r.attendance_status === "Present"
+        ).length;
+        const lateDays = emp.records.filter(
+          (r) => r.attendance_status === "Late"
+        ).length;
+        const absentDays = emp.records.filter(
+          (r) => r.attendance_status === "Absent"
+        ).length;
+        const attendanceRate =
+          totalDays > 0
+            ? (((presentDays + lateDays) / totalDays) * 100).toFixed(2)
+            : 0;
+
+        return {
+          employee_id: emp.employee_id,
+          name: emp.name,
+          department: emp.department,
+          position: emp.position,
+          totalDays,
+          presentDays,
+          lateDays,
+          absentDays,
+          attendanceRate,
+        };
+      });
+
+      // Sort by department then name
+      reportData.sort((a, b) => {
+        if (a.department !== b.department) {
+          return a.department.localeCompare(b.department);
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+      // Create PDF
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      // Header
+      doc.setFontSize(18);
+      doc.setFont(undefined, "bold");
+      doc.text("Attendance Report", pageWidth / 2, 20, { align: "center" });
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, "normal");
+      const currentDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      doc.text(`Generated: ${currentDate}`, pageWidth / 2, 28, {
+        align: "center",
+      });
+      doc.text(
+        `Period: ${new Date().toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        })}`,
+        pageWidth / 2,
+        35,
+        { align: "center" }
+      );
+
+      // Summary Statistics
+      const totalEmployees = reportData.length;
+      const avgAttendanceRate =
+        reportData.reduce(
+          (sum, emp) => sum + parseFloat(emp.attendanceRate),
+          0
+        ) / totalEmployees;
+      const totalPresent = reportData.reduce(
+        (sum, emp) => sum + emp.presentDays,
+        0
+      );
+      const totalLate = reportData.reduce((sum, emp) => sum + emp.lateDays, 0);
+      const totalAbsent = reportData.reduce(
+        (sum, emp) => sum + emp.absentDays,
+        0
+      );
+
+      doc.setFontSize(10);
+      doc.setFont(undefined, "bold");
+      doc.text("Summary Statistics:", 14, 45);
+      doc.setFont(undefined, "normal");
+      doc.text(`Total Employees: ${totalEmployees}`, 14, 52);
+      doc.text(
+        `Average Attendance Rate: ${avgAttendanceRate.toFixed(2)}%`,
+        14,
+        58
+      );
+      doc.text(`Total Present Days: ${totalPresent}`, 14, 64);
+      doc.text(`Total Late Days: ${totalLate}`, 100, 64);
+      doc.text(`Total Absent Days: ${totalAbsent}`, 160, 64);
+
+      // Employee Attendance Table
+      autoTable(doc, {
+        startY: 72,
+        head: [
+          [
+            "ID",
+            "Name",
+            "Department",
+            "Position",
+            "Total",
+            "Present",
+            "Late",
+            "Absent",
+            "Rate %",
+          ],
+        ],
+        body: reportData.map((emp) => [
+          emp.employee_id,
+          emp.name,
+          emp.department,
+          emp.position,
+          emp.totalDays,
+          emp.presentDays,
+          emp.lateDays,
+          emp.absentDays,
+          emp.attendanceRate + "%",
+        ]),
+        theme: "grid",
+        headStyles: {
+          fillColor: [41, 128, 185],
+          fontStyle: "bold",
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+        },
+        columnStyles: {
+          0: { cellWidth: 12 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 35 },
+          4: { cellWidth: 15 },
+          5: { cellWidth: 17 },
+          6: { cellWidth: 13 },
+          7: { cellWidth: 16 },
+          8: { cellWidth: 18 },
+        },
+        margin: { left: 14, right: 14 },
+      });
+
+      // Footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont(undefined, "italic");
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          pageWidth / 2,
+          doc.internal.pageSize.getHeight() - 10,
+          { align: "center" }
+        );
+      }
+
+      // Save the PDF
+      const fileName = `Attendance_Report_${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
+      doc.save(fileName);
+
+      alert("Attendance report generated successfully!");
+    } catch (error) {
+      console.error("Error generating report:", error);
+      alert("Error generating report: " + error.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
   useEffect(() => {
     const fetchAnalytics = async () => {
       const response = await getAdminAnalytics();
@@ -253,11 +589,18 @@ export default function Dashboard() {
                 <AlertCircle className="w-5 h-5 text-blue-500" />
               </div>
               <div className="space-y-2">
-                <button className="w-full text-left px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors text-blue-700 text-sm font-medium">
+                <button
+                  onClick={generatePDFReport}
+                  className="w-full text-left px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors text-blue-700 text-sm font-medium"
+                >
                   ▸ Generate Attendance Report
                 </button>
-                <button className="w-full text-left px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition-colors text-green-700 text-sm font-medium">
-                  ▸ Export Employee Data
+                <button
+                  onClick={handleExportEmployees}
+                  disabled={exporting || loadingForGetEmployees}
+                  className="w-full text-left px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition-colors text-green-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {exporting ? "⏳ Exporting..." : "▸ Export Employee Data"}
                 </button>
                 <button className="w-full text-left px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-purple-700 text-sm font-medium">
                   ▸ View Performance Reports

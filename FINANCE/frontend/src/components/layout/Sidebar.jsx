@@ -1,45 +1,47 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  FileText, 
-  CreditCard, 
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  CreditCard,
   LogOut,
-  Globe
-} from 'lucide-react';
+  Globe,
+} from "lucide-react";
 
 const Sidebar = ({ onLogout }) => {
   const location = useLocation();
   const [logoError, setLogoError] = useState(false);
 
   // Ensure onLogout is defined
-  const handleLogout = onLogout || (() => {
-    console.warn('onLogout is not defined in Sidebar');
-    // No-op since authentication is removed
-  });
-  
+  const handleLogout =
+    onLogout ||
+    (() => {
+      console.warn("onLogout is not defined in Sidebar");
+      // No-op since authentication is removed
+    });
+
   const menuItems = [
     {
-      name: 'Dashboard',
-      path: '/finance-dashboard',
-      icon: LayoutDashboard
+      name: "Dashboard",
+      path: "/finance-dashboard",
+      icon: LayoutDashboard,
     },
     {
-      name: 'Employees',
-      path: '/employees',
-      icon: Users
+      name: "Employees",
+      path: "/employees",
+      icon: Users,
     },
     {
-      name: 'Invoices',
-      path: '/invoices',
-      icon: FileText
+      name: "Invoices",
+      path: "/invoices",
+      icon: FileText,
     },
     {
-      name: 'Monitor Payment',
-      path: '/payments',
-      icon: CreditCard
-    }
+      name: "Monitor Payment",
+      path: "/payments",
+      icon: CreditCard,
+    },
   ];
 
   const isActive = (path) => {
@@ -47,64 +49,79 @@ const Sidebar = ({ onLogout }) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Logo Header - Matching Login Form */}
-      <div className="flex flex-col items-center justify-center py-6 px-4 bg-navy-800 border-b border-navy-700">
-        {/* Logo Image */}
-        <div className="mb-3">
-          <div className="w-16 h-16 rounded-full border-4 border-white shadow-lg flex items-center justify-center transform transition-all duration-300 hover:scale-110 hover:rotate-12 overflow-hidden bg-white">
+    <div className="fixed top-0 left-0 h-full w-64 bg-white shadow-lg flex flex-col">
+      {/* Logo Header */}
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          {/* Logo Image */}
+          <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-white shadow-sm">
             {!logoError ? (
-              <img 
-                src="/logo.png" 
-                alt="Fur-Ever Care Logo" 
-                className="w-full h-full object-contain p-2"
+              <img
+                src="/logo.png"
+                alt="Fur-Ever Care Logo"
+                className="w-full h-full object-cover"
                 onError={() => setLogoError(true)}
               />
             ) : (
               <div className="w-full h-full bg-blue-400 rounded-full flex items-center justify-center">
-                <Globe className="h-8 w-8 text-white" />
+                <Globe className="h-6 w-6 text-white" />
               </div>
             )}
           </div>
-        </div>
-        
-        {/* Title and Subtitle */}
-        <div className="text-center">
-          <h1 className="text-lg font-bold text-white mb-0.5">FUR-EVER CARE</h1>
-          <p className="text-xs text-gray-300">Sales And Finance</p>
+
+          {/* Title */}
+          <div>
+            <h1
+              className="text-xl font-bold tracking-wide"
+              style={{ color: "#5080BE" }}
+            >
+              FUR-EVER CARE
+            </h1>
+            <p className="text-xs text-gray-500">Sales And Finance</p>
+          </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.name}
-              to={item.path}
-              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                isActive(item.path)
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:bg-navy-800 hover:text-white'
-              }`}
-            >
-              <Icon className="h-5 w-5 mr-3" />
-              {item.name}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 py-6">
+        <ul className="space-y-2 px-4">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.path);
+
+            return (
+              <li key={item.name}>
+                <Link to={item.path}>
+                  <button
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                      active
+                        ? "bg-blue-100 text-blue-600 shadow-sm"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                    }`}
+                  >
+                    <Icon
+                      size={20}
+                      className={active ? "text-blue-600" : "text-gray-500"}
+                    />
+                    <span className="font-medium">{item.name}</span>
+                  </button>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
-      {/* Logout button */}
-      <div className="px-4 py-6 border-t border-navy-700">
-        <button
+      {/* Logout Button */}
+      <div className="p-4 border-t border-gray-100">
+        <a
+          href="http://localhost:5173/login"
           onClick={handleLogout}
-          className="flex items-center w-full px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-colors duration-200"
+          className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-800 rounded-lg transition-all duration-200"
         >
-          <LogOut className="h-5 w-5 mr-3" />
-          Logout
-        </button>
+          <LogOut size={20} className="text-gray-500" />
+          <span className="font-medium">LOGOUT</span>
+        </a>
       </div>
     </div>
   );

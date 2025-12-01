@@ -45,8 +45,18 @@ export default function Login() {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     console.log(storedUser);
 
-    if (storedUser.role === "HR") {
+    if (storedUser.department === "HR") {
       navigate("/dashboard");
+    } else if (storedUser.department === "Finance") {
+      window.location.href = "http://localhost:3000/finance-dashboard";
+    } else if (storedUser.department === "Appointment") {
+      window.location.href =
+        "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/admin_page/overview.php";
+    } else if (storedUser.department === "Patient") {
+      window.location.href =
+        "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php";
+    } else if (storedUser.department === "Inventory") {
+      window.location.href = "http://localhost:3000";
     }
   };
 
@@ -55,7 +65,7 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
+    <div className="login-container min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-sky-100 relative">
       <img
         className="login-img"
         src="/images/login-img.jpg"

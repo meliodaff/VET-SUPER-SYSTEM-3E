@@ -6,16 +6,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8">  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vet Appointment System</title>
   <link rel="stylesheet" href="../styles/index.css">
   <link rel="stylesheet" href="../styles/index_Footer.css">
   <link rel="stylesheet" href="../styles/index_Header.css">
+
+      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+
 </head>
 <body>
 
-   <!-- Header Section -->
+  <!-- Header Section -->
   <header class="header">
     <div class="header-left">
       <div class="logo-wrapper">
@@ -25,11 +28,6 @@
     </div>
     <div class="header-right">
       <nav class="nav-links">
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#services">Services</a>
-        <a href="#contact">Contact</a>
-        <h4 class="admin-btn">Admin</h4>
         <img src="../image/profile 1.png" alt="User" class="user-icon" />
       </nav>
 
@@ -48,6 +46,51 @@
       </div>
     </div>
   </header>
+
+    <div class="side-nav">
+      <a href="" class="nav-item">
+        <img src="image/home.png" class="nav-icon" alt="Dashboard Icon">
+        Dashboard
+      </a>
+      <a href="" class="nav-item">
+        <img src="image/user.png" class="nav-icon" alt="Dashboard Icon">
+        Employee Profile
+      </a>
+      <a href="" class="nav-item">
+          <img src="image/Group.png" class="nav-icon" alt="Dashboard Icon">
+        Applicant
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/calendar.png" class="nav-icon" alt="Dashboard Icon">
+        Schedule
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/gift.png" class="nav-icon" alt="Dashboard Icon">
+        Incentives
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/chart-line.png" class="nav-icon" alt="Dashboard Icon">  
+        Analytics
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/megaphone-alt.png" class="nav-icon" alt="Dashboard Icon">  
+        Announcement
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/star.png" class="nav-icon" alt="Dashboard Icon">  
+        Performance Rating
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/community.png" class="nav-icon" alt="Dashboard Icon">  
+        Employee Portal
+      </a>
+
+      <!-- Logout at bottom using padding trick -->
+      <a href="" class="nav-logout">
+      <img src="image/arrow-out-right-square-half.png" class="nav-icon" alt="Dashboard Icon">  
+        Logout
+      </a>
+  </div>
 
   <main class="appointments-section">
     <h2 class="appointments-title">Approved</h2>
@@ -111,7 +154,7 @@
   </main>
 
  <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
+
 
   <script src="../script/index.js"></script>
 </body>

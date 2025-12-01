@@ -13,7 +13,7 @@ if($REQUEST_METHOD === "GET"){
     $idParams = isset($_GET["id"]) ? $_GET["id"] : null;
     $isClaim = isset($_GET["isClaim"]) ? $_GET["isClaim"] : null;
     $topPerformer = isset($_GET["topPerformer"]) ? $_GET["topPerformer"] : null;
-     
+    $items = isset($_GET["items"]) ? $_GET["items"] : null;
 
     if($idParams) {
         $response = getIncentive($idParams, $pdo);
@@ -22,6 +22,9 @@ if($REQUEST_METHOD === "GET"){
         $response = getIncentives((int)$isClaim, $pdo);
     } else if ($topPerformer === "true"){
         $response = getTopPerformer($pdo);
+    }
+    else if ($items === "true") {
+        $response = getIncentiveItems($pdo);
     }
     else {
         $response = getAllIncentivesForTheMonth($pdo);

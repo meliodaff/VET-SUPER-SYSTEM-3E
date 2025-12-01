@@ -1,57 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, Tag } from 'lucide-react';
 import '../styles/categories.css';
 
-const Categories = () => {
-  const [categories, setCategories] = useState([
-    { 
-      id: 1, 
-      name: 'Dog Food & Treats', 
-      description: 'Premium dog food, nutritious treats, and dietary sup...', 
-      productCount: 12,
-      createdDate: 'Oct 4, 2025'
-    },
-    { 
-      id: 2, 
-      name: 'Cat Food & Treats', 
-      description: 'Quality cat food, healthy treats, and nutritional su...', 
-      productCount: 8,
-      createdDate: 'Oct 4, 2025'
-    },
-    { 
-      id: 3, 
-      name: 'Pet Grooming', 
-      description: 'Shampoos, brushes, nail clippers, and grooming tools', 
-      productCount: 15,
-      createdDate: 'Oct 4, 2025'
-    },
-    { 
-      id: 4, 
-      name: 'Pet Toys', 
-      description: 'Interactive toys, chew toys, and entertainment for pets', 
-      productCount: 20,
-      createdDate: 'Oct 4, 2025'
-    },
-    { 
-      id: 5, 
-      name: 'Pet Health & Medicine', 
-      description: 'Vitamins, supplements, flea control, and medications', 
-      productCount: 10,
-      createdDate: 'Oct 4, 2025'
-    },
-    { 
-      id: 6, 
-      name: 'Pet Accessories', 
-      description: 'Collars, leashes, bowls, beds, and carriers', 
-      productCount: 18,
-      createdDate: 'Oct 4, 2025'
-    },
-  ]);
+const API_URL = 'http://localhost/inventory-system/backend/api.php';
 
+const Categories = () => {
+  const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
+  const [loading, setLoading] = useState(false);
+
+  // 1. Fetch Categories on Load
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}?action=categories`);
+      const data = await response.json();
+      if (data.success) {
+        setCategories(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+    setLoading(false);
+  };
 
   const filteredCategories = categories.filter(cat =>
     cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -70,32 +48,71 @@ const Categories = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
-      setCategories(categories.filter(cat => cat.id !== id));
+      try {
+        const response = await fetch(`${API_URL}?action=delete_category&id=${id}`, {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert('Category deleted successfully');
+          fetchCategories(); // Refresh list
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (error) {
+        console.error("Error deleting category:", error);
+      }
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (editingCategory) {
-      setCategories(categories.map(cat =>
-        cat.id === editingCategory.id
-          ? { ...cat, name: formData.name, description: formData.description }
-          : cat
-      ));
-    } else {
-      const newCategory = {
-        id: Math.max(...categories.map(c => c.id), 0) + 1,
-        name: formData.name,
-        description: formData.description,
-        productCount: 0,
-        createdDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-      };
-      setCategories([...categories, newCategory]);
+  // Helper to create FormData for PHP
+  const toFormData = (obj) => {
+    const form = new FormData();
+    for (const key in obj) {
+      form.append(key, obj[key]);
     }
-    setShowModal(false);
-    setFormData({ name: '', description: '' });
+    return form;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Prepare Data
+    const payload = {
+        name: formData.name,
+        description: formData.description
+    };
+
+    if (editingCategory) {
+        payload.id = editingCategory.id;
+    }
+
+    const bodyData = toFormData(payload);
+    
+    // Determine Action
+    const action = editingCategory ? 'update_category' : 'add_category';
+
+    try {
+        const response = await fetch(`${API_URL}?action=${action}`, {
+            method: 'POST',
+            body: bodyData
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            alert(editingCategory ? 'Category updated!' : 'Category added!');
+            setShowModal(false);
+            setFormData({ name: '', description: '' });
+            fetchCategories(); // Refresh list to get new data/dates
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        console.error("Error saving category:", error);
+        alert("Failed to save category");
+    }
   };
 
   return (
@@ -147,52 +164,57 @@ const Categories = () => {
           <div className="table-subtitle">Manage product categories and their descriptions</div>
         </div>
         
-        <div className="table-container">
-          <table className="categories-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Product Count</th>
-                <th>Created Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCategories.map(category => (
-                <tr key={category.id}>
-                  <td className="td-name">{category.name}</td>
-                  <td className="td-description">{category.description}</td>
-                  <td className="td-count">{category.productCount} products</td>
-                  <td className="td-date">{category.createdDate}</td>
-                  <td className="td-actions">
-                    <button
-                      className="btn-icon"
-                      onClick={() => handleEdit(category)}
-                      title="Edit"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      className="btn-icon btn-danger"
-                      onClick={() => handleDelete(category.id)}
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+        {loading ? (
+            <div style={{ padding: '2rem', textAlign: 'center' }}>Loading Categories...</div>
+        ) : (
+            <div className="table-container">
+            <table className="categories-table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Product Count</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                {filteredCategories.map(category => (
+                    <tr key={category.id}>
+                    <td className="td-name">{category.name}</td>
+                    <td className="td-description">{category.description}</td>
+                    {/* Display Live Product Count from Database */}
+                    <td className="td-count">{category.productCount} products</td>
+                    <td className="td-date">{category.createdDate}</td>
+                    <td className="td-actions">
+                        <button
+                        className="btn-icon"
+                        onClick={() => handleEdit(category)}
+                        title="Edit"
+                        >
+                        <Edit2 size={16} />
+                        </button>
+                        <button
+                        className="btn-icon btn-danger"
+                        onClick={() => handleDelete(category.id)}
+                        title="Delete"
+                        >
+                        <Trash2 size={16} />
+                        </button>
+                    </td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
 
-          {filteredCategories.length === 0 && (
-            <div className="empty-state">
-              <Tag size={48} />
-              <p>No categories found</p>
+            {filteredCategories.length === 0 && (
+                <div className="empty-state">
+                <Tag size={48} />
+                <p>No categories found</p>
+                </div>
+            )}
             </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Modal */}

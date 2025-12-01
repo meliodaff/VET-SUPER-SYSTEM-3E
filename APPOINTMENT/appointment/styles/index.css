@@ -11,6 +11,7 @@ body {
   align-items: center;
   padding: 5px 0px;
   background: #e6f2ff;
+  position:fixed;
 }
 
 .header-left {
@@ -330,6 +331,7 @@ input:focus {
   font-weight: bold;
   color: #002060;
   margin-bottom: 20px;
+  margin-top:90px;
 }
 
 /* Tabs */
@@ -685,4 +687,57 @@ input:disabled {
 
 .no-btn:hover {
   background: #555;
+}
+
+
+/* SIDE NAV (GRID LAYOUT) */
+.side-nav {
+  position: fixed;
+  left: 0;
+  top: 80px;
+  width: 250px;
+  height: 100%;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 6px;
+  gap: 7px;
+  background: #ffffff;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: min-content;
+
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+}
+
+.nav-item {
+  padding: 8px 15px;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+/* Push content to the right so sidebar doesn't cover it */
+.appointments-section {
+  margin-left: 250px;
+
+}
+
+.nav-logout {
+  padding: 14px 15px;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 6px;
+  margin-top: 17px;
+}
+
+.nav-icon{
+  position:relative;
+  top: 5px;
+  width: 25px;
 }

@@ -35,10 +35,13 @@ $service = $result->fetch_assoc();
   <link rel="stylesheet" href="/appointment/styles/popup.css">
   <link rel="stylesheet" href="../styles/index_Footer.css">
   <link rel="stylesheet" href="../styles/index_Header.css">
+
+  
+    <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 </head>
 <body>
 
-   <!-- Header Section -->
+  <!-- Header Section -->
   <header class="header">
     <div class="header-left">
       <div class="logo-wrapper">
@@ -48,11 +51,6 @@ $service = $result->fetch_assoc();
     </div>
     <div class="header-right">
       <nav class="nav-links">
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#services">Services</a>
-        <a href="#contact">Contact</a>
-        <h4 class="admin-btn">Admin</h4>
         <img src="../image/profile 1.png" alt="User" class="user-icon" />
       </nav>
 
@@ -72,8 +70,58 @@ $service = $result->fetch_assoc();
     </div>
   </header>
 
+      <div class="side-nav">
+      <a href="" class="nav-item">
+        <img src="image/home.png" class="nav-icon" alt="Dashboard Icon">
+        Dashboard
+      </a>
+      <a href="" class="nav-item">
+        <img src="image/user.png" class="nav-icon" alt="Dashboard Icon">
+        Employee Profile
+      </a>
+      <a href="" class="nav-item">
+          <img src="image/Group.png" class="nav-icon" alt="Dashboard Icon">
+        Applicant
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/calendar.png" class="nav-icon" alt="Dashboard Icon">
+        Schedule
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/gift.png" class="nav-icon" alt="Dashboard Icon">
+        Incentives
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/chart-line.png" class="nav-icon" alt="Dashboard Icon">  
+        Analytics
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/megaphone-alt.png" class="nav-icon" alt="Dashboard Icon">  
+        Announcement
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/star.png" class="nav-icon" alt="Dashboard Icon">  
+        Performance Rating
+      </a>
+      <a href="" class="nav-item">
+      <img src="image/community.png" class="nav-icon" alt="Dashboard Icon">  
+        Employee Portal
+      </a>
+
+      <!-- Logout at bottom using padding trick -->
+      <a href="" class="nav-logout">
+      <img src="image/arrow-out-right-square-half.png" class="nav-icon" alt="Dashboard Icon">  
+        Logout
+      </a>
+  </div>
+
+
   <!-- Main Section -->
   <main class="appointments-section">
+    <br>
+    <br>
+    <br>
+    <br>
   <div style="border: 1px solid black; padding: 50px; border-radius:30px;">
     <h2 class="appointments-title">Edit Service</h2>
 
@@ -107,7 +155,6 @@ $service = $result->fetch_assoc();
 </main>
 
  <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 
 <!-- Confirmation Popup (reusable) -->
 <?php include '../php/confirmation.php'; ?>

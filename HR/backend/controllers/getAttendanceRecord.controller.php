@@ -83,6 +83,63 @@ WHERE e.employee_id = :employee_id AND DATE(taa.check_in_time) = :date
             return $response;
     }
 
+    function getAttendanceRecordForTheMonthOnly($pdo) {
+        $query = "SELECT 
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    e.department,
+    e.position,
+    dates.date as schedule_date,
+    es.day_of_week,
+    es.start_time AS scheduled_start,
+    es.end_time AS scheduled_end,
+    TIME(taa.check_in_time) AS check_in_time,
+    TIME(taa.check_out_time) AS check_out_time,
+    COALESCE(taa.attendance_status, 'Absent') AS attendance_status,
+    taa.notes
+FROM employees e
+CROSS JOIN (
+    SELECT DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL seq DAY) as date
+    FROM (
+        SELECT 0 as seq UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 
+        UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7
+        UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11
+        UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15
+        UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19
+        UNION SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23
+        UNION SELECT 24 UNION SELECT 25 UNION SELECT 26 UNION SELECT 27
+        UNION SELECT 28 UNION SELECT 29 UNION SELECT 30
+    ) seq
+    WHERE DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL seq DAY) <= LAST_DAY(CURDATE())
+) dates
+JOIN employee_schedules es
+    ON e.employee_id = es.employee_id
+    AND es.day_of_week = DAYNAME(dates.date)
+LEFT JOIN time_and_attendance taa
+    ON e.employee_id = taa.employee_id
+    AND DATE(taa.check_in_time) = dates.date
+ORDER BY e.employee_id, dates.date;
+";
+
+        try {
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([]);
+
+            $datas = $stmt->fetchAll();
+            $response = [
+                "success" => true,
+                "data" => $datas 
+            ];
+        } catch (PDOException $e) {
+            $response = [
+                "success" => false,
+                "error" => $e->getMessage()
+            ];
+            }
+            return $response;
+    }
+
 
     function getAttendanceRecordForTheMonth($id, $month, $pdo) {
         $query = "SELECT

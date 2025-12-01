@@ -1,3 +1,7 @@
+/* ===================================
+   VET INVENTORY SYSTEM - SUPPLIERS CSS
+   =================================== */
+
 /* Global Reset */
 * {
   box-sizing: border-box;
@@ -313,12 +317,8 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal {
@@ -335,14 +335,8 @@
 }
 
 @keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .modal-header {
@@ -449,45 +443,54 @@
   margin-bottom: 1rem;
 }
 
+/* ============= MODAL FOOTER & BUTTONS ============= */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0 1.5rem 1.5rem 1.5rem;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #f0f0f0;
+  background-color: #fff;
+}
+
+.btn-cancel,
+.btn-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px; /* FIXED HEIGHT FOR ALIGNMENT */
+  padding: 0 1.5rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
 }
 
 .btn-cancel {
   background-color: white;
-  color: #1a1a1a;
-  border: 1px solid #dee2e6;
-  padding: 0.625rem 1.25rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
 }
 
 .btn-cancel:hover {
-  background-color: #f8f9fa;
-  border-color: #adb5bd;
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #111827;
 }
 
 .btn-submit {
   background-color: #5080be;
   color: white;
-  border: none;
-  padding: 0.625rem 2rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  border: 1px solid #5080be; /* BORDER ADDED TO MATCH HEIGHT */
 }
 
 .btn-submit:hover {
-  background-color: #5080be;
+  background-color: #3b6fae;
+  border-color: #3b6fae;
+  box-shadow: 0 2px 4px rgba(80, 128, 190, 0.3);
 }
 
 /* Responsive Design */
@@ -540,13 +543,14 @@
 
   .modal-footer {
     padding: 0 1.25rem 1.25rem 1.25rem;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .btn-cancel,
   .btn-submit {
     max-width: 100%;
+    width: 100%;
   }
 }

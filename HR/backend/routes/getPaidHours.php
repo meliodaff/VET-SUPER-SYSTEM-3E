@@ -13,8 +13,8 @@ if($REQUEST_METHOD === "GET"){
 
     $idParams = isset($_GET["id"]) ? $_GET["id"] : null;
     $period = isset($_GET["period"]) ? (int)$_GET["period"] : null;
-    $year = isset($_GET["year"]) ? $_GET["year"] : null;
-    $month = isset($_GET["month"]) ? $_GET["month"] : null;
+    $year = isset($_GET["year"]) ? (int)$_GET["year"] : null;
+    $month = isset($_GET["month"]) ? (int)$_GET["month"] : null;
     
     // if(!$idParams) {
     //     // WALA PA HERE YUNG OTHER QUERY KEY LIKE THE PERIOD OR THE YEAR OR THE MONTH

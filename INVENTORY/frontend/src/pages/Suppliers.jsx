@@ -1,46 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, Package } from 'lucide-react';
 import '../styles/suppliers.css';
 
+const API_URL = 'http://localhost/inventory-system/backend/api.php';
+
 const Suppliers = () => {
-  const [suppliers, setSuppliers] = useState([
-    {
-      id: 1,
-      name: 'VetMed Pharmaceuticals',
-      contactPerson: 'Dr. Sarah Chen',
-      email: 'orders@vetmedpharma.com',
-      phone: '+1-555-0123',
-      address: '456 Medical Plaza, San Francisco, CA',
-      createdDate: 'Oct 4, 2025'
-    },
-    {
-      id: 2,
-      name: 'Pet Care Supplies Co.',
-      contactPerson: 'Michael Rodriguez',
-      email: 'sales@petcaresupplies.com',
-      phone: '+1-555-0456',
-      address: '789 Commerce Street, Austin, TX',
-      createdDate: 'Oct 4, 2025'
-    },
-    {
-      id: 3,
-      name: 'Animal Health Solutions',
-      contactPerson: 'Jennifer Wu',
-      email: 'contact@animalhealthsolutions.com',
-      phone: '+1-555-0789',
-      address: '321 Healthcare Ave, Boston, MA',
-      createdDate: 'Oct 4, 2025'
-    },
-    {
-      id: 4,
-      name: 'Veterinary Equipment Inc.',
-      contactPerson: 'David Thompson',
-      email: 'info@vetequipment.com',
-      phone: '+1-555-0321',
-      address: '654 Industrial Blvd, Chicago, IL',
-      createdDate: 'Oct 4, 2025'
-    }
-  ]);
+  // 1. Initialize empty state
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -52,6 +19,25 @@ const Suppliers = () => {
     phone: '',
     address: ''
   });
+
+  // 2. Fetch Data on Load
+  useEffect(() => {
+    fetchSuppliers();
+  }, []);
+
+  const fetchSuppliers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}?action=suppliers`);
+      const data = await response.json();
+      if (data.success) {
+        setSuppliers(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+    }
+    setLoading(false);
+  };
 
   const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,30 +63,64 @@ const Suppliers = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this supplier?')) {
-      setSuppliers(suppliers.filter(sup => sup.id !== id));
+      try {
+        const response = await fetch(`${API_URL}?action=delete_supplier&id=${id}`, {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert('Supplier deleted successfully');
+          fetchSuppliers();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (error) {
+        console.error("Error deleting supplier:", error);
+      }
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (editingSupplier) {
-      setSuppliers(suppliers.map(sup =>
-        sup.id === editingSupplier.id
-          ? { ...sup, ...formData }
-          : sup
-      ));
-    } else {
-      const newSupplier = {
-        id: Math.max(...suppliers.map(s => s.id), 0) + 1,
-        ...formData,
-        createdDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-      };
-      setSuppliers([...suppliers, newSupplier]);
+  // Helper for PHP FormData
+  const toFormData = (obj) => {
+    const form = new FormData();
+    for (const key in obj) {
+      form.append(key, obj[key]);
     }
-    setShowModal(false);
-    setFormData({ name: '', contactPerson: '', email: '', phone: '', address: '' });
+    return form;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Prepare data
+    const payload = { ...formData };
+    if (editingSupplier) {
+        payload.id = editingSupplier.id;
+    }
+
+    const bodyData = toFormData(payload);
+    const action = editingSupplier ? 'update_supplier' : 'add_supplier';
+
+    try {
+        const response = await fetch(`${API_URL}?action=${action}`, {
+            method: 'POST',
+            body: bodyData
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            alert(editingSupplier ? 'Supplier updated!' : 'Supplier added!');
+            setShowModal(false);
+            setFormData({ name: '', contactPerson: '', email: '', phone: '', address: '' });
+            fetchSuppliers(); // Refresh list
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        console.error("Error saving supplier:", error);
+    }
   };
 
   return (
@@ -152,58 +172,62 @@ const Suppliers = () => {
           <div className="table-subtitle">Manage supplier information and contact details</div>
         </div>
         
-        <div className="table-container">
-          <table className="suppliers-table">
-            <thead>
-              <tr>
-                <th>Supplier Name</th>
-                <th>Contact Person</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Created Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSuppliers.map(supplier => (
-                <tr key={supplier.id}>
-                  <td className="td-name">{supplier.name}</td>
-                  <td className="td-contact">{supplier.contactPerson}</td>
-                  <td className="td-email">
-                    <a href={`mailto:${supplier.email}`}>{supplier.email}</a>
-                  </td>
-                  <td className="td-phone">{supplier.phone}</td>
-                  <td className="td-address">{supplier.address}</td>
-                  <td className="td-date">{supplier.createdDate}</td>
-                  <td className="td-actions">
-                    <button
-                      className="btn-icon"
-                      onClick={() => handleEdit(supplier)}
-                      title="Edit"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      className="btn-icon btn-danger"
-                      onClick={() => handleDelete(supplier.id)}
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+        {loading ? (
+            <div style={{ padding: '2rem', textAlign: 'center' }}>Loading Suppliers...</div>
+        ) : (
+            <div className="table-container">
+            <table className="suppliers-table">
+                <thead>
+                <tr>
+                    <th>Supplier Name</th>
+                    <th>Contact Person</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                {filteredSuppliers.map(supplier => (
+                    <tr key={supplier.id}>
+                    <td className="td-name">{supplier.name}</td>
+                    <td className="td-contact">{supplier.contactPerson}</td>
+                    <td className="td-email">
+                        <a href={`mailto:${supplier.email}`}>{supplier.email}</a>
+                    </td>
+                    <td className="td-phone">{supplier.phone}</td>
+                    <td className="td-address">{supplier.address}</td>
+                    <td className="td-date">{supplier.createdDate}</td>
+                    <td className="td-actions">
+                        <button
+                        className="btn-icon"
+                        onClick={() => handleEdit(supplier)}
+                        title="Edit"
+                        >
+                        <Edit2 size={16} />
+                        </button>
+                        <button
+                        className="btn-icon btn-danger"
+                        onClick={() => handleDelete(supplier.id)}
+                        title="Delete"
+                        >
+                        <Trash2 size={16} />
+                        </button>
+                    </td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
 
-          {filteredSuppliers.length === 0 && (
-            <div className="empty-state">
-              <Package size={48} />
-              <p>No suppliers found</p>
+            {filteredSuppliers.length === 0 && (
+                <div className="empty-state">
+                <Package size={48} />
+                <p>No suppliers found</p>
+                </div>
+            )}
             </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Modal */}

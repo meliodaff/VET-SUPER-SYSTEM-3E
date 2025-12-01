@@ -58,6 +58,9 @@ $grand_total = $service_price + $total_items_price;
   <link rel="stylesheet" href="../styles/admin_details.css">
   <link rel="stylesheet" href="../styles/index_Footer.css">
   <link rel="stylesheet" href="../styles/index_Header.css">
+
+  
+    <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 </head>
 <body>
 
@@ -71,11 +74,6 @@ $grand_total = $service_price + $total_items_price;
     </div>
     <div class="header-right">
       <nav class="nav-links">
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#services">Services</a>
-        <a href="#contact">Contact</a>
-        <h4 class="admin-btn">Admin</h4>
         <img src="../image/profile 1.png" alt="User" class="user-icon" />
       </nav>
 
@@ -164,7 +162,6 @@ $grand_total = $service_price + $total_items_price;
   <br>
   <br>
  <!-- footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
 
 <script src="../script/index.js"></script>
 </body>

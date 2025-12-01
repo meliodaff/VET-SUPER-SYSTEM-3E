@@ -18,7 +18,10 @@ $user = $user_result->fetch_assoc();
   <meta charset="UTF-8">
   <title>Book Appointment</title>
   <link rel="stylesheet" href="../styles/Book_appointment_book.css">
-  <link rel="stylesheet" href="/appointment/styles/popup.css">
+  <link rel="stylesheet" href="../styles/popup.css">
+
+      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+
   <style>
     .add-pet-btn {
       display: none;
@@ -154,8 +157,9 @@ $user = $user_result->fetch_assoc();
   </main>
 
   <!-- Footer -->
-  <iframe src="../header_footer/footer/Footer.html" style="width:100%; height:523px; border:none;"></iframe>
-
+  <?php
+    include '../../../MARKETING/generalfooter.php';
+  ?>
   <!-- EXISTING/NEW PET BUTTON HANDLING -->
   <script>
     const statusRadios = document.querySelectorAll('input[name="status"]');

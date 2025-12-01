@@ -29,7 +29,8 @@ export default function EmployeeAnalytics({ employee }) {
   useEffect(() => {
     const fetchEmployeeAnalytics = async () => {
       try {
-        const response = await getEmployeeAnalytics(employee?.employee_id || 1);
+        const user = JSON.parse(localStorage.getItem("user"));
+        const response = await getEmployeeAnalytics(user.employee_id);
 
         if (!response.success) {
           alert(response.message);
