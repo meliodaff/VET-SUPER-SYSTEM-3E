@@ -1,15 +1,31 @@
 <?php
-  require_once '../includes/session_id.php';
-  require_once '../includes/db.php';
+require_once '../includes/session_id.php';
+require_once '../includes/hr_db.php';
 
 // Get user data based on the logged-in user's ID
 $user_id = $_SESSION['user_id'];
 
-$user_query = $conn->prepare("SELECT * FROM registered WHERE user_id = ?");
+// Prepare statement safely
+$user_query = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
 $user_query->bind_param("i", $user_id);
 $user_query->execute();
 $user_result = $user_query->get_result();
 $user = $user_result->fetch_assoc();
+
+if (!$user) {
+    die("User not found.");
+}
+
+$full_name = trim(($user['first_name'] ?? '') . ' ' . ($user['middle_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+$email = $user['email'] ?? '';
+
+// Fetch doctors
+$doctor_sql = "SELECT employee_id, first_name, middle_name, last_name FROM employees WHERE department = ?";
+$doctor_stmt = $conn->prepare($doctor_sql);
+$department = "Doctor";
+$doctor_stmt->bind_param("s", $department);
+$doctor_stmt->execute();
+$doctor_result = $doctor_stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -19,98 +35,67 @@ $user = $user_result->fetch_assoc();
   <title>Book Appointment</title>
   <link rel="stylesheet" href="../styles/Book_appointment_book.css">
   <link rel="stylesheet" href="../styles/popup.css">
-
-      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
-
+  <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
   <style>
-    .add-pet-btn {
-      display: none;
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #002060;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .add-pet-btn:hover {
-      background: #001040;
-    }
-    .submit-btn {
-      padding: 12px 20px;
-      background: #002060;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .submit-btn:hover {
-      background: #001040;
-    }
+    .add-pet-btn { display: none; margin-top: 10px; padding: 10px 20px; background: #002060; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .add-pet-btn:hover { background: #001040; }
+    .submit-btn { padding: 12px 20px; background: #002060; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .submit-btn:hover { background: #001040; }
   </style>
 </head>
-
 <body>
-  <!-- Header -->
   <?php include '../header_footer/Header/Header.php'; ?>
+  <?php include '../php/popup.php'; ?>
 
-
-    <!-- popup -->
-    <?php include '../php/popup.php'; ?>
-
-
-  <!-- Main Content -->
   <main>
     <div class="container">
       <h1>Book Your Visit</h1>
       <p class="subtitle">Schedule your pet's visit</p>
       <h2 class="form-title">Book Appointment</h2>
 
-      <!-- FORM -->
       <form id="appointmentForm" method="POST" action="../php/book.php">
-        
-        <!-- OWNER INFORMATION -->
+        <input type="hidden" name="name" value="<?= htmlspecialchars($full_name) ?>">
+        <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
+
         <div class="section owner-pet">
           <div class="section-header">Owner Information</div>
 
           <div class="form-row">
-            <input type="text" name="fname" placeholder="Full Name *" required>
-            <select name="vetdoc" required>
+            <input type="tel" name="phone" placeholder="Phone Number *" required style="width: 98%;">
+            <select name="vetdoc_id" id="vetdoc" required>
               <option value="">Select Veterinarian *</option>
-              <option value="Dr. Smith">Dr. Smith</option>
-              <option value="Dr. Johnson">Dr. Johnson</option>
+              <?php
+              while ($doctor = $doctor_result->fetch_assoc()) {
+                  $doctor_id = $doctor['employee_id'];
+                  $doctor_name = trim($doctor['first_name'] . ' ' . $doctor['middle_name'] . ' ' . $doctor['last_name']);
+                  echo '<option value="'.htmlspecialchars($doctor_id).'" data-name="'.htmlspecialchars($doctor_name).'">'.htmlspecialchars($doctor_name).'</option>';
+              }
+              ?>
             </select>
+            <input type="hidden" name="vetdoc_name" id="vetdoc_name">
           </div>
 
           <div class="form-row">
-            <div style="width: 50%;">
-              <input type="tel" name="phone" placeholder="Phone Number *" required style="width: 98%;">
-            </div>
-            <label><strong>Status</strong></label>
+            <p style="margin-top: 15px;"><strong>Status</strong></p>
             <div class="status-options">
               <label><input type="radio" name="status" value="existing" checked> Existing Pet</label>
               <label><input type="radio" name="status" value="new"> New Pet</label>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div style="width: 50%;">
-              <input type="email" name="email" placeholder="Email Address *" required style="width: 98%;">
             </div>
 
             <select id="petDropdown" name="pet_name" class="select-pet" required>
               <option value="">Select Pet *</option>
               <?php
-                $sql = "SELECT id, pet_name FROM mypet WHERE user_id = {$_SESSION['user_id']}";
-                $result = $conn->query($sql);
-                if ($result->num_rows > 0) {
-                  while ($row = $result->fetch_assoc()) {
-                    echo '<option value="'.$row['pet_name'].'">'.$row['pet_name'].'</option>';
-                  }
+                $pet_sql = "SELECT id, pet_name FROM mypet WHERE user_id = ?";
+                $pet_stmt = $conn->prepare($pet_sql);
+                $pet_stmt->bind_param("i", $user_id);
+                $pet_stmt->execute();
+                $pet_result = $pet_stmt->get_result();
+                if ($pet_result->num_rows > 0) {
+                    while ($row = $pet_result->fetch_assoc()) {
+                        echo '<option value="'.htmlspecialchars($row['pet_name']).'">'.htmlspecialchars($row['pet_name']).'</option>';
+                    }
                 } else {
-                  echo '<option value="">No pets found</option>';
+                    echo '<option value="">No pets found</option>';
                 }
               ?>
             </select>
@@ -119,53 +104,69 @@ $user = $user_result->fetch_assoc();
           </div>
         </div>
 
-        <!-- APPOINTMENT DETAILS -->
+        <br><br>
+
         <div class="section appointment-details">
           <div class="section-header">Appointment Details</div>
 
           <div class="form-row">
-            <input type="date" name="date" required>
-            <input type="time" name="time" required>
+          <div id="timeButtonsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+              <input id="timeInput" name="time" readonly placeholder="Time" style="...">
+              <button type="button">9AM - 10AM</button>
+              <button type="button">10AM - 11AM</button>
+              <button type="button">1PM - 2PM</button>
+              <button type="button">2PM - 3PM</button>
+              <button type="button">3PM - 4PM</button>
+              <button type="button">4PM - 5PM</button>
+          </div>
 
-            <!-- Service type: value contains both name and price -->
-            <select name="service" id="service" required>
-              <option value="">Service Type *</option>
+            <input type="date" name="date" id="appointmentDate" style="height:44px;" required>
+
+            <select name="service" required style="width: 100%; height:44px; border-radius:10px; border:1px solid #ccc; background-color:#F0F8FF;">
+              <option value="">Select Service *</option>
               <?php
-                $sql = "SELECT id, service_name, price FROM type_of_service";
-                $result = $conn->query($sql);
-                if ($result->num_rows > 0) {
-                  while ($row = $result->fetch_assoc()) {
-                    echo '<option value="'.$row['service_name'].'|'.$row['price'].'">'.$row['service_name'].' - ₱'.$row['price'].'</option>';
+              $app_conn = new mysqli('localhost', 'root', '', 'appointment_sia');
+              if ($app_conn->connect_error) {
+                  die("Appointment DB connection failed: " . $app_conn->connect_error);
+              }
+
+              $service_sql = "SELECT service_name, price FROM type_of_service";
+              $service_result = $app_conn->query($service_sql);
+
+              if ($service_result && $service_result->num_rows > 0) {
+                  while ($service = $service_result->fetch_assoc()) {
+                      $name = $service['service_name'];
+                      $price = $service['price'];
+                      echo '<option value="'.htmlspecialchars($name . '|' . $price).'">'.htmlspecialchars($name . ' - ₱'.$price).'</option>';
                   }
-                }
+              } else {
+                  echo '<option value="">No services found</option>';
+              }
+
+              $app_conn->close();
               ?>
             </select>
+            
           </div>
-          <p style = " margin-left: 655px; margin-top: 4px; color:red; font-size: 13px;">*Some services do not include additional items (e.g., syringes)</p>
         </div>
 
-        <!-- SUBMIT -->
         <div class="form-row">
           <button type="submit" class="submit-btn">Book Appointment</button>
         </div>
       </form>
-            <button type="submit" style="width:100%; height:47px; border-radius: 10px; margin-top:10px;
-              background-color: #002060; color: white; font-weight: bold; font-size:15px;
-              " onclick="window.location.href='Book_appointment_dashboard.php'">
-                CANCEL
-            </button>
+
+      <button type="button" style="width:100%; height:47px; border-radius:10px; margin-top:10px; background-color:#002060; color:white; font-weight:bold; font-size:15px;" onclick="window.location.href='Book_appointment_dashboard.php'">CANCEL</button>
+
     </div>
   </main>
 
-  <!-- Footer -->
-  <?php
-    include '../../../MARKETING/generalfooter.php';
-  ?>
-  <!-- EXISTING/NEW PET BUTTON HANDLING -->
+  <?php include '../../../MARKETING/generalfooter.php'; ?>
+
   <script>
     const statusRadios = document.querySelectorAll('input[name="status"]');
     const petDropdown = document.getElementById('petDropdown');
     const addPetBtn = document.getElementById('addPetBtn');
+    const timeInput = document.getElementById('timeInput');
 
     statusRadios.forEach(radio => {
       radio.addEventListener("change", () => {
@@ -181,10 +182,12 @@ $user = $user_result->fetch_assoc();
       });
     });
 
-    document.getElementById("addPetBtn").addEventListener("click", function() {
+    addPetBtn.addEventListener("click", function() {
       window.location.href = "/appointment/Book_appointment_add_pet.php";
     });
-  </script>
 
+    const timeButtons = document.querySelectorAll('#timeButtonsContainer button');
+    timeButtons.forEach(button => button.addEventListener('click', () => timeInput.value = button.textContent));
+  </script>
 </body>
 </html>
