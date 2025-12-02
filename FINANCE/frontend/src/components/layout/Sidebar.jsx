@@ -46,7 +46,7 @@ const Sidebar = ({ onLogout }) => {
     },
     {
       name: "Employee Portal",
-      path: "/employee-portal",
+      path: "http://localhost:5173/employee-analytics",
       icon: Users,
     },
     {
