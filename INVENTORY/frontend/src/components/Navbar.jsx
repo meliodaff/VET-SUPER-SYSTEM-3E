@@ -20,7 +20,6 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <h1 className="navbar-title">Inventory Management</h1>
       </div>
 
       <div className="navbar-user-menu" ref={dropdownRef}>

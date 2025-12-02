@@ -1,82 +1,166 @@
+/* ============================================
+   sidebar.css
+   ============================================ */
+
 .sidebar {
-  width: 240px;
-  background-color: white;
-  border-right: 1px solid #e0e0e0;
+  position: fixed;
+  top: 0;
+  left: 0;
   height: 100vh;
+  width: 256px;
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
-  position: fixed;
-  left: 0;
-  top: 0;
 }
 
-.sidebar-logo {
-  padding: 1.25rem 1rem;
+/* ============================================
+   HEADER / LOGO SECTION
+   ============================================ */
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sidebar-logo-container {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
 
-.sidebar-logo-image {
-  width: 110px;
-  height: 110px;
-  object-fit: contain;
-  margin-left: -10px;
-  margin-top: -20px;
+.sidebar-logo-container:hover {
+  opacity: 0.8;
 }
 
-.sidebar-logo-text {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #5080be;
-  margin-left: -15px;
-  margin-top: -20px;
+.sidebar-logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
 }
+
+.sidebar-logo-text-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  color: #5080BE;
+  margin: 0;
+}
+
+.sidebar-logo-subtitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  color: #5080BE;
+  margin: 0;
+}
+
+/* ============================================
+   NAVIGATION SECTION
+   ============================================ */
 
 .sidebar-nav {
   flex: 1;
-  padding: 1rem 0.5rem;
+  padding: 1.5rem 0;
   overflow-y: auto;
 }
 
-.sidebar-item {
+.sidebar-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-menu-item {
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-btn {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  margin-bottom: 0.25rem;
   background: none;
   border: none;
-  border-radius: 6px;
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: all 0.2s;
   text-align: left;
+  transition: all 0.2s;
+  color: #4b5563;
   font-size: 0.875rem;
-  color: #4a4a4a;
 }
 
-.sidebar-item:hover {
-  background-color: #f5f5f5;
+.sidebar-btn:hover {
+  background-color: #f9fafb;
+  color: #1f2937;
 }
 
-.sidebar-item.active {
-  background-color: #e3f2fd;
-  color: #1976d2;
+.sidebar-btn-active {
+  background-color: #dbeafe;
+  color: #2563eb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.sidebar-item-icon {
-  width: 18px;
-  height: 18px;
+.sidebar-btn-active .sidebar-icon {
+  color: #2563eb;
+}
+
+.sidebar-icon {
   flex-shrink: 0;
+  color: #6b7280;
 }
 
-.sidebar-item-text {
-  font-weight: 400;
+.sidebar-btn-active .sidebar-icon {
+  color: #2563eb;
 }
 
-.sidebar-item.active .sidebar-item-text {
+.sidebar-label {
   font-weight: 500;
+}
+
+/* ============================================
+   FOOTER / LOGOUT SECTION
+   ============================================ */
+
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.sidebar-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: #4b5563;
+  transition: all 0.2s;
+}
+
+.sidebar-logout-btn:hover {
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+.sidebar-logout-btn .sidebar-icon {
+  color: #6b7280;
 }
 
 .sidebar-user {
