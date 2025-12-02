@@ -1,40 +1,98 @@
-
 <?php
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../utils/cors.php';
-require_once __DIR__ . '/../utils/response.php';
+require_once '../../config/database.php';
+require_once '../../utils/cors.php';
+require_once '../../utils/response.php';
 
-cors();
+$database = new Database();
+$db = $database->getConnection();
+
+if (!$db) {
+    Response::error('Database connection failed');
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  return json_response(['error' => 'Method not allowed'], 405);
+    Response::error('Method not allowed', 405);
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
-$supplier_id = $input['supplier_id'] ?? null;
-$amount = $input['amount'] ?? null;
-$payment_method = $input['payment_method'] ?? null; // 'cash' | 'bank_transfer' | ...
-$expected_delivery = $input['expected_delivery'] ?? null; // 'YYYY-MM-DD'
-$notes = $input['notes'] ?? null;
+$data = json_decode(file_get_contents("php://input"), true);
 
-if (!$supplier_id || !$amount || !$payment_method) {
-  return json_response(['error' => 'supplier_id, amount, and payment_method are required'], 422);
+// Expected payload:
+// {
+//   supplier_id: number,
+//   purchase_order_id: number | null,
+//   amount: number,
+//   payment_method: string, // 'cash' | 'bank_transfer' | 'check' | ...
+//   payment_date: 'YYYY-MM-DD', // optional, defaults to today
+//   expected_delivery: 'YYYY-MM-DD', // preferred delivery date, optional
+//   notes: string // optional
+// }
+
+$supplierId = isset($data['supplier_id']) ? (int)$data['supplier_id'] : null;
+$purchaseOrderId = isset($data['purchase_order_id']) ? (int)$data['purchase_order_id'] : null;
+$amount = isset($data['amount']) ? (float)$data['amount'] : null;
+$paymentMethod = isset($data['payment_method']) ? trim($data['payment_method']) : null;
+$paymentDate = !empty($data['payment_date']) ? $data['payment_date'] : null;
+$expectedDelivery = !empty($data['expected_delivery']) ? $data['expected_delivery'] : null;
+$notes = isset($data['notes']) ? trim($data['notes']) : null;
+
+if (!$supplierId || !$amount || !$paymentMethod) {
+    Response::error('supplier_id, amount and payment_method are required');
 }
 
-$stmt = $conn->prepare("
-  INSERT INTO supplier_payments (supplier_id, amount, payment_method, expected_delivery, status, notes)
-  VALUES (?, ?, ?, ?, 'Paid', ?)
-");
-$stmt->bind_param('idsss', $supplier_id, $amount, $payment_method, $expected_delivery, $notes);
+try {
+    // Default payment_date to today if not provided
+    if ($paymentDate === null || $paymentDate === '') {
+        $paymentDateExpr = "CURDATE()";
+        $usePaymentDateParam = false;
+    } else {
+        $paymentDateExpr = "?";
+        $usePaymentDateParam = true;
+    }
 
-if (!$stmt->execute()) {
-  return json_response(['error' => 'DB insert failed', 'details' => $stmt->error], 500);
+    $sql = "
+        INSERT INTO supplier_payments (
+            supplier_id,
+            purchase_order_id,
+            amount,
+            payment_method,
+            payment_date,
+            expected_delivery,
+            status,
+            notes,
+            created_at
+        ) VALUES (
+            ?, ?, ?, ?, $paymentDateExpr, ?, 'Scheduled', ?, NOW()
+        )
+    ";
+
+    $params = [
+        $supplierId,
+        $purchaseOrderId ?: null,
+        $amount,
+        $paymentMethod,
+    ];
+
+    if ($usePaymentDateParam) {
+        $params[] = $paymentDate;
+    }
+
+    $params[] = $expectedDelivery;
+    $params[] = $notes;
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+
+    $newId = (int)$db->lastInsertId();
+
+    Response::success(
+        [
+            'supplier_payment_id' => $newId,
+        ],
+        'Supplier payment recorded'
+    );
+} catch (Exception $e) {
+    Response::error('Database error: ' . $e->getMessage());
 }
+?>
 
-$new_id = $stmt->insert_id;
-$stmt->close();
 
-return json_response([
-  'message' => 'Payment recorded',
-  'supplier_payment_id' => $new_id
-], 201);

@@ -1,85 +1,100 @@
-
 <?php
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../utils/cors.php';
-require_once __DIR__ . '/../utils/response.php';
+require_once '../../config/database.php';
+require_once '../../utils/cors.php';
+require_once '../../utils/response.php';
 
-cors();
+$database = new Database();
+$db = $database->getConnection();
+
+if (!$db) {
+    Response::error('Database connection failed');
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  return json_response(['error' => 'Method not allowed'], 405);
+    Response::error('Method not allowed', 405);
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
-$supplier_payment_id = $input['supplier_payment_id'] ?? null;
-// items: [{ item_id, delivered_qty, unit_cost }]
-$items = $input['items'] ?? [];
+$data = json_decode(file_get_contents("php://input"), true);
 
-if (!$supplier_payment_id || !is_array($items) || count($items) === 0) {
-  return json_response(['error' => 'supplier_payment_id and items[] are required'], 422);
+// Expected payload:
+// {
+//   supplier_payment_id: number,
+//   items: [
+//     { item_id: number, delivered_qty: number, unit_cost: number }
+//   ]
+// }
+
+$supplierPaymentId = isset($data['supplier_payment_id']) ? (int)$data['supplier_payment_id'] : null;
+$items = isset($data['items']) && is_array($data['items']) ? $data['items'] : [];
+
+if (!$supplierPaymentId || empty($items)) {
+    Response::error('supplier_payment_id and at least one delivered item are required');
 }
-
-$conn->begin_transaction();
 
 try {
-  // validate payment exists & is not already delivered
-  $stmt = $conn->prepare("SELECT status FROM supplier_payments WHERE id = ?");
-  $stmt->bind_param('i', $supplier_payment_id);
-  $stmt->execute();
-  $res = $stmt->get_result();
-  if ($res->num_rows === 0) {
-    throw new Exception('Invalid supplier_payment_id');
-  }
-  $row = $res->fetch_assoc();
-  if ($row['status'] === 'Delivered') {
-    throw new Exception('Payment already marked Delivered');
-  }
-  $stmt->close();
+    $db->beginTransaction();
 
-  // process each item
-  $insItemStmt = $conn->prepare("
-    INSERT INTO supplier_delivery_items (supplier_payment_id, item_id, delivered_qty, unit_cost)
-    VALUES (?, ?, ?, ?)
-  ");
-  $updInvStmt = $conn->prepare("
-    UPDATE inventory_items SET quantity = quantity + ?, unit_cost = ?
-    WHERE id = ?
-  ");
-  $txnStmt = $conn->prepare("
-    INSERT INTO inventory_transactions (item_id, change_qty, unit_cost, ref_type, ref_id)
-    VALUES (?, ?, ?, 'Delivery', ?)
-  ");
+    // Validate supplier payment and ensure not already delivered
+    $stmt = $db->prepare("SELECT id, status FROM supplier_payments WHERE id = ?");
+    $stmt->execute([$supplierPaymentId]);
+    $payment = $stmt->fetch();
 
-  foreach ($items as $it) {
-    $item_id = (int)$it['item_id'];
-    $delivered_qty = (int)$it['delivered_qty'];
-    $unit_cost = (float)$it['unit_cost'];
+    if (!$payment) {
+        throw new Exception('Invalid supplier_payment_id');
+    }
 
-    if ($delivered_qty <= 0) { continue; }
+    if ($payment['status'] === 'Delivered') {
+        throw new Exception('Payment already marked Delivered');
+    }
 
-    $insItemStmt->bind_param('iiid', $supplier_payment_id, $item_id, $delivered_qty, $unit_cost);
-    if (!$insItemStmt->execute()) { throw new Exception($insItemStmt->error); }
+    // Insert delivery items + update inventory
+    $insItem = $db->prepare("
+        INSERT INTO supplier_delivery_items (supplier_payment_id, item_id, delivered_qty, unit_cost)
+        VALUES (?, ?, ?, ?)
+    ");
 
-    $updInvStmt->bind_param('idi', $delivered_qty, $unit_cost, $item_id);
-    if (!$updInvStmt->execute()) { throw new Exception($updInvStmt->error); }
+    $updInv = $db->prepare("
+        UPDATE inventory_items
+        SET quantity = quantity + ?, unit_cost = ?
+        WHERE id = ?
+    ");
 
-    $txnStmt->bind_param('iidi', $item_id, $delivered_qty, $unit_cost, $supplier_payment_id);
-    if (!$txnStmt->execute()) { throw new Exception($txnStmt->error); }
-  }
+    $insTxn = $db->prepare("
+        INSERT INTO inventory_transactions (item_id, change_qty, unit_cost, ref_type, ref_id)
+        VALUES (?, ?, ?, 'Delivery', ?)
+    ");
 
-  // update payment status → Delivered
-  $updPay = $conn->prepare("
-    UPDATE supplier_payments SET status = 'Delivered', delivered_at = NOW()
-    WHERE id = ?
-  ");
-  $updPay->bind_param('i', $supplier_payment_id);
-  if (!$updPay->execute()) { throw new Exception($updPay->error); }
-  $updPay->close();
+    foreach ($items as $item) {
+        $itemId = isset($item['item_id']) ? (int)$item['item_id'] : 0;
+        $qty = isset($item['delivered_qty']) ? (float)$item['delivered_qty'] : 0;
+        $unitCost = isset($item['unit_cost']) ? (float)$item['unit_cost'] : 0;
 
-  $conn->commit();
+        if ($itemId <= 0 || $qty <= 0) {
+            continue;
+        }
 
-  return json_response(['message' => 'Delivery recorded, inventory updated'], 200);
+        $insItem->execute([$supplierPaymentId, $itemId, $qty, $unitCost]);
+        $updInv->execute([$qty, $unitCost, $itemId]);
+        $insTxn->execute([$itemId, $qty, $unitCost, $supplierPaymentId]);
+    }
 
+    // Mark supplier payment as Delivered and set delivered_at
+    $updPay = $db->prepare("
+        UPDATE supplier_payments
+        SET status = 'Delivered', delivered_at = NOW()
+        WHERE id = ?
+    ");
+    $updPay->execute([$supplierPaymentId]);
+
+    $db->commit();
+
+    Response::success(null, 'Delivery recorded and inventory updated');
 } catch (Exception $e) {
-  $conn->rollback();
-  return json_response(['error' => 'Transaction failed', 'details' => $e->getMessage()], 500);
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Response::error('Transaction failed: ' . $e->getMessage(), 500);
+}
+?>
+
+

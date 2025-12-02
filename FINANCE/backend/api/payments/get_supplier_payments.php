@@ -1,85 +1,112 @@
-
 <?php
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../utils/cors.php';
-require_once __DIR__ . '/../utils/response.php';
+require_once '../../config/database.php';
+require_once '../../utils/cors.php';
+require_once '../../utils/response.php';
 
-cors();
+$database = new Database();
+$db = $database->getConnection();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  return json_response(['error' => 'Method not allowed'], 405);
+if (!$db) {
+    Response::error('Database connection failed');
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
-$supplier_payment_id = $input['supplier_payment_id'] ?? null;
-// items: [{ item_id, delivered_qty, unit_cost }]
-$items = $input['items'] ?? [];
-
-if (!$supplier_payment_id || !is_array($items) || count($items) === 0) {
-  return json_response(['error' => 'supplier_payment_id and items[] are required'], 422);
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    Response::error('Method not allowed', 405);
 }
 
-$conn->begin_transaction();
+// Filters & pagination
+$status = isset($_GET['status']) ? trim($_GET['status']) : ''; // Scheduled | In Transit | Delivered | ''
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+
+$limit = max(1, min($limit, 100));
+$page = max(1, $page);
+$offset = ($page - 1) * $limit;
+
+$where = [];
+$params = [];
+
+if ($status !== '') {
+    $where[] = "sp.status = ?";
+    $params[] = $status;
+}
+
+$whereSql = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
 
 try {
-  // validate payment exists & is not already delivered
-  $stmt = $conn->prepare("SELECT status FROM supplier_payments WHERE id = ?");
-  $stmt->bind_param('i', $supplier_payment_id);
-  $stmt->execute();
-  $res = $stmt->get_result();
-  if ($res->num_rows === 0) {
-    throw new Exception('Invalid supplier_payment_id');
-  }
-  $row = $res->fetch_assoc();
-  if ($row['status'] === 'Delivered') {
-    throw new Exception('Payment already marked Delivered');
-  }
-  $stmt->close();
+    // Count
+    $countSql = "
+        SELECT COUNT(*) AS total
+        FROM supplier_payments sp
+        $whereSql
+    ";
+    $stmt = $db->prepare($countSql);
+    $stmt->execute($params);
+    $totalCount = (int)$stmt->fetch()['total'];
 
-  // process each item
-  $insItemStmt = $conn->prepare("
-    INSERT INTO supplier_delivery_items (supplier_payment_id, item_id, delivered_qty, unit_cost)
-    VALUES (?, ?, ?, ?)
-  ");
-  $updInvStmt = $conn->prepare("
-    UPDATE inventory_items SET quantity = quantity + ?, unit_cost = ?
-    WHERE id = ?
-  ");
-  $txnStmt = $conn->prepare("
-    INSERT INTO inventory_transactions (item_id, change_qty, unit_cost, ref_type, ref_id)
-    VALUES (?, ?, ?, 'Delivery', ?)
-  ");
+    // List
+    $listSql = "
+        SELECT
+            sp.id,
+            sp.supplier_id,
+            sp.purchase_order_id,
+            sp.amount,
+            sp.payment_method,
+            sp.payment_date,
+            sp.expected_delivery,
+            sp.status,
+            sp.delivered_at,
+            sp.notes,
+            sp.created_at
+        FROM supplier_payments sp
+        $whereSql
+        ORDER BY sp.created_at DESC, sp.id DESC
+        LIMIT $limit OFFSET $offset
+    ";
+    $stmt = $db->prepare($listSql);
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll();
 
-  foreach ($items as $it) {
-    $item_id = (int)$it['item_id'];
-    $delivered_qty = (int)$it['delivered_qty'];
-    $unit_cost = (float)$it['unit_cost'];
+    $payments = array_map(function ($row) {
+        $expected = $row['expected_delivery'];
+        $actual = $row['delivered_at'];
+        $onTime = null;
 
-    if ($delivered_qty <= 0) { continue; }
+        if ($row['status'] === 'Delivered' && $expected && $actual) {
+            $onTime = (substr($expected, 0, 10) === substr($actual, 0, 10));
+        }
 
-    $insItemStmt->bind_param('iiid', $supplier_payment_id, $item_id, $delivered_qty, $unit_cost);
-    if (!$insItemStmt->execute()) { throw new Exception($insItemStmt->error); }
+        return [
+            'id' => (int)$row['id'],
+            'supplier_id' => (int)$row['supplier_id'],
+            'purchase_order_id' => $row['purchase_order_id'] !== null ? (int)$row['purchase_order_id'] : null,
+            'amount' => (float)$row['amount'],
+            'payment_method' => $row['payment_method'],
+            'payment_date' => $row['payment_date'],
+            'expected_delivery' => $expected,
+            'status' => $row['status'],
+            'delivered_at' => $actual,
+            'on_time' => $onTime,
+            'notes' => $row['notes'],
+            'created_at' => $row['created_at'],
+        ];
+    }, $rows);
 
-    $updInvStmt->bind_param('idi', $delivered_qty, $unit_cost, $item_id);
-    if (!$updInvStmt->execute()) { throw new Exception($updInvStmt->error); }
-
-    $txnStmt->bind_param('iidi', $item_id, $delivered_qty, $unit_cost, $supplier_payment_id);
-    if (!$txnStmt->execute()) { throw new Exception($txnStmt->error); }
-  }
-
-  // update payment status → Delivered
-  $updPay = $conn->prepare("
-    UPDATE supplier_payments SET status = 'Delivered', delivered_at = NOW()
-    WHERE id = ?
-  ");
-  $updPay->bind_param('i', $supplier_payment_id);
-  if (!$updPay->execute()) { throw new Exception($updPay->error); }
-  $updPay->close();
-
-  $conn->commit();
-
-  return json_response(['message' => 'Delivery recorded, inventory updated'], 200);
-
+    Response::success(
+        [
+            'supplier_payments' => $payments,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => ceil($totalCount / $limit),
+                'total_count' => $totalCount,
+                'limit' => $limit,
+            ],
+        ],
+        'Supplier payments loaded'
+    );
 } catch (Exception $e) {
-  $conn->rollback();
-  return json_response(['error' => 'Transaction failed', 'details' => $e->getMessage()], 500);
+    Response::error('Database error: ' . $e->getMessage());
+}
+?>
+
+
