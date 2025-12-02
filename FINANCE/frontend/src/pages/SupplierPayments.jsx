@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, Package, CreditCard, Truck, CheckCircle2, Clock } from "lucide-react";
+import { Calendar, Package, Truck, CheckCircle2, Clock } from "lucide-react";
 import { purchaseOrdersAPI, supplierAPI, inventoryAPI } from "../services/api";
 import { formatCurrency } from "../utils/helpers";
 
@@ -9,19 +9,8 @@ const initialOrderForm = {
   items: [{ item_id: "", quantity: "", unit_cost: "" }],
 };
 
-const initialPaymentForm = {
-  supplier_id: "",
-  purchase_order_id: "",
-  amount: "",
-  payment_method: "bank_transfer",
-  payment_date: "",
-  expected_delivery: "",
-  notes: "",
-};
-
 const SupplierPayments = () => {
   const [orderForm, setOrderForm] = useState(initialOrderForm);
-  const [paymentForm, setPaymentForm] = useState(initialPaymentForm);
   const [orders, setOrders] = useState([]);
   const [supplierPayments, setSupplierPayments] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);
@@ -35,8 +24,8 @@ const SupplierPayments = () => {
       setError("");
 
       const [ordersRes, supplierRes, itemsRes] = await Promise.all([
-        purchaseOrdersAPI.getPurchaseOrders({ limit: 20 }),
-        supplierAPI.getSupplierPayments({ limit: 20 }),
+        purchaseOrdersAPI.getPurchaseOrders({ limit: 50 }),
+        supplierAPI.getSupplierPayments({ limit: 50 }),
         inventoryAPI.getItems(),
       ]);
 
@@ -45,13 +34,32 @@ const SupplierPayments = () => {
       }
 
       if (supplierRes?.data?.success && supplierRes.data.data) {
-        setSupplierPayments(supplierRes.data.data.supplier_payments || []);
+        const payments = supplierRes.data.data.supplier_payments || [];
+        setSupplierPayments(payments);
+        console.log("Loaded supplier payments:", payments.length, "payments");
+        if (payments.length > 0) {
+          console.log("Latest payment:", payments[0]);
+        }
+      } else {
+        console.log("Supplier payments response:", supplierRes);
+        // Try to handle different response structures
+        if (Array.isArray(supplierRes?.data)) {
+          setSupplierPayments(supplierRes.data);
+        } else if (Array.isArray(supplierRes?.data?.supplier_payments)) {
+          setSupplierPayments(supplierRes.data.supplier_payments);
+        }
       }
 
-      // inventory/get_items.php returns plain array
+      // Handle both plain array and wrapped { data: [] } responses
+      let itemsPayload = [];
       if (Array.isArray(itemsRes?.data)) {
-        setInventoryItems(itemsRes.data);
+        itemsPayload = itemsRes.data;
+      } else if (Array.isArray(itemsRes?.data?.data)) {
+        itemsPayload = itemsRes.data.data;
       }
+
+      console.log("Loaded inventory items:", itemsPayload);
+      setInventoryItems(itemsPayload);
     } catch (e) {
       console.error("Failed to load supplier data", e);
       const msg = e?.response?.data?.message || e.message || "Failed to load supplier data";
@@ -88,17 +96,46 @@ const SupplierPayments = () => {
     setError("");
     setSuccess("");
 
+    // Validate preferred delivery date is required
+    if (!orderForm.preferred_delivery_date || orderForm.preferred_delivery_date.trim() === "") {
+      setError("Preferred delivery date is required. Please select a delivery date.");
+      return;
+    }
+
+    // Validate items have supplier_id
+    const validItems = orderForm.items
+      .map((it) => ({
+        item_id: it.item_id ? parseInt(it.item_id, 10) : null,
+        quantity: it.quantity ? parseFloat(it.quantity) : null,
+      }))
+      .filter((it) => it.item_id && it.quantity);
+
+    if (validItems.length === 0) {
+      setError("Please add at least one item with quantity.");
+      return;
+    }
+
+    // Check for items without supplier_id
+    const itemsWithoutSupplier = validItems
+      .map((it) => {
+        const invItem = inventoryItems.find((inv) => inv.id === it.item_id);
+        return invItem && !invItem.supplier_id ? invItem.name : null;
+      })
+      .filter(Boolean);
+
+    if (itemsWithoutSupplier.length > 0) {
+      setError(
+        `The following items are missing supplier assignments: ${itemsWithoutSupplier.join(", ")}. Please set a supplier_id for these items in the inventory_items table.`
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       const payload = {
         preferred_delivery_date: orderForm.preferred_delivery_date || null,
         notes: orderForm.notes || null,
-        items: orderForm.items
-          .map((it) => ({
-            item_id: it.item_id ? parseInt(it.item_id, 10) : null,
-            quantity: it.quantity ? parseFloat(it.quantity) : null,
-          }))
-          .filter((it) => it.item_id && it.quantity),
+        items: validItems,
       };
 
       const res = await purchaseOrdersAPI.createPurchaseOrder(payload);
@@ -108,13 +145,21 @@ const SupplierPayments = () => {
           setSuccess(
             `Generated ${created.length} purchase order${
               created.length > 1 ? "s" : ""
-            } for ${created.length} supplier(s).`
+            } for ${created.length} supplier(s). Supplier payment entries have been automatically created for delivery tracking.`
           );
         } else {
           setSuccess("Purchase orders generated successfully.");
         }
         setOrderForm(initialOrderForm);
+        
+        // Force refresh data multiple times to ensure it appears
         await loadData();
+        setTimeout(async () => {
+          await loadData();
+        }, 300);
+        setTimeout(async () => {
+          await loadData();
+        }, 800);
       } else {
         const msg = res?.data?.message || "Failed to create purchase order";
         setError(msg);
@@ -128,42 +173,6 @@ const SupplierPayments = () => {
     }
   };
 
-  const handleCreateSupplierPayment = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    try {
-      setLoading(true);
-      const payload = {
-        supplier_id: parseInt(paymentForm.supplier_id, 10),
-        purchase_order_id: paymentForm.purchase_order_id
-          ? parseInt(paymentForm.purchase_order_id, 10)
-          : null,
-        amount: paymentForm.amount ? parseFloat(paymentForm.amount) : null,
-        payment_method: paymentForm.payment_method,
-        payment_date: paymentForm.payment_date || null,
-        expected_delivery: paymentForm.expected_delivery || null,
-        notes: paymentForm.notes || null,
-      };
-
-      const res = await supplierAPI.createSupplierPayment(payload);
-      if (res?.data?.success) {
-        setSuccess("Supplier payment recorded successfully.");
-        setPaymentForm(initialPaymentForm);
-        await loadData();
-      } else {
-        const msg = res?.data?.message || "Failed to record supplier payment";
-        setError(msg);
-      }
-    } catch (e) {
-      console.error("Create supplier payment error", e);
-      const msg = e?.response?.data?.message || e.message || "Failed to record supplier payment";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleUpdateDeliveryStatus = async (id, status) => {
     try {
@@ -254,7 +263,7 @@ const SupplierPayments = () => {
       )}
 
       {/* Forms */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Purchase Order Form */}
         <form
           onSubmit={handleCreatePurchaseOrder}
@@ -268,7 +277,7 @@ const SupplierPayments = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Preferred Delivery Date
+                Preferred Delivery Date <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Calendar className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -282,6 +291,7 @@ const SupplierPayments = () => {
                       preferred_delivery_date: e.target.value,
                     }))
                   }
+                  required
                 />
               </div>
             </div>
@@ -316,69 +326,133 @@ const SupplierPayments = () => {
               </button>
             </div>
 
-            {orderForm.items.map((item, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-3 gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3"
-              >
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Item
-                  </label>
-                  <select
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs"
-                    value={item.item_id}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const selected = inventoryItems.find(
-                        (it) => String(it.id) === String(value)
-                      );
-                      handleOrderItemChange(index, "item_id", value);
-                      if (selected) {
-                        handleOrderItemChange(
-                          index,
-                          "unit_cost",
-                          selected.unit_cost ?? ""
+            {orderForm.items.map((item, index) => {
+              const qty = parseFloat(item.quantity) || 0;
+              const selectedItem = inventoryItems.find(
+                (inv) => String(inv.id) === String(item.item_id)
+              );
+              // Get unit_cost from form state first, fallback to inventory item's unit_cost
+              const unitCostFromForm = parseFloat(item.unit_cost);
+              const unitCostFromInventory = parseFloat(selectedItem?.unit_cost) || 0;
+              const unit = unitCostFromForm || unitCostFromInventory || 0;
+              const lineTotal = qty * unit;
+              const hasSupplier = selectedItem?.supplier_id;
+
+              return (
+                <div
+                  key={index}
+                  className={`grid grid-cols-4 gap-3 rounded-lg p-3 ${
+                    item.item_id && !hasSupplier
+                      ? "bg-red-50 border-2 border-red-300"
+                      : "bg-gray-50 border border-gray-200"
+                  }`}
+                >
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Item
+                    </label>
+                    <select
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs"
+                      value={item.item_id}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const selected = inventoryItems.find(
+                          (it) => String(it.id) === String(value)
                         );
+                        handleOrderItemChange(index, "item_id", value);
+                        if (selected) {
+                          // Get unit_cost from inventory item
+                          const unitCost = parseFloat(selected.unit_cost) || parseFloat(selected.cost) || 0;
+                          handleOrderItemChange(
+                            index,
+                            "unit_cost",
+                            unitCost > 0 ? unitCost.toFixed(2) : ""
+                          );
+                        } else {
+                          // Clear unit_cost if no item selected
+                          handleOrderItemChange(index, "unit_cost", "");
+                        }
+                      }}
+                    >
+                      <option value="">Select product</option>
+                      {inventoryItems.map((inv) => (
+                        <option key={inv.id} value={inv.id}>
+                          {inv.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Quantity
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        handleOrderItemChange(index, "quantity", e.target.value)
                       }
-                    }}
-                  >
-                    <option value="">Select product</option>
-                    {inventoryItems.map((inv) => (
-                      <option key={inv.id} value={inv.id}>
-                        {inv.name} {inv.sku ? `(${inv.sku})` : ""}
-                      </option>
-                    ))}
-                  </select>
+                      min="1"
+                      step="1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Unit Cost (auto)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm bg-gray-100"
+                      value={item.unit_cost || (selectedItem?.unit_cost ? parseFloat(selectedItem.unit_cost).toFixed(2) : "")}
+                      placeholder="0.00"
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Line Total
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm bg-gray-100"
+                      value={lineTotal.toFixed(2)}
+                      readOnly
+                    />
+                  </div>
+                  {item.item_id && !hasSupplier && (
+                    <div className="col-span-4 mt-2">
+                      <p className="text-xs text-red-600 font-medium">
+                        ⚠️ This item is missing a supplier assignment. Please set supplier_id in inventory_items table.
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Quantity
-                  </label>
-                  <input
-                    type="number"
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      handleOrderItemChange(index, "quantity", e.target.value)
-                    }
-                    min="1"
-                    step="1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Unit Cost (auto)
-                  </label>
-                  <input
-                    type="number"
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm bg-gray-100"
-                    value={item.unit_cost}
-                    readOnly
-                  />
-                </div>
+              );
+            })}
+
+            {/* Order estimated total */}
+            <div className="flex justify-end mt-2">
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Estimated Total: </span>
+                {formatCurrency
+                  ? formatCurrency(
+                      orderForm.items.reduce((sum, it) => {
+                        const q = parseFloat(it.quantity) || 0;
+                        const u = parseFloat(it.unit_cost) || 0;
+                        return sum + q * u;
+                      }, 0)
+                    )
+                  : orderForm.items
+                      .reduce((sum, it) => {
+                        const q = parseFloat(it.quantity) || 0;
+                        const u = parseFloat(it.unit_cost) || 0;
+                        return sum + q * u;
+                      }, 0)
+                      .toFixed(2)}
               </div>
-            ))}
+            </div>
           </div>
 
           <button
@@ -388,156 +462,6 @@ const SupplierPayments = () => {
           >
             <Package className="h-4 w-4 mr-2" />
             {loading ? "Saving..." : "Create Purchase Order"}
-          </button>
-        </form>
-
-        {/* Supplier Payment Form */}
-        <form
-          onSubmit={handleCreateSupplierPayment}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4"
-        >
-          <div className="flex items-center mb-2">
-            <CreditCard className="h-5 w-5 text-emerald-600 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">Record Supplier Payment</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Supplier ID
-              </label>
-              <input
-                type="number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                value={paymentForm.supplier_id}
-                onChange={(e) =>
-                  setPaymentForm((prev) => ({ ...prev, supplier_id: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Linked Purchase Order (optional)
-              </label>
-              <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                value={paymentForm.purchase_order_id}
-                onChange={(e) =>
-                  setPaymentForm((prev) => ({
-                    ...prev,
-                    purchase_order_id: e.target.value,
-                  }))
-                }
-              >
-                <option value="">Not linked</option>
-                {orders.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    PO #{o.id} • Supplier {o.supplier_id} •{" "}
-                    {formatCurrency ? formatCurrency(o.total_amount || 0) : o.total_amount}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Amount
-              </label>
-              <input
-                type="number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                value={paymentForm.amount}
-                onChange={(e) =>
-                  setPaymentForm((prev) => ({ ...prev, amount: e.target.value }))
-                }
-                min="0"
-                step="0.01"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Payment Method
-              </label>
-              <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                value={paymentForm.payment_method}
-                onChange={(e) =>
-                  setPaymentForm((prev) => ({
-                    ...prev,
-                    payment_method: e.target.value,
-                  }))
-                }
-              >
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="cash">Cash</option>
-                <option value="check">Check</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Payment Date
-              </label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                value={paymentForm.payment_date}
-                onChange={(e) =>
-                  setPaymentForm((prev) => ({
-                    ...prev,
-                    payment_date: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Preferred Delivery Date
-              </label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                value={paymentForm.expected_delivery}
-                onChange={(e) =>
-                  setPaymentForm((prev) => ({
-                    ...prev,
-                    expected_delivery: e.target.value,
-                  }))
-                }
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes (optional)
-            </label>
-            <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              rows={2}
-              value={paymentForm.notes}
-              onChange={(e) =>
-                setPaymentForm((prev) => ({
-                  ...prev,
-                  notes: e.target.value,
-                }))
-              }
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50"
-          >
-            <CreditCard className="h-4 w-4 mr-2" />
-            {loading ? "Saving..." : "Record Payment"}
           </button>
         </form>
       </div>
@@ -569,7 +493,9 @@ const SupplierPayments = () => {
                   {orders.map((o) => (
                     <tr key={o.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-gray-900 font-medium">#{o.id}</td>
-                      <td className="px-4 py-2 text-gray-700">{o.supplier_id}</td>
+                      <td className="px-4 py-2 text-gray-700">
+                        {o.supplier_name || `Supplier ${o.supplier_id}`}
+                      </td>
                       <td className="px-4 py-2 text-gray-700">
                         {o.preferred_delivery_date || "-"}
                       </td>
@@ -590,10 +516,15 @@ const SupplierPayments = () => {
             <div className="flex items-center">
               <Truck className="h-5 w-5 text-indigo-600 mr-2" />
               <h2 className="text-lg font-semibold text-gray-900">Supplier Delivery Tracking</h2>
+              {supplierPayments.length > 0 && (
+                <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  {supplierPayments.length} {supplierPayments.length === 1 ? 'entry' : 'entries'}
+                </span>
+              )}
             </div>
           </div>
           {supplierPayments.length === 0 ? (
-            <p className="text-sm text-gray-500">No supplier payments found.</p>
+            <p className="text-sm text-gray-500">No supplier payments found. Create a purchase order to see delivery tracking entries.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -611,7 +542,9 @@ const SupplierPayments = () => {
                   {supplierPayments.map((p) => (
                     <tr key={p.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-gray-900 font-medium">#{p.id}</td>
-                      <td className="px-4 py-2 text-gray-700">{p.supplier_id}</td>
+                      <td className="px-4 py-2 text-gray-700">
+                        {p.supplier_name || `Supplier ${p.supplier_id}`}
+                      </td>
                       <td className="px-4 py-2 text-gray-700">
                         {p.expected_delivery || "-"}
                       </td>
