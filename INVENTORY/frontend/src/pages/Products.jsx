@@ -312,7 +312,6 @@ function Products() {
               <table className="products-table">
                 <thead>
                   <tr>
-                    <th>ITEM ID</th>
                     <th>NAME</th>
                     <th>CATEGORY</th>
                     <th className="text-center">QUANTITY</th>
@@ -323,7 +322,6 @@ function Products() {
                 <tbody>
                   {filteredData.map((item, index) => (
                     <tr key={item.id} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
-                      <td>{item.id}</td>
                       <td>{item.name}</td>
                       <td>{item.category_name || 'Uncategorized'}</td>
                       <td className="text-center">{item.quantity}</td>
