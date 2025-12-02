@@ -105,6 +105,7 @@ include '../includes/db.php';
       <a href="reschedule.php" class="tab active" data-tab="reschedule">Reschedule</a>
       <a href="cancelled.php" class="tab" data-tab="cancelled">cancelled</a>
       <a href="done.php" class="tab" data-tab="done">Done</a>
+      <a href="schedule.php" class="tab">Schedule</a>
       <a href="services.php" class="tab">Services</a>
     </div>
 

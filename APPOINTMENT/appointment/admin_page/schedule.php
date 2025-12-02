@@ -99,9 +99,9 @@ include '../includes/db.php';
   <main class="appointments-section">
     <div class="title-row" style="display: flex; align-items: center; justify-content: space-between;">
       <h2 class="appointments-title">Services</h2>
-      <a href="add_service_page.php" class="add-btn" 
+      <a href="add_schedule.php" class="add-btn" 
          style="background-color: #1a237e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-         Add Service
+         Add Scedule
       </a>
     </div>
 
@@ -113,47 +113,47 @@ include '../includes/db.php';
       <a href="reschedule.php" class="tab">Reschedule</a>
       <a href="cancelled.php" class="tab" data-tab="cancelled">cancelled</a>
       <a href="done.php" class="tab">Done</a>
-      <a href="schedule.php" class="tab">Schedule</a>
-      <a href="services.php" class="tab active">Services</a>
+      <a href="schedule.php" class="tab active">Schedule</a>
+      <a href="services.php" class="tab">Services</a>
     </div>
 
     <!-- Services Table -->
     <div class="appointments-table">
       <div class="table-header">
-        <div>Service Name</div>
-        <div>Price</div>
-        <div>Description</div>
+        <div>Day of Week</div>
+        <div>Starting Time</div>
+        <div>End Time</div>
         <div>Action</div>
       </div>
 
-      <?php
-      $query = "SELECT * FROM type_of_service ORDER BY id ASC";
-      $result = $conn->query($query);
+       <?php
+  $query = "SELECT * FROM schedule ORDER BY id ASC";
+  $result = $conn->query($query);
 
-      if ($result->num_rows > 0) {
+    if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
           echo '<div class="table-row">';
-          echo '<div>' . htmlspecialchars($row['service_name']) . '</div>';
-          echo '<div>₱' . number_format($row['price'], 2) . '</div>';
-          echo '<div style="white-space: normal; word-wrap: break-word; overflow-wrap: break-word; max-width: 250px;">' . htmlspecialchars($row['description']) . '</div>';
+          echo '<div>' . htmlspecialchars($row['day_of_week']) . '</div>';
+          echo '<div>' . htmlspecialchars(date("h:i A", strtotime($row['start_time']))) . '</div>';
+          echo '<div>' . htmlspecialchars(date("h:i A", strtotime($row['end_time']))) . '</div>';
           
           echo '<div class="status-cell">';
-          // ✅ EDIT button (sends via POST)
-          echo '<form action="edit_service_page.php" method="POST" style="display:inline-block;">';
+          // EDIT button
+          echo '<form action="edit_schedule.php" method="POST" style="display:inline-block;">';
           echo '<input type="hidden" name="id" value="' . htmlspecialchars($row['id']) . '">';
           echo '<button type="submit" name="action" value="edit" class="btn-approve">EDIT</button>';
           echo '</form>';
 
-          // ✅ DELETE button
-          echo '<form action="../php/delete_service_process.php" method="POST" class="delete-form" style="display:inline-block;">';
+          // DELETE button
+          echo '<form action="../php/delete_schedule_process.php" method="POST" class="delete-form" style="display:inline-block;">';
           echo '<input type="hidden" name="id" value="' . htmlspecialchars($row['id']) . '">';
-          echo '<button type="button" class="btn-reject open-delete-confirmation" data-service="' . htmlspecialchars($row['service_name']) . '">DELETE</button>';
+          echo '<button type="button" class="btn-reject open-delete-confirmation" data-schedule="' . htmlspecialchars($row['day_of_week'] . " " . $row['start_time'] . "-" . $row['end_time']) . '">DELETE</button>';
           echo '</form>';
 
           echo '</div></div>';
-        }
+      }
       } else {
-        echo '<h3 class="empty-title">No Services Found</h3>';
+          echo '<h3 class="empty-title">No Schedule Found</h3>';
       }
       ?>
     </div>
@@ -163,14 +163,14 @@ include '../includes/db.php';
 <?php include '../php/confirmation.php'; ?>
 
 <script>
-  // Delete confirmation logic
+  // Delete confirmation logic for schedules
   document.querySelectorAll(".open-delete-confirmation").forEach(button => {
     button.addEventListener("click", function () {
       const form = this.closest("form");
-      const serviceName = this.getAttribute("data-service");
+      const scheduleName = this.getAttribute("data-schedule"); // changed from data-service to data-schedule
 
       // Use your custom popup
-      openConfirmation("delete", serviceName, function() {
+      openConfirmation("delete", scheduleName, function() {
         form.submit(); // Submit only after confirming
       });
     });
