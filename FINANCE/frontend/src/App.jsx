@@ -7,6 +7,7 @@ import SalesMonitoring from './pages/SalesMonitoring';
 import Employees from './pages/Employees';
 import Invoices from './pages/Invoices';
 import MonitorPayment from './pages/MonitorPayment';
+import EmployeePortal from './pages/EmployeePortal';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -38,6 +39,14 @@ function App() {
             element={
               <Layout admin={admin} onLogout={noop}>
                 <SalesMonitoring />
+              </Layout>
+            }
+          />
+          <Route
+            path="/employee-portal"
+            element={
+              <Layout admin={admin} onLogout={noop}>
+                <EmployeePortal />
               </Layout>
             }
           />

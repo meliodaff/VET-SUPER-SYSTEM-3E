@@ -34,6 +34,11 @@ const Sidebar = ({ onLogout }) => {
       icon: LayoutDashboard,
     },
     {
+      name: "Employee Portal",
+      path: "/employee-portal",
+      icon: Users,
+    },
+    {
       name: "Employees",
       path: "/employees",
       icon: Users,
