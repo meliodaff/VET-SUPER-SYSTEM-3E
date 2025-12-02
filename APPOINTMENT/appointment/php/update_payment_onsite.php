@@ -11,8 +11,8 @@ if (!$appointment_id) {
 // Update payment method and status in the database
 $stmt = $conn->prepare("UPDATE book_appointment SET `payment_method`=?, `payment_status`=? WHERE id=?");
 
-$payment_method = 'Online Payment'; // dynamically, you can change this based on user choice
-$payment_status = 'Paid';           // mark as paid
+$payment_method = 'Onsite Payment'; // now it’s Onsite Payment
+$payment_status = 'Unpaid';           // mark as paid
 $stmt->bind_param("ssi", $payment_method, $payment_status, $appointment_id);
 
 if ($stmt->execute()) {

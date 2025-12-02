@@ -4,12 +4,13 @@ include '../includes/db.php'; // database connection
 
 function addAppointment($conn, $user_id, $fname, $phone, $email, $vetdoc, $pet_name, $date, $time, $service, $service_price) {
     $status = "Pending";
-    $payment_method = "Pending"; // ✅ default payment method
+    $payment_method = "Pending"; // default payment method
+    $payment_status = "Pending";  // default payment status
 
-    // Prepare SQL with 13 fields including payment_method
+    // Prepare SQL with 14 fields including payment_method and payment_status
     $sql = "INSERT INTO book_appointment 
-            (user_id, fname, phone, email, vetdoc, pet_name, date, time, service, service_price, payment_method, status, date_create)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+            (user_id, fname, phone, email, vetdoc, pet_name, date, time, service, service_price, payment_method, payment_status, status, date_create)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -18,7 +19,7 @@ function addAppointment($conn, $user_id, $fname, $phone, $email, $vetdoc, $pet_n
 
     // Bind variables
     $stmt->bind_param(
-        "issssssssiss",
+        "issssssssisss",
         $user_id,
         $fname,
         $phone,
@@ -30,6 +31,7 @@ function addAppointment($conn, $user_id, $fname, $phone, $email, $vetdoc, $pet_n
         $service,
         $service_price,
         $payment_method,
+        $payment_status,
         $status
     );
 

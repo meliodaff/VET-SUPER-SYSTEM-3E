@@ -33,8 +33,6 @@ body {
 }
 
 .back-btn {
-  display: block;
-  margin: 20px auto;
   padding: 10px 25px;
   background: #1a237e;
   color: white;

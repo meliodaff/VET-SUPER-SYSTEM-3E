@@ -5,7 +5,7 @@
   $user_id = $_SESSION['user_id'];
 
 // ✅ Fetch appointments for the logged-in user (include id)
-$sql = "SELECT id, pet_name, date, time, vetdoc, service, status 
+$sql = "SELECT id, pet_name, date, time, vetdoc, service, status, payment_status
         FROM book_appointment 
         WHERE user_id = ? AND status = 'approved' 
         ORDER BY date_create DESC";
@@ -93,7 +93,15 @@ $result = $stmt->get_result();
                   </a>
                   <br>
                   <?php if (strtolower($row['status']) === 'approved'): ?>
-                    <a href="pay_reciept.php?id=<?= $row['id'] ?>">View Receipt</a>
+                      <?php if (strtolower($row['payment_status']) === 'paid'): ?>
+                        <a href="Book_appointment_dashboard_receipt.php?id=<?= $row['id'] ?>">View Receipt</a>
+                      <?php endif; ?>
+                      <?php if (strtolower($row['payment_status']) === 'unpaid'): ?>
+                        <a href="Book_appointment_dashboard_receipt.php?id=<?= $row['id'] ?>">View Receipt</a>
+                      <?php endif; ?>
+                      <?php if (strtolower($row['payment_status']) === 'pending'): ?>
+                        <a href="pay_reciept.php?id=<?= $row['id'] ?>">Pay Receipt</a>
+                      <?php endif; ?>
                   <?php endif; ?>
                 </td>
               </tr>

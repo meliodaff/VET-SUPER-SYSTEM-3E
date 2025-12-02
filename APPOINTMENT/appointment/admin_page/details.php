@@ -150,6 +150,7 @@ $grand_total = $service_price + $total_items_price;
   <div class="field"><label>Date: </label><span><?= htmlspecialchars($appointment['date']) ?></span></div>
   <div class="field"><label>Time: </label><span><?= htmlspecialchars($appointment['time']) ?></span></div>
   <div class="field"><label>Payment Method: </label><span><?= htmlspecialchars($appointment['payment_method']) ?></span></div>
+  <div class="field"><label>Payment Status: </label><span><?= htmlspecialchars($appointment['payment_status']) ?></span></div>
 
   <div class="field">
     <label>Total (Service + Items):</label>
@@ -158,7 +159,15 @@ $grand_total = $service_price + $total_items_price;
 </div>
   </div>
 
-  <button onclick="window.history.back()" class="back-btn">Back</button>
+  <div style="display:flex; gap: 10px; ">
+    <?php if ($appointment['payment_status'] === 'Unpaid'): ?>
+      <button onclick="window.location.href='../php/update_payment_onsite_admin.php?id=<?= $appointment['id'] ?>'" class="back-btn">
+          Paid
+      </button>
+    <?php endif; ?>
+    <button onclick="window.history.back()" class="back-btn">Back</button>
+  </div>
+
 </main>
   <br>
   <br>

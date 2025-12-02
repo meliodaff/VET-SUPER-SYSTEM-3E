@@ -149,11 +149,11 @@ $user = $user_result->fetch_assoc();
           <button type="submit" class="submit-btn">Book Appointment</button>
         </div>
       </form>
-                             <button type="submit" style="width:100%; height:47px; border-radius: 10px; margin-top:10px;
+            <button type="submit" style="width:100%; height:47px; border-radius: 10px; margin-top:10px;
               background-color: #002060; color: white; font-weight: bold; font-size:15px;
-            " onclick="window.location.href='Book_appointment_dashboard.php'">
-                  CANCEL
-              </button>
+              " onclick="window.location.href='Book_appointment_dashboard.php'">
+                CANCEL
+            </button>
     </div>
   </main>
 

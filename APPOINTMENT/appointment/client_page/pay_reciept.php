@@ -132,7 +132,7 @@ foreach ($items as $item) {
       <button type="submit" style="
         width:100%; height:40px; border-radius: 15px; margin-top:10px;
         background-color: #002060; color: white; font-weight: bold; font-size:15px;"
-        onclick="window.location.href='Book_appointment_dashboard.php'">
+        onclick="window.location.href='../php/update_payment_onsite.php?id=<?= $appointment_id ?>'">
         Onsite Payment
       </button>
       <button type="submit" style="

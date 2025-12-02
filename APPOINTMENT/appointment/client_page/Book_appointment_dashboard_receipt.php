@@ -8,8 +8,7 @@ if (!$appointment_id) {
   die("No appointment selected.");
 }
 
-// ✅ Fetch appointment info directly from book_appointment
-$sql = "SELECT pet_name, date, time, service, service_price, vetdoc, status 
+$sql = "SELECT pet_name, date, time, service, service_price, vetdoc, status, payment_method, payment_status
         FROM book_appointment 
         WHERE id = ? AND user_id = ?";
 $stmt = $conn->prepare($sql);
@@ -94,6 +93,16 @@ foreach ($items as $item) {
       <div class="row">
         <span class="label">Status:</span>
         <span><?= htmlspecialchars($appointment['status'] ?? 'N/A') ?></span>
+      </div>
+
+      <div class="row">
+        <span class="label">Payment Method:</span>
+        <span><?= htmlspecialchars($appointment['payment_method'] ?? 'N/A') ?></span>
+      </div>
+
+            <div class="row">
+        <span class="label">Payment Status:</span>
+        <span><?= htmlspecialchars($appointment['payment_status'] ?? 'N/A') ?></span>
       </div>
 
       <div class="section">
