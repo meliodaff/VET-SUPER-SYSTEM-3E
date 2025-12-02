@@ -89,8 +89,8 @@ include '../includes/db.php';
       <a href="approved.php" class="tab" data-tab="approved">Approved</a>
       <a href="reject.php" class="tab" data-tab="rejected">Rejected</a>
       <a href="reschedule.php" class="tab" data-tab="reschedule">Reschedule</a>
+      <a href="cancelled.php" class="tab active" data-tab="cancelled">cancelled</a>
       <a href="done.php" class="tab" data-tab="done">Done</a>
-      <a href="schedule.php" class="tab">Schedule</a>
       <a href="services.php" class="tab">Services</a>
     </div>
 
