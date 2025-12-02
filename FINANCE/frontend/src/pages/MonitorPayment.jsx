@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, RefreshCw, AlertTriangle } from 'lucide-react';
-import { paymentsAPI } from '../services/api';
+import { invoicesAPI } from '../services/api';
 import PaymentStatistics from '../components/payments/PaymentStatistics';
 import PaymentList from '../components/payments/PaymentList';
 
@@ -21,33 +21,69 @@ const MonitorPayment = () => {
   useEffect(() => {
     fetchPayments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, currentPage, searchTerm, sortBy, sortOrder]);
+  }, [statusFilter, currentPage, searchTerm]);
 
   const fetchPayments = async () => {
     try {
       setLoading(true);
       setError('');
-      // Status is already lowercase from the select options
-      const statusParam = statusFilter !== 'all' ? statusFilter : '';
+      // Map status filter to invoices API format
+      let statusParam = 'all';
+      if (statusFilter === 'paid') {
+        statusParam = 'paid';
+      } else if (statusFilter === 'pending') {
+        statusParam = 'outstanding';
+      } else if (statusFilter === 'overdue') {
+        statusParam = 'overdue';
+      }
+      
       const params = {
         status: statusParam,
         page: currentPage,
         limit: 10,
-        search: searchTerm,
-        sort_by: sortBy,
-        sort_order: sortOrder
+        search: searchTerm
       };
       
-      const response = await paymentsAPI.getPayments(params);
+      const response = await invoicesAPI.getInvoices(params);
       
-      // Check if response is successful and has data structure like Invoices page
+      // Check if response is successful and has data structure
       if (response?.data?.success && response?.data?.data) {
         const data = response.data.data;
-        const paymentsList = data.payments || [];
-        const stats = data.statistics || {};
+        const invoicesList = data.invoices || [];
+        const summaryData = data.summary || {};
         const paginationData = data.pagination || {};
         
-        console.log('Payments loaded:', paymentsList.length, 'payments');
+        // Map invoices to payments format for PaymentList component
+        const paymentsList = invoicesList.map(invoice => ({
+          id: invoice.id,
+          invoice_id: invoice.id,
+          invoice_number: invoice.invoice_number,
+          client_name: invoice.client_name,
+          amount: invoice.amount || invoice.service_price || 0,
+          status: invoice.payment_status || 'Pending',
+          raw_status: invoice.raw_status || invoice.payment_status?.toLowerCase() || 'pending',
+          payment_method: invoice.payment_method || '0',
+          payment_date: invoice.date || invoice.date_create,
+          invoice_date: invoice.date || invoice.date_create,
+          due_date: invoice.date || invoice.date_create,
+          created_at: invoice.date_create
+        }));
+        
+        // Map summary to statistics format for PaymentStatistics component
+        const stats = {
+          total_payments: summaryData.total_invoices || 0,
+          total_amount: (summaryData.outstanding_amount || 0) + 
+                       (summaryData.overdue_amount || 0) + 
+                       (summaryData.paid_amount || 0),
+          paid_count: summaryData.paid_count || 0,
+          pending_count: summaryData.outstanding_count || 0,
+          overdue_count: summaryData.overdue_count || 0,
+          paid_amount: summaryData.paid_amount || 0,
+          pending_amount: summaryData.outstanding_amount || 0,
+          overdue_amount: summaryData.overdue_amount || 0
+        };
+        
+        console.log('Invoices loaded:', paymentsList.length, 'invoices');
         console.log('Statistics:', stats);
         console.log('Pagination:', paginationData);
         
@@ -58,7 +94,7 @@ const MonitorPayment = () => {
         setError(''); // Clear any previous errors on success
       } else {
         // Handle API error response
-        const errorMsg = response?.data?.message || 'Failed to load payments';
+        const errorMsg = response?.data?.message || 'Failed to load invoices';
         console.error('API returned error:', errorMsg, response?.data);
         setError(errorMsg);
         setPayments([]);
@@ -66,10 +102,10 @@ const MonitorPayment = () => {
         setPagination({});
       }
     } catch (error) {
-      console.error('Error fetching payments:', error);
+      console.error('Error fetching invoices:', error);
       const errorMessage = error?.response?.data?.message || 
                           error?.message || 
-                          'Failed to load payments. Please check if XAMPP is running.';
+                          'Failed to load invoices. Please check if XAMPP is running.';
       setError(errorMessage);
       setPayments([]);
       setStatistics({});
@@ -88,25 +124,31 @@ const MonitorPayment = () => {
   const handleUpdatePaymentStatus = async (paymentId, status, paymentMethod = null) => {
     try {
       setLoading(true);
-      const response = await paymentsAPI.updatePaymentStatus({
+      // Map status to invoice format
+      let invoiceStatus = status;
+      if (status === 'Pending') {
+        invoiceStatus = 'Outstanding';
+      }
+      
+      const response = await invoicesAPI.updateInvoice({
         id: paymentId,
-        status: status,
+        status: invoiceStatus,
         payment_method: paymentMethod
       });
       
       if (response?.data?.success) {
-        // Refresh payments and statistics after successful update
+        // Refresh invoices and statistics after successful update
         await fetchPayments();
-        return { success: true, message: 'Payment status updated successfully' };
+        return { success: true, message: 'Invoice status updated successfully' };
       } else {
-        const errorMsg = response?.data?.message || 'Failed to update payment status';
+        const errorMsg = response?.data?.message || 'Failed to update invoice status';
         return { success: false, message: errorMsg };
       }
     } catch (error) {
-      console.error('Error updating payment status:', error);
+      console.error('Error updating invoice status:', error);
       const errorMsg = error?.response?.data?.message || 
                       error?.message || 
-                      'Failed to update payment status. Please check if XAMPP is running.';
+                      'Failed to update invoice status. Please check if XAMPP is running.';
       return { 
         success: false, 
         message: errorMsg
@@ -161,7 +203,7 @@ const MonitorPayment = () => {
           <div className="flex items-start justify-between mb-4">
             <div>
               <h1 className="text-4xl font-bold mb-2">Payment Monitor</h1>
-              <p className="text-blue-100 text-lg">Track and manage client payment transactions from localhost database</p>
+              <p className="text-blue-100 text-lg">Track and manage client payment transactions from invoices</p>
             </div>
             <button
               onClick={handleRefresh}

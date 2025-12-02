@@ -176,4 +176,19 @@ export const supplierAPI = {
     api.post("/inventory/receive_delivery.php", data),
 };
 
+// Payroll API - connects to HR module
+export const payrollAPI = {
+  getPaidHours: (id, period, year, month) => {
+    // Direct call to HR backend endpoint
+    const baseURL = window.location.origin;
+    const url = `${baseURL}/VET-SUPER-SYSTEM-3E/HR/backend/routes/getPaidHours.php`;
+    const params = new URLSearchParams({ id, period, year, month });
+    return axios.get(`${url}?${params.toString()}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  },
+};
+
 export default api;

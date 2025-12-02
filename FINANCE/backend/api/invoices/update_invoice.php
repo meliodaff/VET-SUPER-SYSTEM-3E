@@ -3,8 +3,23 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-$database = new Database();
-$db = $database->getConnection();
+// Connect to appointment_sia database
+$host = 'localhost';
+$db_name = 'appointment_sia';
+$username = 'root';
+$password = '';
+
+try {
+    $db = new PDO(
+        "mysql:host=$host;dbname=$db_name",
+        $username,
+        $password
+    );
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    Response::error('Database connection failed: ' . $e->getMessage());
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
     Response::error('Method not allowed', 405);
@@ -24,20 +39,21 @@ $due_date = isset($data['due_date']) ? $data['due_date'] : null;
 $total_amount = isset($data['amount']) ? (float)$data['amount'] : (isset($data['total_amount']) ? (float)$data['total_amount'] : null);
 $status = isset($data['status']) ? $data['status'] : null;
 
-// Map frontend status to database status
+// Map frontend status to database payment_status
 $statusMap = [
-    'Outstanding' => 'pending',
-    'Paid' => 'paid',
+    'Outstanding' => 'Pending',
+    'Paid' => 'Paid',
     'Overdue' => 'overdue',
-    'pending' => 'pending',
-    'draft' => 'draft',
-    'paid' => 'paid',
+    'pending' => 'Pending',
+    'Pending' => 'Pending',
+    'paid' => 'Paid',
+    'Paid' => 'Paid',
     'overdue' => 'overdue'
 ];
 
 try {
-    // Check if invoice exists
-    $stmt = $db->prepare("SELECT id, patient_id FROM invoices WHERE id = ?");
+    // Check if invoice exists in book_appointment table
+    $stmt = $db->prepare("SELECT id FROM book_appointment WHERE id = ?");
     $stmt->execute([$id]);
     $invoice = $stmt->fetch();
     
@@ -45,76 +61,48 @@ try {
         Response::error('Invoice not found');
     }
     
-    // Build update query dynamically
+    // Build update query dynamically for book_appointment table
     $update_fields = [];
     $update_values = [];
     
-    if ($invoice_number !== null) {
-        // Check if new invoice number already exists
-        $stmt = $db->prepare("SELECT id FROM invoices WHERE invoice_number = ? AND id != ?");
-        $stmt->execute([$invoice_number, $id]);
-        if ($stmt->rowCount() > 0) {
-            Response::error('Invoice number already exists');
-        }
-        $update_fields[] = "invoice_number = ?";
-        $update_values[] = $invoice_number;
-    }
-    
-    // Handle client_name by finding or creating patient
+    // Map client_name to fname
     if ($client_name !== null && $client_name !== '') {
-        if (strtolower(trim($client_name)) === 'walk-in client' || trim($client_name) === 'Walk-in Client') {
-            // Set patient_id to NULL for walk-in clients
-            $update_fields[] = "patient_id = ?";
-            $update_values[] = null; // PDO will handle NULL correctly
-        } else {
-            // Find existing patient by owner_name
-            $stmt = $db->prepare("SELECT id FROM patients WHERE owner_name = ? LIMIT 1");
-            $stmt->execute([$client_name]);
-            $patient = $stmt->fetch();
-            
-            if ($patient) {
-                $update_fields[] = "patient_id = ?";
-                $update_values[] = $patient['id'];
-            } else {
-                // Create new patient if not found
-                $stmt = $db->prepare("INSERT INTO patients (owner_name, name, breed, age, created_at) VALUES (?, ?, 'Unknown', 0, NOW())");
-                $stmt->execute([$client_name, $client_name]);
-                $patient_id = $db->lastInsertId();
-                $update_fields[] = "patient_id = ?";
-                $update_values[] = $patient_id;
-            }
-        }
+        $update_fields[] = "fname = ?";
+        $update_values[] = $client_name;
     }
     
+    // Map invoice_date to date
     if ($invoice_date !== null) {
-        $update_fields[] = "invoice_date = ?";
+        $update_fields[] = "date = ?";
         $update_values[] = $invoice_date;
     }
     
-    if ($due_date !== null) {
-        $update_fields[] = "due_date = ?";
-        $update_values[] = $due_date;
-    }
-    
+    // Map total_amount to service_price
     if ($total_amount !== null) {
-        $update_fields[] = "total_amount = ?";
+        $update_fields[] = "service_price = ?";
         $update_values[] = $total_amount;
     }
     
+    // Map status to payment_status
     if ($status !== null) {
         // Map status to database format
-        $db_status = isset($statusMap[$status]) ? $statusMap[$status] : strtolower($status);
-        $update_fields[] = "status = ?";
+        $db_status = isset($statusMap[$status]) ? $statusMap[$status] : 'Pending';
+        $update_fields[] = "payment_status = ?";
         $update_values[] = $db_status;
+        // Also update status field
+        $update_fields[] = "status = ?";
+        $update_values[] = strtolower($db_status);
     }
+    
+    // Always update date_update
+    $update_fields[] = "date_update = NOW()";
     
     if (empty($update_fields)) {
         Response::error('No fields to update');
     }
     
-    // Build the SQL query
-    // Separate fields with placeholders from fields without (like NULL)
-    $sql = "UPDATE invoices SET " . implode(", ", $update_fields) . " WHERE id = ?";
+    // Build the SQL query for book_appointment table
+    $sql = "UPDATE book_appointment SET " . implode(", ", $update_fields) . " WHERE id = ?";
     
     // Add the invoice ID to the values array
     $update_values[] = $id;

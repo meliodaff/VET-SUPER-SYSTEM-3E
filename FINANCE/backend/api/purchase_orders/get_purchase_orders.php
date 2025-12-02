@@ -40,25 +40,35 @@ try {
     $stmt->execute($params);
     $totalCount = (int)$stmt->fetch()['total'];
 
-    // List with basic fields
+    // List with basic fields, JOIN suppliers to get supplier name from database
     $listSql = "
         SELECT
-            id,
-            supplier_id,
-            total_amount,
-            preferred_delivery_date,
-            status,
-            notes,
-            created_at,
-            updated_at
-        FROM purchase_orders
+            po.id,
+            po.supplier_id,
+            COALESCE(s.name, CONCAT('Supplier ', po.supplier_id)) as supplier_name,
+            po.total_amount,
+            po.preferred_delivery_date,
+            po.status,
+            po.notes,
+            po.created_at,
+            po.updated_at
+        FROM purchase_orders po
+        LEFT JOIN suppliers s ON po.supplier_id = s.id
         $whereSql
-        ORDER BY created_at DESC, id DESC
+        ORDER BY po.created_at DESC, po.id DESC
         LIMIT $limit OFFSET $offset
     ";
     $stmt = $db->prepare($listSql);
     $stmt->execute($params);
-    $orders = $stmt->fetchAll();
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Ensure supplier_name is included in each order
+    foreach ($orders as &$order) {
+        if (!isset($order['supplier_name']) || empty($order['supplier_name'])) {
+            $order['supplier_name'] = 'Supplier ' . $order['supplier_id'];
+        }
+    }
+    unset($order);
 
     Response::success(
         [

@@ -44,11 +44,12 @@ try {
     $stmt->execute($params);
     $totalCount = (int)$stmt->fetch()['total'];
 
-    // List
+    // List with supplier name JOIN - pulls name directly from suppliers table in database
     $listSql = "
         SELECT
             sp.id,
             sp.supplier_id,
+            COALESCE(s.name, CONCAT('Supplier ', sp.supplier_id)) as supplier_name,
             sp.purchase_order_id,
             sp.amount,
             sp.payment_method,
@@ -59,13 +60,14 @@ try {
             sp.notes,
             sp.created_at
         FROM supplier_payments sp
+        LEFT JOIN suppliers s ON sp.supplier_id = s.id
         $whereSql
         ORDER BY sp.created_at DESC, sp.id DESC
         LIMIT $limit OFFSET $offset
     ";
     $stmt = $db->prepare($listSql);
     $stmt->execute($params);
-    $rows = $stmt->fetchAll();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $payments = array_map(function ($row) {
         $expected = $row['expected_delivery'];
@@ -79,6 +81,7 @@ try {
         return [
             'id' => (int)$row['id'],
             'supplier_id' => (int)$row['supplier_id'],
+            'supplier_name' => $row['supplier_name'] ?? "Supplier {$row['supplier_id']}",
             'purchase_order_id' => $row['purchase_order_id'] !== null ? (int)$row['purchase_order_id'] : null,
             'amount' => (float)$row['amount'],
             'payment_method' => $row['payment_method'],

@@ -3,8 +3,23 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-$database = new Database();
-$db = $database->getConnection();
+// Connect to appointment_sia database
+$host = 'localhost';
+$db_name = 'appointment_sia';
+$username = 'root';
+$password = '';
+
+try {
+    $db = new PDO(
+        "mysql:host=$host;dbname=$db_name",
+        $username,
+        $password
+    );
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    Response::error('Database connection failed: ' . $e->getMessage());
+}
 
 if (!$db) {
     Response::error('Database connection failed');
@@ -17,31 +32,20 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 
 $statusFilterMap = [
-    'outstanding' => ['pending', 'draft'],
-    'paid' => ['paid'],
+    'outstanding' => ['pending'],
+    'paid' => ['Paid'],
     'overdue' => ['overdue']
 ];
 
 $statusLabelMap = [
-    'pending' => 'Outstanding',
-    'draft' => 'Outstanding',
-    'paid' => 'Paid',
+    'pending' => 'Pending',
+    'Paid' => 'Paid',
+    'Pending' => 'Pending',
     'overdue' => 'Overdue'
 ];
 
 try {
-    // Detect invoices primary key column (id or invoice_id) to support different schemas
-    $colStmt = $db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'invoices'");
-    $colStmt->execute();
-    $columns = $colStmt->fetchAll(PDO::FETCH_COLUMN);
-    if (in_array('id', $columns)) {
-        $idCol = 'id';
-    } elseif (in_array('invoice_id', $columns)) {
-        $idCol = 'invoice_id';
-    } else {
-        $idCol = 'id';
-    }
-    // Build WHERE clause
+    // Build WHERE clause for appointment_sia database
     $where_conditions = [];
     $params = [];
     $statusKey = strtolower($status);
@@ -50,31 +54,32 @@ try {
         if (isset($statusFilterMap[$statusKey])) {
             $statuses = $statusFilterMap[$statusKey];
             $placeholders = implode(',', array_fill(0, count($statuses), '?'));
-            $where_conditions[] = "inv.status IN ($placeholders)";
+            $where_conditions[] = "app.payment_status IN ($placeholders)";
             $params = array_merge($params, $statuses);
         } else {
-            $where_conditions[] = "inv.status = ?";
-            $params[] = $statusKey;
+            $where_conditions[] = "app.payment_status = ?";
+            $params[] = ucfirst($statusKey);
         }
     }
     
     if ($date_range > 0) {
         // Compute date boundary in PHP to avoid binding inside INTERVAL
         $from_date = date('Y-m-d', strtotime("-$date_range days"));
-        $where_conditions[] = "inv.invoice_date >= ?";
+        $where_conditions[] = "app.date >= ?";
         $params[] = $from_date;
     }
     
     if (!empty($search)) {
-        $where_conditions[] = "(inv.invoice_number LIKE ? OR p.owner_name LIKE ? OR p.name LIKE ?)";
+        $where_conditions[] = "(app.fname LIKE ? OR app.phone LIKE ? OR app.email LIKE ? OR app.pet_name LIKE ?)";
         $search_param = "%$search%";
+        $params[] = $search_param;
         $params[] = $search_param;
         $params[] = $search_param;
         $params[] = $search_param;
     }
     
     $where_clause = !empty($where_conditions) ? "WHERE " . implode(" AND ", $where_conditions) : "";
-    $join_clause = "FROM invoices inv LEFT JOIN patients p ON inv.patient_id = p.id";
+    $join_clause = "FROM book_appointment app";
     
     // Get total count
     $count_sql = "SELECT COUNT(*) as total $join_clause $where_clause";
@@ -87,23 +92,30 @@ try {
     $limit = max(1, min($limit, 100));
     $page = max(1, $page);
     $offset = ($page - 1) * $limit;
-    // Main invoice list query - join invoice_items/services to get service names per invoice
+    
+    // Main query for appointment_sia database
     $sql = "
         SELECT 
-            inv." . $idCol . " AS id,
-            inv.invoice_number,
-            inv.invoice_date,
-            inv.due_date,
-            inv.total_amount,
-            inv.status,
-            COALESCE(p.owner_name, 'Walk-in Client') AS client_name,
-            GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ') AS services
+            app.id,
+            app.user_id,
+            app.fname,
+            app.phone,
+            app.email,
+            app.doctor_id,
+            app.vetdoc,
+            app.pet_name,
+            app.date,
+            app.time,
+            app.service,
+            app.service_price,
+            app.payment_method,
+            app.status,
+            app.payment_status,
+            app.date_create,
+            app.date_update
         $join_clause
-        LEFT JOIN invoice_items ii ON ii.invoice_id = inv." . $idCol . "
-        LEFT JOIN services s ON s.id = ii.service_id
         $where_clause
-        GROUP BY inv." . $idCol . "
-        ORDER BY inv.invoice_date DESC, inv." . $idCol . " DESC
+        ORDER BY app.date_create DESC, app.id DESC
         LIMIT $limit OFFSET $offset
     ";
     
@@ -112,30 +124,42 @@ try {
     $rawInvoices = $stmt->fetchAll();
     
     $invoices = array_map(function ($invoice) use ($statusLabelMap) {
-        $status = strtolower($invoice['status']);
+        $paymentStatus = $invoice['payment_status'] ?? 'Pending';
+        $statusKey = strtolower($paymentStatus);
         return [
             'id' => (int) $invoice['id'],
-            'invoice_number' => $invoice['invoice_number'],
-            'client_name' => $invoice['client_name'],
-            'services' => isset($invoice['services']) ? $invoice['services'] : '',
-            'date' => $invoice['invoice_date'],
-            'due_date' => $invoice['due_date'],
-            'amount' => (float) $invoice['total_amount'],
-            'status' => $statusLabelMap[$status] ?? ucfirst($status),
-            'raw_status' => $status
+            'invoice_number' => 'APP-' . str_pad($invoice['id'], 6, '0', STR_PAD_LEFT),
+            'user_id' => (int) $invoice['user_id'],
+            'client_name' => $invoice['fname'] ?? 'N/A',
+            'phone' => $invoice['phone'] ?? '',
+            'email' => $invoice['email'] ?? '',
+            'doctor_id' => (int) $invoice['doctor_id'],
+            'vetdoc' => $invoice['vetdoc'] ?? '',
+            'pet_name' => $invoice['pet_name'] ?? '',
+            'date' => $invoice['date'] ?? '',
+            'time' => $invoice['time'] ?? '',
+            'service' => $invoice['service'] ?? '',
+            'service_price' => (float) ($invoice['service_price'] ?? 0),
+            'payment_method' => $invoice['payment_method'] ?? '0',
+            'status' => $invoice['status'] ?? 'pending',
+            'payment_status' => $paymentStatus,
+            'date_create' => $invoice['date_create'] ?? '',
+            'date_update' => $invoice['date_update'] ?? '',
+            'amount' => (float) ($invoice['service_price'] ?? 0),
+            'raw_status' => $statusKey
         ];
     }, $rawInvoices);
     
-    // Get summary
+    // Get summary for appointment_sia
     $summary_sql = "
         SELECT 
             COUNT(*) as total_invoices,
-            SUM(CASE WHEN inv.status IN ('pending','draft') THEN 1 ELSE 0 END) as outstanding_count,
-            SUM(CASE WHEN inv.status = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
-            SUM(CASE WHEN inv.status = 'paid' THEN 1 ELSE 0 END) as paid_count,
-            COALESCE(SUM(CASE WHEN inv.status IN ('pending','draft') THEN inv.total_amount ELSE 0 END), 0) as outstanding_amount,
-            COALESCE(SUM(CASE WHEN inv.status = 'overdue' THEN inv.total_amount ELSE 0 END), 0) as overdue_amount,
-            COALESCE(SUM(CASE WHEN inv.status = 'paid' THEN inv.total_amount ELSE 0 END), 0) as paid_amount
+            SUM(CASE WHEN app.payment_status = 'Pending' THEN 1 ELSE 0 END) as outstanding_count,
+            SUM(CASE WHEN app.payment_status = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
+            SUM(CASE WHEN app.payment_status = 'Paid' THEN 1 ELSE 0 END) as paid_count,
+            COALESCE(SUM(CASE WHEN app.payment_status = 'Pending' THEN app.service_price ELSE 0 END), 0) as outstanding_amount,
+            COALESCE(SUM(CASE WHEN app.payment_status = 'overdue' THEN app.service_price ELSE 0 END), 0) as overdue_amount,
+            COALESCE(SUM(CASE WHEN app.payment_status = 'Paid' THEN app.service_price ELSE 0 END), 0) as paid_amount
         $join_clause
         $where_clause
     ";

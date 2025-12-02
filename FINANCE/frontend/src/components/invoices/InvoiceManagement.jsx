@@ -45,19 +45,25 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Invoice
+                ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Client
+                Patient Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
+                Pet Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Due Date
+                Service
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date & Time
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Amount
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Payment Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -75,6 +81,9 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
                     <FileText className="h-5 w-5 text-gray-400 mr-3" />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
+                        #{invoice.id}
+                      </div>
+                      <div className="text-xs text-gray-500">
                         {invoice.invoice_number}
                       </div>
                     </div>
@@ -83,29 +92,51 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <User className="h-4 w-4 text-gray-400 mr-2" />
-                    <div className="text-sm text-gray-900">{invoice.client_name}</div>
+                    <div>
+                      <div className="text-sm text-gray-900">{invoice.client_name || invoice.fname || 'N/A'}</div>
+                      {invoice.phone && (
+                        <div className="text-xs text-gray-500">{invoice.phone}</div>
+                      )}
+                    </div>
                   </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{invoice.pet_name || '-'}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{invoice.service || '-'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                    <div className="text-sm text-gray-900">{formatDate(invoice.date)}</div>
+                    <div>
+                      <div className="text-sm text-gray-900">{formatDate(invoice.date)}</div>
+                      {invoice.time && (
+                        <div className="text-xs text-gray-500">{invoice.time}</div>
+                      )}
+                    </div>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{formatDate(invoice.due_date)}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <Coins className="h-4 w-4 text-yellow-500 mr-1" />
                     <div className="text-sm font-medium text-gray-900">
-                      {formatCurrency(invoice.amount)}
+                      {formatCurrency(invoice.amount || invoice.service_price || 0)}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
-                    {invoice.status}
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(invoice.payment_status || invoice.status)}`}>
+                    {invoice.payment_status || invoice.status || 'Pending'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    (invoice.status || '').toLowerCase() === 'pending' 
+                      ? 'bg-yellow-100 text-yellow-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {invoice.status || 'pending'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

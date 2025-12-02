@@ -3,23 +3,48 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-$database = new Database();
-$db = $database->getConnection();
+// Connect to fur_ever_care_db for employees
+$host = 'localhost';
+$db_name_employees = 'fur_ever_care_db';
+$username = 'root';
+$password = '';
+
+try {
+    $db_employees = new PDO(
+        "mysql:host=$host;dbname=$db_name_employees",
+        $username,
+        $password
+    );
+    $db_employees->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db_employees->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    Response::error('Database connection failed: ' . $e->getMessage());
+}
+
+// Connect to appointment_sia for appointments
+try {
+    $db_appointments = new PDO(
+        "mysql:host=$host;dbname=appointment_sia",
+        $username,
+        $password
+    );
+    $db_appointments->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db_appointments->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    Response::error('Appointment database connection failed: ' . $e->getMessage());
+}
 
 try {
     // Check what columns exist in employees table
-    $columnsStmt = $db->query("SHOW COLUMNS FROM employees");
+    $columnsStmt = $db_employees->query("SHOW COLUMNS FROM employees");
     $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
     $hasId = in_array('id', $columns);
     $hasName = in_array('name', $columns);
     $hasFirstName = in_array('first_name', $columns);
-    $hasEmployeeId = in_array('employee_id', $columns);
     $hasRole = in_array('role', $columns);
     $hasSystemRole = in_array('system_role', $columns);
     $hasPosition = in_array('Position', $columns);
-    
-    // Determine primary key for JOIN
-    $primaryKey = $hasId ? 'id' : ($hasEmployeeId ? 'employee_id' : 'id');
+    $hasEmployeeId = in_array('employee_id', $columns);
     
     // Build name field
     if ($hasName) {
@@ -30,13 +55,7 @@ try {
         $nameField = "COALESCE(e.first_name, 'Unknown')";
     }
     
-    // Get doctor surgery fees from invoice_items, services, invoices, and employees
-    // Use LEFT JOIN to ensure we get all doctors, even if they have no surgeries
-    $joinCondition = $hasId ? "inv.employee_id = e.id" : "inv.employee_id = e.employee_id";
-    $employeeIdField = $hasId ? "e.id" : "e.employee_id";
-    
     // Build WHERE clause for veterinarians
-    // Only use columns that actually exist
     $whereConditions = [];
     if ($hasSystemRole && $hasPosition) {
         $conditions = ["e.system_role = 'Admin'", "e.Position LIKE '%Veterinarian%'", "e.Position LIKE '%Vet%'"];
@@ -58,43 +77,70 @@ try {
         $whereConditions[] = "(e.Position LIKE '%Veterinarian%' OR e.Position LIKE '%Vet%')";
     }
     
-    $whereClause = !empty($whereConditions) ? "WHERE " . implode(" AND ", $whereConditions) : "";
+    $employeeIdField = $hasEmployeeId ? "e.employee_id" : ($hasId ? "e.id" : "e.employee_id");
+    $idSelectField = $hasEmployeeId ? "e.employee_id" : ($hasId ? "COALESCE(e.id, e.employee_id)" : "e.employee_id");
     
-    $stmt = $db->prepare("
+    // Get all veterinarians
+    $sql = "
         SELECT 
-            $nameField AS doctor,
-            COALESCE(COUNT(DISTINCT CASE WHEN s.category = 'Surgery' AND inv.status = 'paid' THEN ii.id END), 0) AS surgeries_count,
-            COALESCE(SUM(CASE WHEN s.category = 'Surgery' AND inv.status = 'paid' THEN ii.line_total ELSE 0 END), 0) AS total_fees
+            $idSelectField AS employee_id,
+            $nameField AS doctor
         FROM employees e
-        LEFT JOIN invoices inv ON $joinCondition
-        LEFT JOIN invoice_items ii ON ii.invoice_id = inv.id
-        LEFT JOIN services s ON ii.service_id = s.id
-        $whereClause
-        GROUP BY $employeeIdField, $nameField
-        HAVING surgeries_count > 0
-        ORDER BY total_fees DESC, surgeries_count DESC
-    ");
-    // Log the SQL for debugging (remove in production)
-    error_log("Doctor Surgery Fees SQL: " . $stmt->queryString);
+    ";
     
+    if (!empty($whereConditions)) {
+        $sql .= " WHERE " . implode(" AND ", $whereConditions);
+    }
+    
+    $stmt = $db_employees->prepare($sql);
     $stmt->execute();
-    $rows = $stmt->fetchAll();
+    $doctors = $stmt->fetchAll();
     
-    // Log results for debugging
-    error_log("Doctor Surgery Fees Results Count: " . count($rows));
+    // Get surgery fees from appointment_sia.book_appointment
+    // Filter for services containing "Surgery"
+    $stmt_surgeries = $db_appointments->prepare("
+        SELECT 
+            doctor_id,
+            COUNT(*) as surgeries_count,
+            SUM(service_price) as total_fees
+        FROM book_appointment
+        WHERE payment_status = 'Paid' 
+          AND (service LIKE '%Surgery%' OR service LIKE '%surgery%')
+        GROUP BY doctor_id
+    ");
+    $stmt_surgeries->execute();
+    $surgery_stats = $stmt_surgeries->fetchAll();
     
-    $surgery_fees = array_map(function ($row) {
-        return [
-            'doctor' => trim($row['doctor'] ?? 'Unknown Doctor'),
-            'surgeries' => (int) ($row['surgeries_count'] ?? 0),
-            'total_fees' => (float) ($row['total_fees'] ?? 0)
-        ];
-    }, $rows);
+    // Create a map of doctor_id to surgery statistics
+    $surgery_map = [];
+    foreach ($surgery_stats as $stat) {
+        $surgery_map[(int)$stat['doctor_id']] = $stat;
+    }
     
-    // Always return an array, even if empty
+    // Combine doctor data with surgery statistics
+    $surgery_fees = [];
+    foreach ($doctors as $doctor) {
+        $employeeId = (int)($doctor['employee_id'] ?? 0);
+        $surgeryData = $surgery_map[$employeeId] ?? null;
+        
+        if ($surgeryData && (int)($surgeryData['surgeries_count'] ?? 0) > 0) {
+            $surgery_fees[] = [
+                'doctor' => trim($doctor['doctor'] ?? 'Unknown Doctor'),
+                'surgeries' => (int)($surgeryData['surgeries_count'] ?? 0),
+                'total_fees' => (float)($surgeryData['total_fees'] ?? 0)
+            ];
+        }
+    }
+    
+    // Sort by total_fees descending
+    usort($surgery_fees, function($a, $b) {
+        return $b['total_fees'] <=> $a['total_fees'];
+    });
+    
     Response::success($surgery_fees);
     
 } catch (Exception $e) {
+    error_log("Doctor Surgery Fees Error: " . $e->getMessage());
     Response::error('Database error: ' . $e->getMessage());
 }
 ?>
