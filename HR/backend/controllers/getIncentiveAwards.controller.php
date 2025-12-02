@@ -2,7 +2,7 @@
 
      function getIncentiveAwards($pdo) {
     
-        $query = "SELECT * FROM incentive_awards WHERE YEAR(award_date) = YEAR(CURDATE()) AND MONTH(award_date) = MONTH(CURDATE())";
+        $query = "SELECT * FROM incentive_awards WHERE YEAR(award_date) = YEAR(CURDATE()) AND MONTH(award_date) = MONTH(CURDATE()) AND status = 'Pending Approval'";
         try {
             $stmt = $pdo->prepare($query);
             $stmt->execute();
@@ -24,6 +24,8 @@
     function getIncentiveAwardsForTheMonth($pdo) {
     
         $query = "SELECT 
+ia.award_id,
+i.incentive_id,
 CONCAT(e.first_name, ' ', e.last_name) AS name,
 i.incentive_name AS reward,
 ia.award_date AS dateAwarded,
@@ -52,6 +54,9 @@ WHERE YEAR(award_date) = YEAR(CURDATE()) AND MONTH(award_date) = MONTH(CURDATE()
             }
             return $response;
     }
+
+
+    
 
 
 

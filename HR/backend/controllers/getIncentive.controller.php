@@ -22,6 +22,7 @@
      function getIncentives($isClaim, $pdo) {
     
         $query = "SELECT
+ia.award_id,
 e.employee_id,
 i.incentive_id,
 CONCAT(e.first_name, ' ', e.last_name) AS name,
@@ -101,6 +102,7 @@ return $response;
 }
     function getAllIncentivesForTheMonth($pdo) {
         $query = "SELECT
+ia.award_id,
 e.employee_id,
 e.profile_image_url,
 i.incentive_id,
