@@ -1,7 +1,8 @@
 <?php
 // require_once __DIR__ . '/../config/config.php';
+include_once __DIR__ . "/../config/appointment.php";
 include_once __DIR__ . "/../config/database.php";
-require_once __DIR__ . "/../controllers/getPerformanceReviews.controller.php";
+require_once __DIR__ . "/../controllers/getAppointment.controller.php";
 include_once __DIR__ . "/../config/cors.php";
 
 
@@ -10,14 +11,14 @@ $REQUEST_METHOD = $_SERVER["REQUEST_METHOD"];
 
 
 if($REQUEST_METHOD === "GET"){
-    $report = isset($_GET["report"]) ? $_GET["report"] : null;
-  
-    if($report === "true"){
+    $idParams = isset($_GET["id"]) ? $_GET["id"] : null;
+    
+    if($idParams){
 
-        $response = getPerformanceReviewsReport($pdo);
+        $response = getAppointment($idParams, $pdoAppointment, $pdo);
     }else {
-
-        $response = getPerformanceReviews($pdo);
+        
+        $response = getAppointments($pdo);
     }
 
     if (!$response["success"]){

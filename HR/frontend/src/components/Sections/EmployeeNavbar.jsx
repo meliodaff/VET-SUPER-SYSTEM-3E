@@ -65,6 +65,7 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
     setPhoto(user.photo);
   }, []);
 
+  const user = JSON.parse(localStorage.getItem("user"));
   // Sync activeNav with current route
   useEffect(() => {
     if (location.pathname === "/employee-schedule") {
@@ -75,6 +76,8 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
       setActiveNav("ANALYTICS");
     } else if (location.pathname === "/employee-performance-rating") {
       setActiveNav("PERFORMANCE");
+    } else if (location.pathname === "/appointment-table") {
+      setActiveNav("APPOINTMENT");
     }
   }, [location.pathname]);
 
@@ -273,6 +276,15 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
             >
               PERFORMANCE RATING
             </NavItem>
+            {user.department === "Doctor" && (
+              <NavItem
+                active={activeNav === "APPOINTMENT"}
+                onClick={() => handleNavClick("APPOINTMENT")}
+                link="/appointment-table"
+              >
+                APPOINTMENT
+              </NavItem>
+            )}
           </div>
 
           {/* Right Section - Search, Notifications, Profile */}
@@ -395,28 +407,35 @@ const EmployeeNavbar = ({ employee, onNavigate }) => {
               </button>
 
               {/* Dropdown Menu */}
+              {/* Dropdown Menu */}
               {isOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  <button
-                    onClick={() => {
-                      const user = JSON.parse(localStorage.getItem("user"));
-                      if (user.department === "HR") {
-                        navigate("/dashboard");
-                      } else if (user.department === "Finance") {
-                        window.location.href =
-                          "http://localhost:3000/finance-dashboard";
-                      } else if (user.department === "Appointment") {
-                        window.location.href =
-                          "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/admin_page/overview.php";
-                      } else if (user.department === "Patient") {
-                        window.location.href =
-                          "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php";
-                      }
-                    }}
-                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors rounded-lg"
-                  >
-                    Go back to Dashboard
-                  </button>
+                  {(() => {
+                    const user = JSON.parse(localStorage.getItem("user"));
+                    return (
+                      user.department !== "Doctor" && (
+                        <button
+                          onClick={() => {
+                            if (user.department === "HR") {
+                              navigate("/dashboard");
+                            } else if (user.department === "Finance") {
+                              window.location.href =
+                                "http://localhost:3000/finance-dashboard";
+                            } else if (user.department === "Appointment") {
+                              window.location.href =
+                                "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/admin_page/overview.php";
+                            } else if (user.department === "Patient") {
+                              window.location.href =
+                                "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php";
+                            }
+                          }}
+                          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors rounded-lg"
+                        >
+                          Go back to Dashboard
+                        </button>
+                      )
+                    );
+                  })()}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors rounded-lg"

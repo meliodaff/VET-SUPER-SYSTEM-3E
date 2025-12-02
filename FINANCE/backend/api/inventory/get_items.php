@@ -2,8 +2,6 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../utils/cors.php';
 
-cors();
-
 $database = new Database();
 $db = $database->getConnection();
 
@@ -20,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $stmt = $db->query("SELECT id, sku, name, quantity, unit_cost FROM inventory_items ORDER BY name ASC");
+    $stmt = $db->query("SELECT id, sku, name, quantity, unit_cost, supplier_id FROM inventory_items ORDER BY name ASC");
     $items = $stmt->fetchAll();
 
     header('Content-Type: application/json');

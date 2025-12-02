@@ -116,7 +116,15 @@ foreach ($items as $item) {
 if (empty($ordersBySupplier)) {
     $msg = 'No purchase orders could be generated.';
     if (!empty($invalidItems)) {
-        $msg .= ' Check supplier mapping for item IDs: ' . implode(', ', array_unique($invalidItems));
+        $itemNames = [];
+        foreach (array_unique($invalidItems) as $itemId) {
+            if (isset($inventoryById[$itemId])) {
+                $itemNames[] = $inventoryById[$itemId]['name'] ?? "Item #{$itemId}";
+            } else {
+                $itemNames[] = "Item #{$itemId}";
+            }
+        }
+        $msg .= ' The following items are missing supplier assignments: ' . implode(', ', $itemNames) . '. Please set a supplier_id for these items in inventory_items table.';
     }
     Response::error($msg);
 }
@@ -147,6 +155,21 @@ try {
         ) VALUES (?, ?, ?, ?, ?)
     ");
 
+    // Prepare statement for creating supplier payment entries
+    $paymentStmt = $db->prepare("
+        INSERT INTO supplier_payments (
+            supplier_id,
+            purchase_order_id,
+            amount,
+            payment_method,
+            payment_date,
+            expected_delivery,
+            status,
+            notes,
+            created_at
+        ) VALUES (?, ?, ?, 'bank_transfer', CURDATE(), ?, 'Scheduled', ?, NOW())
+    ");
+
     foreach ($ordersBySupplier as $supplierId => $orderData) {
         $totalAmount = $orderData['total_amount'];
 
@@ -169,12 +192,27 @@ try {
             ]);
         }
 
+        // Automatically create supplier payment entry for delivery tracking
+        $paymentStmt->execute([
+            $supplierId,
+            $purchaseOrderId,
+            $totalAmount,
+            $preferredDate,
+            $notes,
+        ]);
+
+        $supplierPaymentId = (int)$db->lastInsertId();
+
         $createdOrders[] = [
             'purchase_order_id' => $purchaseOrderId,
             'supplier_id' => $supplierId,
             'total_amount' => $totalAmount,
             'item_count' => count($orderData['items']),
+            'supplier_payment_id' => $supplierPaymentId,
         ];
+        
+        // Log for debugging
+        error_log("Created PO #{$purchaseOrderId} with Supplier Payment #{$supplierPaymentId} for Supplier #{$supplierId}");
     }
 
     $db->commit();

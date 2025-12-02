@@ -7,14 +7,14 @@ require_once __DIR__ . '/../utils/checkIfStatusActive.php';
 function insertPatientAccount($pdo, $postData) {
     // Absolute paths for saving
     
-         $isUserStatusActive = checkIfStatusActive($postData["email"], $pdo);
+        //  $isUserStatusActive = checkIfStatusActive($postData["email"], $pdo);
     
-            if(!$isUserStatusActive["isStatusActive"]){
-                return $response = [
-                    "success" => false,
-                    "message" => "Your email is already registered yet inactive. Kindly verify it through your email."
-                ];
-            }
+        //     if(!$isUserStatusActive["isStatusActive"]){
+        //         return $response = [
+        //             "success" => false,
+        //             "message" => "Your email is already registered yet inactive. Kindly verify it through your email."
+        //         ];
+        //     }
             
     $isDuplicateEmail = checkIfEmailExists($postData["email"], $pdo);
 
@@ -30,9 +30,9 @@ function insertPatientAccount($pdo, $postData) {
     try {
         $stmt = $pdo->prepare("
             INSERT INTO users 
-                (first_name, middle_name, last_name, email, password, role, status) 
+                (first_name, middle_name, last_name, email, password, role, status, phone_number) 
             VALUES 
-                (:firstName, :middleName, :lastName, :email, :password, 'Patient', 'Inactive')
+                (:firstName, :middleName, :lastName, :email, :password, 'Patient', 'Active', :phone_number)
         ");
 
         $hashedPassword = password_hash($postData["password"], PASSWORD_BCRYPT);
@@ -43,6 +43,7 @@ function insertPatientAccount($pdo, $postData) {
             ':lastName'        => $postData['lastName'],
             ':email'           => $postData['email'],
             ':password'      => $hashedPassword,  // ✅ relative path
+            ':phone_number'      => $postData["phoneNumber"],  // ✅ relative path
         ]);
 
         return [

@@ -47,6 +47,47 @@ WHERE YEAR(review_date) = YEAR(CURDATE()) AND MONTH(review_date) = MONTH(CURDATE
             return $response;
     }
 
+     function getPerformanceReviewsReport($pdo) {
+    
+        $query = "SELECT 
+    pr.review_id,
+    pr.employee_id,
+    pr.reviewer_id,
+    pr.review_date,
+    pr.review_score,
+    pr.comments,
+    e.first_name,
+    e.last_name,
+    e.department,
+    e.position,
+    reviewer.first_name as reviewer_first_name,
+    reviewer.last_name as reviewer_last_name
+FROM performance_reviews pr
+LEFT JOIN employees e ON pr.employee_id = e.employee_id
+LEFT JOIN employees reviewer ON pr.reviewer_id = reviewer.employee_id
+WHERE MONTH(pr.review_date) = MONTH(CURDATE()) AND YEAR(pr.review_date) = YEAR(CURDATE())
+ORDER BY e.department, e.last_name, e.first_name";
+
+        try {
+            $stmt = $pdo->prepare($query);
+            $stmt->execute();
+
+            $datas = $stmt->fetchAll();
+            $response = [
+                "success" => true,
+                "message" => "Incentive awards successfully fetched",
+                "data" => $datas 
+            ];
+        } catch (PDOException $e) {
+            $response = [
+                "success" => false,
+                "message" => "Incentive awards failed to fetch",
+                "error" => $e->getMessage()
+            ];
+            }
+            return $response;
+    }
+
     
 
 ?>

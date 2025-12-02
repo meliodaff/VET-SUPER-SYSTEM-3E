@@ -115,8 +115,17 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
                   <div className="text-center">
                     <div className="font-bold text-lg">Fur Ever Care</div>
                     <div className="text-sm">RECEIPT</div>
-                    <div className="text-xs mt-2">{formatDateTime(invoiceDetails.invoice.invoice_date)}</div>
+                    <div className="text-xs mt-2">
+                      {invoiceDetails.invoice.date || invoiceDetails.invoice.invoice_date || ''}
+                      {invoiceDetails.invoice.time && ` ${invoiceDetails.invoice.time}`}
+                    </div>
                     <div className="text-xs">Invoice: {invoiceDetails.invoice.invoice_number}</div>
+                    {invoiceDetails.invoice.client_name && (
+                      <div className="text-xs">Patient: {invoiceDetails.invoice.client_name}</div>
+                    )}
+                    {invoiceDetails.invoice.pet_name && (
+                      <div className="text-xs">Pet: {invoiceDetails.invoice.pet_name}</div>
+                    )}
                   </div>
 
                   <hr className="my-2" />
@@ -136,23 +145,62 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
                   </div>
                   <div className="text-center text-xs mt-3">Thank you for your business!</div>
                 </div>
-                {/* Top details: Schedule / Service / Price */}
+                {/* Top details: Patient / Pet / Schedule / Service / Price */}
                 <div className="grid grid-cols-1 gap-2 text-sm text-gray-800">
                   <div className="flex justify-between">
-                    <span className="font-semibold">Schedule:</span>
-                    <span>{formatDateTime(invoiceDetails.invoice.invoice_date)}</span>
+                    <span className="font-semibold">Patient Name:</span>
+                    <span>{invoiceDetails.invoice.client_name || invoiceDetails.invoice.fname || 'N/A'}</span>
                   </div>
+                  {invoiceDetails.invoice.pet_name && (
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Pet Name:</span>
+                      <span>{invoiceDetails.invoice.pet_name}</span>
+                    </div>
+                  )}
+                  {invoiceDetails.invoice.phone && (
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Phone:</span>
+                      <span>{invoiceDetails.invoice.phone}</span>
+                    </div>
+                  )}
+                  {invoiceDetails.invoice.email && (
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Email:</span>
+                      <span>{invoiceDetails.invoice.email}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Date:</span>
+                    <span>{invoiceDetails.invoice.date || invoiceDetails.invoice.invoice_date || '—'}</span>
+                  </div>
+                  {invoiceDetails.invoice.time && (
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Time:</span>
+                      <span>{invoiceDetails.invoice.time}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="font-semibold">Service:</span>
                     <span className="font-medium">
-                      {invoiceDetails.items && invoiceDetails.items.length > 0
+                      {invoiceDetails.invoice.service || 
+                       (invoiceDetails.items && invoiceDetails.items.length > 0
                         ? invoiceDetails.items.map(it => it.service_name).join(', ')
-                        : (invoiceDetails.invoice?.description || '—')}
+                        : '—')}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-semibold">Service Price:</span>
-                    <span className="font-medium">{formatCurrency(invoiceDetails.summary.total_amount)}</span>
+                    <span className="font-medium">{formatCurrency(invoiceDetails.summary.total_amount || invoiceDetails.invoice.service_price || 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Payment Status:</span>
+                    <span className={`font-medium ${
+                      (invoiceDetails.invoice.payment_status || '').toLowerCase() === 'paid' 
+                        ? 'text-green-600' 
+                        : 'text-yellow-600'
+                    }`}>
+                      {invoiceDetails.invoice.payment_status || invoiceDetails.invoice.status || 'Pending'}
+                    </span>
                   </div>
                 </div>
 

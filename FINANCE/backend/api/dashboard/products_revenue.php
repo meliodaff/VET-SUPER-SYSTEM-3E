@@ -3,24 +3,47 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-$database = new Database();
-$db = $database->getConnection();
+// Connect to appointment_sia database for revenue data
+$host = 'localhost';
+$db_name = 'appointment_sia';
+$username = 'root';
+$password = '';
+
+try {
+    $db = new PDO(
+        "mysql:host=$host;dbname=$db_name",
+        $username,
+        $password
+    );
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    Response::error('Database connection failed: ' . $e->getMessage());
+}
 
 if (!$db) {
     Response::error('Database connection failed');
 }
 
 try {
-    // Get products revenue from paid invoices only
+    // Get products revenue from paid appointments grouped by service type
+    // Extract service category from service field (e.g., "Surgery (General)" -> "Surgery")
     $stmt = $db->prepare("
         SELECT 
-            COALESCE(s.category, 'Other') AS category,
-            SUM(ii.line_total) AS total_revenue
-        FROM invoice_items ii
-        JOIN invoices inv ON ii.invoice_id = inv.id
-        LEFT JOIN services s ON ii.service_id = s.id
-        WHERE inv.status = 'paid'
-        GROUP BY s.category
+            CASE 
+                WHEN service LIKE '%Surgery%' THEN 'Surgery'
+                WHEN service LIKE '%Consultation%' OR service LIKE '%Checkup%' THEN 'Consultation'
+                WHEN service LIKE '%Vaccination%' OR service LIKE '%Vaccine%' THEN 'Vaccination'
+                WHEN service LIKE '%Grooming%' THEN 'Grooming'
+                WHEN service LIKE '%Laboratory%' OR service LIKE '%Lab%' THEN 'Laboratory'
+                WHEN service LIKE '%Medication%' OR service LIKE '%Medicine%' THEN 'Medication'
+                ELSE 'Other Services'
+            END AS category,
+            SUM(service_price) AS total_revenue,
+            COUNT(*) AS service_count
+        FROM book_appointment
+        WHERE payment_status = 'Paid'
+        GROUP BY category
         ORDER BY total_revenue DESC
     ");
     $stmt->execute();
@@ -35,9 +58,10 @@ try {
         $percentage = $totalRevenue > 0 ? round(($amount / $totalRevenue) * 100, 2) : 0;
         
         return [
-            'category' => $row['category'] ?? 'Other',
+            'category' => $row['category'] ?? 'Other Services',
             'amount' => $amount,
-            'percentage' => $percentage
+            'percentage' => $percentage,
+            'count' => (int) ($row['service_count'] ?? 0)
         ];
     }, $rows);
     

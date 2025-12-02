@@ -3,8 +3,23 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-$database = new Database();
-$db = $database->getConnection();
+// Connect to appointment_sia database for sales data
+$host = 'localhost';
+$db_name = 'appointment_sia';
+$username = 'root';
+$password = '';
+
+try {
+    $db = new PDO(
+        "mysql:host=$host;dbname=$db_name",
+        $username,
+        $password
+    );
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    Response::error('Database connection failed: ' . $e->getMessage());
+}
 
 if (!$db) {
     Response::error('Database connection failed');
@@ -16,14 +31,14 @@ try {
     // Compute date boundary in PHP instead of binding inside INTERVAL
     $from_date = date('Y-m-d', strtotime("-$months months"));
 
-    // Get sales trend from payments
+    // Get sales trend from book_appointment table (paid appointments only)
     $stmt = $db->prepare("
         SELECT 
-            DATE_FORMAT(p.payment_date, '%Y-%m') as month,
-            COALESCE(SUM(p.amount), 0) as total_sales
-        FROM payments p
-        WHERE p.payment_date >= :from_date
-        GROUP BY DATE_FORMAT(p.payment_date, '%Y-%m')
+            DATE_FORMAT(date, '%Y-%m') as month,
+            COALESCE(SUM(service_price), 0) as total_sales
+        FROM book_appointment
+        WHERE date >= :from_date AND payment_status = 'Paid'
+        GROUP BY DATE_FORMAT(date, '%Y-%m')
         ORDER BY month ASC
     ");
     $stmt->execute([':from_date' => $from_date]);

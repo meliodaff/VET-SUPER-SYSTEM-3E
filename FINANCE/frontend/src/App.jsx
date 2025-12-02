@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // Components
 import Dashboard from './pages/Dashboard';
-import SalesMonitoring from './pages/SalesMonitoring';
 import Employees from './pages/Employees';
 import Invoices from './pages/Invoices';
 import MonitorPayment from './pages/MonitorPayment';
@@ -26,22 +25,14 @@ function App() {
         <div className="App">
           <Routes>
           {/* Public Routes (authentication removed) */}
-          <Route path="/login" element={<Navigate to="/sales-monitoring" replace />} />
-          <Route path="/create-account" element={<Navigate to="/sales-monitoring" replace />} />
+          <Route path="/login" element={<Navigate to="/finance-dashboard" replace />} />
+          <Route path="/create-account" element={<Navigate to="/finance-dashboard" replace />} />
 
           <Route
             path="/finance-dashboard"
             element={
               <Layout admin={admin} onLogout={noop}>
                 <Dashboard />
-              </Layout>
-            }
-          />
-          <Route
-            path="/sales-monitoring"
-            element={
-              <Layout admin={admin} onLogout={noop}>
-                <SalesMonitoring />
               </Layout>
             }
           />
@@ -103,7 +94,7 @@ function App() {
           />
 
           {/* Default Route */}
-          <Route path="/" element={<Navigate to="/sales-monitoring" replace />} />
+          <Route path="/" element={<Navigate to="/finance-dashboard" replace />} />
           </Routes>
         </div>
       </Router>
