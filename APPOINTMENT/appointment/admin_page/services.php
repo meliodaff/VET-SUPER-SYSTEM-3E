@@ -30,20 +30,6 @@ include '../includes/db.php';
       <nav class="nav-links">
         <img src="../image/profile 1.png" alt="User" class="user-icon" />
       </nav>
-
-      <!-- Logout Confirmation Popup -->
-      <div id="logoutConfirmPopup" class="logout-confirm-popup">
-        <p>Are you sure to logout?</p>
-        <div class="confirm-actions">
-          <button id="logoutYesBtn" class="yes-btn">Yes</button>
-          <button id="logoutNoBtn" class="no-btn">No</button>
-        </div>
-      </div>
-
-      <!-- Logout Popup -->
-      <div id="logoutPopup" class="logout-popup">
-        <button id="logoutBtn">Logout</button>
-      </div>
     </div>
   </header>
 
@@ -90,7 +76,7 @@ include '../includes/db.php';
       </a>
 
       <!-- Logout at bottom using padding trick -->
-      <a href="" class="nav-logout">
+      <a href="http://localhost:5173/login" class="nav-logout">
       <img src="image/arrow-out-right-square-half.png" class="nav-icon" alt="Dashboard Icon">  
         Logout
       </a>
@@ -113,7 +99,6 @@ include '../includes/db.php';
       <a href="reschedule.php" class="tab">Reschedule</a>
       <a href="cancelled.php" class="tab" data-tab="cancelled">cancelled</a>
       <a href="done.php" class="tab">Done</a>
-      <a href="schedule.php" class="tab">Schedule</a>
       <a href="services.php" class="tab active">Services</a>
     </div>
 

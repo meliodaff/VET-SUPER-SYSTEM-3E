@@ -76,20 +76,6 @@ $grand_total = $service_price + $total_items_price;
       <nav class="nav-links">
         <img src="../image/profile 1.png" alt="User" class="user-icon" />
       </nav>
-
-      <!-- Logout Confirmation Popup -->
-      <div id="logoutConfirmPopup" class="logout-confirm-popup">
-        <p>Are you sure to logout?</p>
-        <div class="confirm-actions">
-          <button id="logoutYesBtn" class="yes-btn">Yes</button>
-          <button id="logoutNoBtn" class="no-btn">No</button>
-        </div>
-      </div>
-
-      <!-- Logout Popup -->
-      <div id="logoutPopup" class="logout-popup">
-        <button id="logoutBtn">Logout</button>
-      </div>
     </div>
   </header>
 
@@ -100,23 +86,6 @@ $grand_total = $service_price + $total_items_price;
   <h2>Details</h2>
 
   <div class="details-box">
-    <div class="section">
-      <h3>Personal Information</h3>
-      <div class="field"><label>Full Name: </label><span><?= htmlspecialchars($user['fname']) ?></span></div>
-      <div class="field"><label>Last Name: </label><span><?= htmlspecialchars($user['lname']) ?></span></div>
-      <div class="field"><label>Phone Number: </label><span><?= htmlspecialchars($user['phone']) ?></span></div>
-      <div class="field"><label>Email Address: </label><span><?= htmlspecialchars($user['email']) ?></span></div>
-    </div>
-
-    <div class="section">
-      <h3>Address Information</h3>
-      <div class="field"><label>Street Address: </label><span><?= htmlspecialchars($user['street_address']) ?></span></div>
-      <div class="field"><label>City: </label><span><?= htmlspecialchars($user['city']) ?></span></div>
-      <div class="field"><label>State: </label><span><?= htmlspecialchars($user['state']) ?></span></div>
-      <div class="field"><label>ZIP Code: </label><span><?= htmlspecialchars($user['zip_code']) ?></span></div>
-      <div class="field"><label>Emergency Contact: </label><span><?= htmlspecialchars($user['emergency_contact']) ?></span></div>
-    </div>
-
 <div class="section">
   <h3>Book Information</h3>
 
