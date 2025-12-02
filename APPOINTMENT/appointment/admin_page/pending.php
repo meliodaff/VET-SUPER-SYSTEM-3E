@@ -109,6 +109,7 @@ include '../includes/db.php';
     <a href="approved.php" class="tab">Approved</a>
     <a href="reject.php" class="tab">Rejected</a>
     <a href="reschedule.php" class="tab">Reschedule</a>
+    <a href="cancelled.php" class="tab" data-tab="cancelled">cancelled</a>
     <a href="done.php" class="tab">Done</a>
     <a href="services.php" class="tab">Services</a>
     </div>

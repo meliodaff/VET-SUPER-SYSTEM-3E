@@ -1,20 +1,20 @@
 <?php
-    include '../includes/session_id.php';
-    include '../includes/db.php';
+include '../includes/session_id.php';
+include '../includes/db.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">  
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vet Appointment System</title>
   <link rel="stylesheet" href="../styles/index.css">
   <link rel="stylesheet" href="../styles/index_Footer.css">
   <link rel="stylesheet" href="../styles/index_Header.css">
 
-      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
-
+  
+    <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 </head>
 <body>
 
@@ -46,6 +46,7 @@
       </div>
     </div>
   </header>
+
 
     <div class="side-nav">
       <a href="" class="nav-item">
@@ -91,24 +92,24 @@
         Logout
       </a>
   </div>
-
+  
   <main class="appointments-section">
-    <h2 class="appointments-title">Approved</h2>
+    <h2 class="appointments-title">Done</h2>
 
     <!-- Tabs -->
     <div class="tabs">
-    <a href="overview.php" class="tab">Overview</a>
-    <a href="pending.php" class="tab">Pending</a>
-    <a href="approved.php" class="tab active">Approved</a>
-    <a href="reject.php" class="tab">Rejected</a>
-    <a href="reschedule.php" class="tab">Reschedule</a>
-    <a href="cancelled.php" class="tab" data-tab="cancelled">cancelled</a>
-    <a href="done.php" class="tab">Done</a>
-    <a href="services.php" class="tab">Services</a>
+      <a href="overview.php" class="tab" data-tab="overview">Overview</a>
+      <a href="pending.php" class="tab" data-tab="pending">Pending</a>
+      <a href="approved.php" class="tab" data-tab="approved">Approved</a>
+      <a href="reject.php" class="tab" data-tab="rejected">Rejected</a>
+      <a href="reschedule.php" class="tab" data-tab="reschedule">Reschedule</a>
+      <a href="cancelled.php" class="tab active" data-tab="cancelled">cancelled</a>
+      <a href="done.php" class="tab" data-tab="done">Done</a>
+      <a href="services.php" class="tab">Services</a>
     </div>
 
-    <div class="" id="approved">
-  <div class="appointments-table">
+    <div class="" id="rejected">
+          <div class="appointments-table">
     <div class="table-header">
       <div>Date/Time</div>
       <div>Pet Name</div>
@@ -118,7 +119,7 @@
 
     <?php
     // Fetch appointments where status = 'approved'
-    $query = "SELECT * FROM book_appointment WHERE status = 'approved' ORDER BY date DESC, time ASC";
+    $query = "SELECT * FROM book_appointment WHERE status = 'cancelled' ORDER BY date DESC, time ASC";
     $result = $conn->query($query);
 
     if ($result->num_rows > 0) {
@@ -134,13 +135,8 @@
             echo '  <div>' . htmlspecialchars($row['pet_name']) . '</div>';
             echo '  <div>' . htmlspecialchars($row['service']) . '</div>';
             echo '  <div>';
-            echo '    <form action="../php/update_status.php" method="POST" style="display:inline-block; margin-bottom: 10px;">';
-            echo '          <input type="hidden" name="id" value="' . htmlspecialchars($row['id']) . '">';
-            echo '          <button type="submit" name="action" value="done" class="btn-done">DONE</button>';
-            echo '    </form>';
-            echo '    <br>';
             echo '    <a href="details.php?id=' . htmlspecialchars($row['id']) . '" class="view-btn" style="background-color: grey;
-                      color: white; border-radius: 5px; font-size:14px; padding: 4px;    text-decoration: none;">View Details</a>';
+                                    color: white; border-radius: 5px; font-size:14px; padding: 4px;    text-decoration: none;">View Details</a>';
             echo '  </div>';
             echo '</div>';
         }
@@ -151,12 +147,10 @@
   </div>
 </div>
 
-
   </main>
 
  <!-- footer -->
-
-
+  
   <script src="../script/index.js"></script>
 </body>
 </html>

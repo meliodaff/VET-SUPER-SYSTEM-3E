@@ -7,7 +7,7 @@
 // ✅ Fetch appointments for the logged-in user (include id)
 $sql = "SELECT id, pet_name, date, time, vetdoc, service, status 
         FROM book_appointment 
-        WHERE user_id = ? AND status = 'reject'
+        WHERE user_id = ? AND status = 'rejected'
         ORDER BY date_create DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
