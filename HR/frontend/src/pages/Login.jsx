@@ -43,8 +43,6 @@ export default function Login() {
     // ✅ Now you can access it anywhere in your frontend
     // Example: getting it back
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    console.log(storedUser);
-
     if (storedUser.department === "HR") {
       navigate("/dashboard");
     } else if (storedUser.department === "Finance") {
@@ -52,11 +50,13 @@ export default function Login() {
     } else if (storedUser.department === "Appointment") {
       window.location.href =
         "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/admin_page/overview.php";
-    } else if (storedUser.department === "Patient") {
+    } else if (storedUser.role === "Patient") {
       window.location.href =
         "http://localhost/VET-SUPER-SYSTEM-3E/APPOINTMENT/appointment/client_page/Book_appointment_dashboard.php";
     } else if (storedUser.department === "Inventory") {
-      window.location.href = "http://localhost:3000";
+      window.location.href = "http://localhost:3001";
+    } else if (storedUser.department === "Doctor") {
+      navigate("/appointment-table");
     }
   };
 

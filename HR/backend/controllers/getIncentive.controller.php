@@ -119,6 +119,7 @@ JOIN incentives i
 ON ia.incentive_id = i.incentive_id
 WHERE YEAR(ia.award_date) = YEAR(CURDATE())
 AND MONTH(ia.award_date) = MONTH(CURDATE())
+AND status = 'Approved'
 ";
 
 try {

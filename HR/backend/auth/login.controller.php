@@ -15,14 +15,14 @@
         }
         // if (password_verify($employee["password"], $employeeInformation["password_hash"])) {
       
-        $isUserStatusActive = checkIfStatusActive($user["email"], $pdo);
+        // $isUserStatusActive = checkIfStatusActive($user["email"], $pdo);
 
-        if(!$isUserStatusActive["isStatusActive"]){
-            return $response = [
-                "success" => false,
-                "message" => $isUserStatusActive["message"]
-            ];
-        }
+        // if(!$isUserStatusActive["isStatusActive"]){
+        //     return $response = [
+        //         "success" => false,
+        //         "message" => $isUserStatusActive["message"]
+        //     ];
+        // }
         
         $query = "SELECT * FROM users WHERE email = :email";
 
