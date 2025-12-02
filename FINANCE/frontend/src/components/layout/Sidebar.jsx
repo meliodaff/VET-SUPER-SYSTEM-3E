@@ -39,11 +39,6 @@ const Sidebar = ({ onLogout }) => {
       icon: Package,
     },
     {
-      name: "Employee Portal",
-      path: "/employee-portal",
-      icon: Users,
-    },
-    {
       name: "Payroll",
       path: "/employees",
       icon: Users,

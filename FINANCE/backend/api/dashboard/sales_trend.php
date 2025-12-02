@@ -3,23 +3,8 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-// Connect to appointment_sia database for sales data
-$host = 'localhost';
-$db_name = 'appointment_sia';
-$username = 'root';
-$password = '';
-
-try {
-    $db = new PDO(
-        "mysql:host=$host;dbname=$db_name",
-        $username,
-        $password
-    );
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    Response::error('Database connection failed: ' . $e->getMessage());
-}
+$database = new Database();
+$db = $database->getConnection();
 
 if (!$db) {
     Response::error('Database connection failed');
@@ -31,14 +16,34 @@ try {
     // Compute date boundary in PHP instead of binding inside INTERVAL
     $from_date = date('Y-m-d', strtotime("-$months months"));
 
-    // Get sales trend from book_appointment table (paid appointments only)
+    // Check if invoices table exists
+    $tablesStmt = $db->query("SHOW TABLES LIKE 'invoices'");
+    $hasInvoices = $tablesStmt->rowCount() > 0;
+    
+    if (!$hasInvoices) {
+        Response::error('Invoices table not found');
+    }
+
+    // Check what columns exist in invoices table
+    $columnsStmt = $db->query("SHOW COLUMNS FROM invoices");
+    $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Determine date and amount fields
+    $dateField = in_array('invoice_date', $columns) ? 'invoice_date' : (in_array('date', $columns) ? 'date' : 'created_at');
+    $amountField = in_array('total_amount', $columns) ? 'total_amount' : (in_array('amount', $columns) ? 'amount' : '0');
+    $statusField = in_array('status', $columns) ? 'status' : 'paid';
+
+    // Get sales trend from invoices table (paid invoices only)
+    // Using invoices table directly for accurate sales data
     $stmt = $db->prepare("
         SELECT 
-            DATE_FORMAT(date, '%Y-%m') as month,
-            COALESCE(SUM(service_price), 0) as total_sales
-        FROM book_appointment
-        WHERE date >= :from_date AND payment_status = 'Paid'
-        GROUP BY DATE_FORMAT(date, '%Y-%m')
+            DATE_FORMAT($dateField, '%Y-%m') as month,
+            COALESCE(SUM($amountField), 0) as total_sales,
+            COUNT(*) as invoice_count
+        FROM invoices
+        WHERE $dateField >= :from_date 
+          AND LOWER($statusField) = 'paid'
+        GROUP BY DATE_FORMAT($dateField, '%Y-%m')
         ORDER BY month ASC
     ");
     $stmt->execute([':from_date' => $from_date]);

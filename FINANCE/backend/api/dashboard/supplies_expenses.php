@@ -3,22 +3,11 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-// Connect to vet-inventory database
-$host = 'localhost';
-$db_name = 'vet-inventory';
-$username = 'root';
-$password = '';
+$database = new Database();
+$db = $database->getConnection();
 
-try {
-    $db = new PDO(
-        "mysql:host=$host;dbname=$db_name",
-        $username,
-        $password
-    );
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    Response::error('Database connection failed: ' . $e->getMessage());
+if (!$db) {
+    Response::error('Database connection failed');
 }
 
 try {
@@ -29,51 +18,64 @@ try {
     // Calculate date range
     $from_date = date('Y-m-d', strtotime("-$months months"));
     
-    // Check what columns exist in the products table
-    $columnsStmt = $db->query("SHOW COLUMNS FROM products");
-    $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
+    // Check if purchase_orders and purchase_order_items tables exist
+    $tablesStmt = $db->query("SHOW TABLES LIKE 'purchase_orders'");
+    $hasPurchaseOrders = $tablesStmt->rowCount() > 0;
     
-    // Determine field names
-    $quantityField = in_array('quantity', $columns) ? 'p.quantity' : (in_array('qty', $columns) ? 'p.qty' : (in_array('stock', $columns) ? 'p.stock' : '0'));
-    $unitCostField = in_array('unit_cost', $columns) ? 'p.unit_cost' : (in_array('unitCost', $columns) ? 'p.unitCost' : (in_array('price', $columns) ? 'p.price' : (in_array('cost', $columns) ? 'p.cost' : '0')));
-    $hasCategoryId = in_array('category_id', $columns);
-    $hasCreatedAt = in_array('created_at', $columns);
-    $hasUpdatedAt = in_array('updated_at', $columns);
+    $tablesStmt = $db->query("SHOW TABLES LIKE 'purchase_order_items'");
+    $hasPurchaseOrderItems = $tablesStmt->rowCount() > 0;
     
-    // Build category field
+    if (!$hasPurchaseOrders || !$hasPurchaseOrderItems) {
+        Response::error('Purchase orders tables not found. Please ensure purchase_orders and purchase_order_items tables exist.');
+    }
+    
+    // Check columns in purchase_orders and purchase_order_items
+    $poColumnsStmt = $db->query("SHOW COLUMNS FROM purchase_orders");
+    $poColumns = $poColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    $poiColumnsStmt = $db->query("SHOW COLUMNS FROM purchase_order_items");
+    $poiColumns = $poiColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Check inventory_items for category information
+    $invColumnsStmt = $db->query("SHOW COLUMNS FROM inventory_items");
+    $invColumns = $invColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    $hasCategoryId = in_array('category_id', $invColumns);
+    $hasCategory = in_array('category', $invColumns);
+    $hasCreatedAt = in_array('created_at', $poColumns);
+    
+    // Build category field from inventory_items
     if ($hasCategoryId) {
         $categoryField = "COALESCE(c.name, c.category_name, 'Uncategorized')";
-        $categoryJoin = "LEFT JOIN categories c ON p.category_id = c.id";
-    } else if (in_array('category', $columns)) {
-        $categoryField = "COALESCE(p.category, 'Uncategorized')";
+        $categoryJoin = "LEFT JOIN categories c ON inv.category_id = c.id";
+    } else if ($hasCategory) {
+        $categoryField = "COALESCE(inv.category, 'Uncategorized')";
         $categoryJoin = "";
     } else {
         $categoryField = "'Uncategorized'";
         $categoryJoin = "";
     }
     
-    // 1. Get monthly expenses trend (based on products created_at/updated_at)
+    // 1. Get monthly expenses trend from purchase_orders
     if ($hasCreatedAt) {
         $trendSql = "
             SELECT
-                DATE_FORMAT(created_at, '%Y-%m') as month,
-                COALESCE(SUM($quantityField * $unitCostField), 0) as total_expenses,
-                COUNT(*) as items_count
-            FROM products p
-            $categoryJoin
-            WHERE created_at >= :from_date
-            GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+                DATE_FORMAT(po.created_at, '%Y-%m') as month,
+                COALESCE(SUM(po.total_amount), 0) as total_expenses,
+                COUNT(DISTINCT po.id) as items_count
+            FROM purchase_orders po
+            WHERE po.created_at >= :from_date
+            GROUP BY DATE_FORMAT(po.created_at, '%Y-%m')
             ORDER BY month ASC
         ";
     } else {
-        // If no created_at, use current date for all items
+        // If no created_at, use current date
         $trendSql = "
             SELECT
                 DATE_FORMAT(NOW(), '%Y-%m') as month,
-                COALESCE(SUM($quantityField * $unitCostField), 0) as total_expenses,
-                COUNT(*) as items_count
-            FROM products p
-            $categoryJoin
+                COALESCE(SUM(po.total_amount), 0) as total_expenses,
+                COUNT(DISTINCT po.id) as items_count
+            FROM purchase_orders po
         ";
     }
     
@@ -110,15 +112,17 @@ try {
     
     $monthly_trend = array_values($all_months);
     
-    // 2. Get category breakdown
+    // 2. Get category breakdown from purchase_order_items joined with inventory_items
     $categorySql = "
         SELECT
             $categoryField AS category,
-            COUNT(*) as items_count,
-            COALESCE(SUM($quantityField * $unitCostField), 0) as total_expenses,
-            COALESCE(SUM($quantityField), 0) as total_quantity,
-            COALESCE(AVG($unitCostField), 0) as avg_unit_cost
-        FROM products p
+            COUNT(DISTINCT poi.id) as items_count,
+            COALESCE(SUM(poi.line_total), 0) as total_expenses,
+            COALESCE(SUM(poi.quantity), 0) as total_quantity,
+            COALESCE(AVG(poi.unit_cost), 0) as avg_unit_cost
+        FROM purchase_order_items poi
+        JOIN purchase_orders po ON poi.purchase_order_id = po.id
+        LEFT JOIN inventory_items inv ON poi.item_id = inv.id
         $categoryJoin
         GROUP BY category
         ORDER BY total_expenses DESC
@@ -138,20 +142,21 @@ try {
         ];
     }, $category_data);
     
-    // 3. Get total expenses summary
+    // 3. Get total expenses summary from purchase_orders
     $summarySql = "
         SELECT
-            COUNT(*) as total_items,
-            COALESCE(SUM($quantityField * $unitCostField), 0) as total_expenses,
-            COALESCE(SUM($quantityField), 0) as total_quantity,
-            COALESCE(AVG($unitCostField), 0) as avg_unit_cost
-        FROM products p
+            COUNT(DISTINCT po.id) as total_items,
+            COALESCE(SUM(po.total_amount), 0) as total_expenses,
+            COALESCE(SUM(poi.quantity), 0) as total_quantity,
+            COALESCE(AVG(poi.unit_cost), 0) as avg_unit_cost
+        FROM purchase_orders po
+        LEFT JOIN purchase_order_items poi ON po.id = poi.purchase_order_id
     ";
     
     if ($hasCreatedAt) {
         $summarySql .= ",
-            COALESCE(SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN ($quantityField * $unitCostField) ELSE 0 END), 0) as monthly_expenses,
-            COALESCE(SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN ($quantityField * $unitCostField) ELSE 0 END), 0) as weekly_expenses";
+            COALESCE(SUM(CASE WHEN po.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN po.total_amount ELSE 0 END), 0) as monthly_expenses,
+            COALESCE(SUM(CASE WHEN po.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN po.total_amount ELSE 0 END), 0) as weekly_expenses";
     } else {
         $summarySql .= ",
             0 as monthly_expenses,
@@ -162,53 +167,41 @@ try {
     $stmt->execute();
     $summary = $stmt->fetch();
     
-    // 4. Get recent expenses (last 10 items)
-    $nameField = in_array('name', $columns) ? 'p.name' : (in_array('product_name', $columns) ? 'p.product_name' : 'p.id');
+    // 4. Get recent expenses (last 10 purchase order items)
+    $nameField = in_array('name', $invColumns) ? 'inv.name' : (in_array('product_name', $invColumns) ? 'inv.product_name' : 'inv.id');
     
-    if ($hasCreatedAt && $hasUpdatedAt) {
+    if ($hasCreatedAt) {
         $recentSql = "
             SELECT
-                p.id,
+                poi.id,
                 $nameField AS item,
                 $categoryField AS category,
-                $quantityField AS qty,
-                $unitCostField AS unitCost,
-                ($quantityField * $unitCostField) AS totalCost,
-                p.created_at,
-                p.updated_at
-            FROM products p
+                poi.quantity AS qty,
+                poi.unit_cost AS unitCost,
+                poi.line_total AS totalCost,
+                po.created_at,
+                po.updated_at
+            FROM purchase_order_items poi
+            JOIN purchase_orders po ON poi.purchase_order_id = po.id
+            LEFT JOIN inventory_items inv ON poi.item_id = inv.id
             $categoryJoin
-            ORDER BY GREATEST(COALESCE(p.created_at, '1970-01-01'), COALESCE(p.updated_at, '1970-01-01')) DESC
-            LIMIT 10
-        ";
-    } else if ($hasCreatedAt) {
-        $recentSql = "
-            SELECT
-                p.id,
-                $nameField AS item,
-                $categoryField AS category,
-                $quantityField AS qty,
-                $unitCostField AS unitCost,
-                ($quantityField * $unitCostField) AS totalCost,
-                p.created_at,
-                NULL AS updated_at
-            FROM products p
-            $categoryJoin
-            ORDER BY p.created_at DESC
+            ORDER BY po.created_at DESC
             LIMIT 10
         ";
     } else {
         $recentSql = "
             SELECT
-                p.id,
+                poi.id,
                 $nameField AS item,
                 $categoryField AS category,
-                $quantityField AS qty,
-                $unitCostField AS unitCost,
-                ($quantityField * $unitCostField) AS totalCost,
+                poi.quantity AS qty,
+                poi.unit_cost AS unitCost,
+                poi.line_total AS totalCost,
                 NULL AS created_at,
                 NULL AS updated_at
-            FROM products p
+            FROM purchase_order_items poi
+            JOIN purchase_orders po ON poi.purchase_order_id = po.id
+            LEFT JOIN inventory_items inv ON poi.item_id = inv.id
             $categoryJoin
             LIMIT 10
         ";

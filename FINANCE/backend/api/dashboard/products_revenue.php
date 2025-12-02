@@ -3,49 +3,73 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-// Connect to appointment_sia database for revenue data
-$host = 'localhost';
-$db_name = 'appointment_sia';
-$username = 'root';
-$password = '';
-
-try {
-    $db = new PDO(
-        "mysql:host=$host;dbname=$db_name",
-        $username,
-        $password
-    );
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    Response::error('Database connection failed: ' . $e->getMessage());
-}
+$database = new Database();
+$db = $database->getConnection();
 
 if (!$db) {
     Response::error('Database connection failed');
 }
 
 try {
-    // Get products revenue from paid appointments grouped by service type
-    // Extract service category from service field (e.g., "Surgery (General)" -> "Surgery")
-    $stmt = $db->prepare("
-        SELECT 
-            CASE 
-                WHEN service LIKE '%Surgery%' THEN 'Surgery'
-                WHEN service LIKE '%Consultation%' OR service LIKE '%Checkup%' THEN 'Consultation'
-                WHEN service LIKE '%Vaccination%' OR service LIKE '%Vaccine%' THEN 'Vaccination'
-                WHEN service LIKE '%Grooming%' THEN 'Grooming'
-                WHEN service LIKE '%Laboratory%' OR service LIKE '%Lab%' THEN 'Laboratory'
-                WHEN service LIKE '%Medication%' OR service LIKE '%Medicine%' THEN 'Medication'
-                ELSE 'Other Services'
-            END AS category,
-            SUM(service_price) AS total_revenue,
-            COUNT(*) AS service_count
-        FROM book_appointment
-        WHERE payment_status = 'Paid'
-        GROUP BY category
-        ORDER BY total_revenue DESC
-    ");
+    // Check if invoice_items and services tables exist
+    $tablesStmt = $db->query("SHOW TABLES LIKE 'invoice_items'");
+    $hasInvoiceItems = $tablesStmt->rowCount() > 0;
+    
+    $tablesStmt = $db->query("SHOW TABLES LIKE 'services'");
+    $hasServices = $tablesStmt->rowCount() > 0;
+    
+    if ($hasInvoiceItems && $hasServices) {
+        // Get products revenue from invoice_items joined with services, grouped by service category
+        $stmt = $db->prepare("
+            SELECT 
+                COALESCE(s.category, 'Other Services') AS category,
+                SUM(ii.line_total) AS total_revenue,
+                COUNT(*) AS service_count
+            FROM invoice_items ii
+            JOIN invoices inv ON ii.invoice_id = inv.id
+            LEFT JOIN services s ON ii.service_id = s.id
+            WHERE inv.status = 'paid'
+            GROUP BY s.category
+            ORDER BY total_revenue DESC
+        ");
+    } else {
+        // Fallback: try to get from invoice_items directly if services table doesn't exist
+        $columnsStmt = $db->query("SHOW COLUMNS FROM invoice_items");
+        $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        if (in_array('service_name', $columns)) {
+            $stmt = $db->prepare("
+                SELECT 
+                    CASE 
+                        WHEN ii.service_name LIKE '%Surgery%' THEN 'Surgery'
+                        WHEN ii.service_name LIKE '%Consultation%' OR ii.service_name LIKE '%Checkup%' THEN 'Consultation'
+                        WHEN ii.service_name LIKE '%Vaccination%' OR ii.service_name LIKE '%Vaccine%' THEN 'Vaccination'
+                        WHEN ii.service_name LIKE '%Grooming%' THEN 'Grooming'
+                        WHEN ii.service_name LIKE '%Laboratory%' OR ii.service_name LIKE '%Lab%' THEN 'Laboratory'
+                        WHEN ii.service_name LIKE '%Medication%' OR ii.service_name LIKE '%Medicine%' THEN 'Medication'
+                        ELSE 'Other Services'
+                    END AS category,
+                    SUM(ii.line_total) AS total_revenue,
+                    COUNT(*) AS service_count
+                FROM invoice_items ii
+                JOIN invoices inv ON ii.invoice_id = inv.id
+                WHERE inv.status = 'paid'
+                GROUP BY category
+                ORDER BY total_revenue DESC
+            ");
+        } else {
+            // If no service info available, return empty or use invoice totals
+            $stmt = $db->prepare("
+                SELECT 
+                    'All Services' AS category,
+                    SUM(inv.total_amount) AS total_revenue,
+                    COUNT(*) AS service_count
+                FROM invoices inv
+                WHERE inv.status = 'paid'
+            ");
+        }
+    }
+    
     $stmt->execute();
     $rows = $stmt->fetchAll();
     

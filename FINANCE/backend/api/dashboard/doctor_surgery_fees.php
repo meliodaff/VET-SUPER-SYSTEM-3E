@@ -3,40 +3,16 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-// Connect to fur_ever_care_db for employees
-$host = 'localhost';
-$db_name_employees = 'fur_ever_care_db';
-$username = 'root';
-$password = '';
+$database = new Database();
+$db = $database->getConnection();
 
-try {
-    $db_employees = new PDO(
-        "mysql:host=$host;dbname=$db_name_employees",
-        $username,
-        $password
-    );
-    $db_employees->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db_employees->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    Response::error('Database connection failed: ' . $e->getMessage());
-}
-
-// Connect to appointment_sia for appointments
-try {
-    $db_appointments = new PDO(
-        "mysql:host=$host;dbname=appointment_sia",
-        $username,
-        $password
-    );
-    $db_appointments->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db_appointments->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    Response::error('Appointment database connection failed: ' . $e->getMessage());
+if (!$db) {
+    Response::error('Database connection failed');
 }
 
 try {
     // Check what columns exist in employees table
-    $columnsStmt = $db_employees->query("SHOW COLUMNS FROM employees");
+    $columnsStmt = $db->query("SHOW COLUMNS FROM employees");
     $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
     $hasId = in_array('id', $columns);
     $hasName = in_array('name', $columns);
@@ -92,29 +68,69 @@ try {
         $sql .= " WHERE " . implode(" AND ", $whereConditions);
     }
     
-    $stmt = $db_employees->prepare($sql);
+    $stmt = $db->prepare($sql);
     $stmt->execute();
     $doctors = $stmt->fetchAll();
     
-    // Get surgery fees from appointment_sia.book_appointment
-    // Filter for services containing "Surgery"
-    $stmt_surgeries = $db_appointments->prepare("
-        SELECT 
-            doctor_id,
-            COUNT(*) as surgeries_count,
-            SUM(service_price) as total_fees
-        FROM book_appointment
-        WHERE payment_status = 'Paid' 
-          AND (service LIKE '%Surgery%' OR service LIKE '%surgery%')
-        GROUP BY doctor_id
-    ");
-    $stmt_surgeries->execute();
-    $surgery_stats = $stmt_surgeries->fetchAll();
+    // Check if invoice_items and services tables exist
+    $tablesStmt = $db->query("SHOW TABLES LIKE 'invoice_items'");
+    $hasInvoiceItems = $tablesStmt->rowCount() > 0;
     
-    // Create a map of doctor_id to surgery statistics
+    $tablesStmt = $db->query("SHOW TABLES LIKE 'services'");
+    $hasServices = $tablesStmt->rowCount() > 0;
+    
+    // Get surgery fees from invoices and invoice_items
+    // Filter for services containing "Surgery"
+    if ($hasInvoiceItems && $hasServices) {
+        $stmt_surgeries = $db->prepare("
+            SELECT 
+                inv.employee_id,
+                COUNT(DISTINCT inv.id) as surgeries_count,
+                SUM(ii.line_total) as total_fees
+            FROM invoices inv
+            JOIN invoice_items ii ON inv.id = ii.invoice_id
+            LEFT JOIN services s ON ii.service_id = s.id
+            WHERE inv.status = 'paid' 
+              AND (s.name LIKE '%Surgery%' OR s.name LIKE '%surgery%' OR s.category LIKE '%Surgery%' OR s.category LIKE '%surgery%')
+            GROUP BY inv.employee_id
+        ");
+    } else if ($hasInvoiceItems) {
+        // Fallback: check service_name in invoice_items if services table doesn't exist
+        $invoiceItemsColumnsStmt = $db->query("SHOW COLUMNS FROM invoice_items");
+        $invoiceItemsColumns = $invoiceItemsColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        if (in_array('service_name', $invoiceItemsColumns)) {
+            $stmt_surgeries = $db->prepare("
+                SELECT 
+                    inv.employee_id,
+                    COUNT(DISTINCT inv.id) as surgeries_count,
+                    SUM(ii.line_total) as total_fees
+                FROM invoices inv
+                JOIN invoice_items ii ON inv.id = ii.invoice_id
+                WHERE inv.status = 'paid' 
+                  AND (ii.service_name LIKE '%Surgery%' OR ii.service_name LIKE '%surgery%')
+                GROUP BY inv.employee_id
+            ");
+        } else {
+            // If no service info, return empty results
+            $surgery_stats = [];
+            $stmt_surgeries = null;
+        }
+    } else {
+        // If invoice_items doesn't exist, return empty results
+        $surgery_stats = [];
+        $stmt_surgeries = null;
+    }
+    
+    if ($stmt_surgeries) {
+        $stmt_surgeries->execute();
+        $surgery_stats = $stmt_surgeries->fetchAll();
+    }
+    
+    // Create a map of employee_id to surgery statistics
     $surgery_map = [];
     foreach ($surgery_stats as $stat) {
-        $surgery_map[(int)$stat['doctor_id']] = $stat;
+        $surgery_map[(int)$stat['employee_id']] = $stat;
     }
     
     // Combine doctor data with surgery statistics
