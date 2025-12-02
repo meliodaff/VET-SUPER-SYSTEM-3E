@@ -1,6 +1,8 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../utils/cors.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../utils/cors.php';
+
+cors();
 
 $database = new Database();
 $db = $database->getConnection();
@@ -21,7 +23,6 @@ try {
     $stmt = $db->query("SELECT id, sku, name, quantity, unit_cost FROM inventory_items ORDER BY name ASC");
     $items = $stmt->fetchAll();
 
-    // Return plain array (no wrapper) for frontend convenience
     header('Content-Type: application/json');
     echo json_encode($items);
     exit;
