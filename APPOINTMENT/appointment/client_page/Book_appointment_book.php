@@ -112,12 +112,12 @@ $doctor_result = $doctor_stmt->get_result();
           <div class="form-row">
           <div id="timeButtonsContainer" style="display: flex; flex-direction: column; gap: 10px;">
               <input id="timeInput" name="time" readonly placeholder="Time" style="...">
-              <button type="button">9AM - 10AM</button>
-              <button type="button">10AM - 11AM</button>
-              <button type="button">1PM - 2PM</button>
-              <button type="button">2PM - 3PM</button>
-              <button type="button">3PM - 4PM</button>
-              <button type="button">4PM - 5PM</button>
+              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">9AM - 10AM</button>
+              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">10AM - 11AM</button>
+              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">1PM - 2PM</button>
+              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">2PM - 3PM</button>
+              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">3PM - 4PM</button>
+              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">4PM - 5PM</button>
           </div>
 
             <input type="date" name="date" id="appointmentDate" style="height:44px;" required>
