@@ -16,14 +16,34 @@ try {
     // Compute date boundary in PHP instead of binding inside INTERVAL
     $from_date = date('Y-m-d', strtotime("-$months months"));
 
-    // Get sales trend from payments
+    // Check if invoices table exists
+    $tablesStmt = $db->query("SHOW TABLES LIKE 'invoices'");
+    $hasInvoices = $tablesStmt->rowCount() > 0;
+    
+    if (!$hasInvoices) {
+        Response::error('Invoices table not found');
+    }
+
+    // Check what columns exist in invoices table
+    $columnsStmt = $db->query("SHOW COLUMNS FROM invoices");
+    $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Determine date and amount fields
+    $dateField = in_array('invoice_date', $columns) ? 'invoice_date' : (in_array('date', $columns) ? 'date' : 'created_at');
+    $amountField = in_array('total_amount', $columns) ? 'total_amount' : (in_array('amount', $columns) ? 'amount' : '0');
+    $statusField = in_array('status', $columns) ? 'status' : 'paid';
+
+    // Get sales trend from invoices table (paid invoices only)
+    // Using invoices table directly for accurate sales data
     $stmt = $db->prepare("
         SELECT 
-            DATE_FORMAT(p.payment_date, '%Y-%m') as month,
-            COALESCE(SUM(p.amount), 0) as total_sales
-        FROM payments p
-        WHERE p.payment_date >= :from_date
-        GROUP BY DATE_FORMAT(p.payment_date, '%Y-%m')
+            DATE_FORMAT($dateField, '%Y-%m') as month,
+            COALESCE(SUM($amountField), 0) as total_sales,
+            COUNT(*) as invoice_count
+        FROM invoices
+        WHERE $dateField >= :from_date 
+          AND LOWER($statusField) = 'paid'
+        GROUP BY DATE_FORMAT($dateField, '%Y-%m')
         ORDER BY month ASC
     ");
     $stmt->execute([':from_date' => $from_date]);

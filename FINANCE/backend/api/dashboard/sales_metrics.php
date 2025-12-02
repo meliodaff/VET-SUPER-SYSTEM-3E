@@ -3,88 +3,67 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-$database = new Database();
-$db = $database->getConnection();
+// Connect to appointment_sia database for sales data
+$host = 'localhost';
+$db_name = 'appointment_sia';
+$username = 'root';
+$password = '';
+
+try {
+    $db = new PDO(
+        "mysql:host=$host;dbname=$db_name",
+        $username,
+        $password
+    );
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    Response::error('Database connection failed: ' . $e->getMessage());
+}
 
 if (!$db) {
     Response::error('Database connection failed');
 }
 
 try {
-    // Today's sales - try from payments first, fallback to invoices with status='paid' and today's date
+    // Today's sales from book_appointment table
     $stmt = $db->prepare("
-        SELECT COALESCE(SUM(p.amount), 0) as today_sales
-        FROM payments p
-        WHERE DATE(p.payment_date) = CURDATE()
+        SELECT COALESCE(SUM(service_price), 0) as today_sales
+        FROM book_appointment
+        WHERE DATE(date) = CURDATE() AND payment_status = 'Paid'
     ");
     $stmt->execute();
-    $today_sales_payments = (float) ($stmt->fetch()['today_sales'] ?? 0);
+    $today_sales = (float) ($stmt->fetch()['today_sales'] ?? 0);
     
-    // Fallback: Today's sales from paid invoices
+    // Total revenue (all time) from paid appointments
     $stmt = $db->prepare("
-        SELECT COALESCE(SUM(inv.total_amount), 0) as today_sales
-        FROM invoices inv
-        WHERE inv.status = 'paid' AND DATE(inv.invoice_date) = CURDATE()
+        SELECT COALESCE(SUM(service_price), 0) as total_revenue
+        FROM book_appointment
+        WHERE payment_status = 'Paid'
     ");
     $stmt->execute();
-    $today_sales_invoices = (float) ($stmt->fetch()['today_sales'] ?? 0);
+    $total_revenue = (float) ($stmt->fetch()['total_revenue'] ?? 0);
     
-    // Use the larger value or sum if both exist
-    $today_sales = max($today_sales_payments, $today_sales_invoices);
-    
-    // Total revenue (all time) - from payments
-    $stmt = $db->prepare("
-        SELECT COALESCE(SUM(p.amount), 0) as total_revenue
-        FROM payments p
-    ");
-    $stmt->execute();
-    $total_revenue_payments = (float) ($stmt->fetch()['total_revenue'] ?? 0);
-    
-    // Fallback: Total revenue from paid invoices
-    $stmt = $db->prepare("
-        SELECT COALESCE(SUM(inv.total_amount), 0) as total_revenue
-        FROM invoices inv
-        WHERE inv.status = 'paid'
-    ");
-    $stmt->execute();
-    $total_revenue_invoices = (float) ($stmt->fetch()['total_revenue'] ?? 0);
-    
-    // Use payments if available, otherwise use invoices
-    $total_revenue = $total_revenue_payments > 0 ? $total_revenue_payments : $total_revenue_invoices;
-    
-    // Pending invoices (pending/draft) - return amount, not count
+    // Pending invoices (Pending status) - return amount
     $stmt = $db->prepare("
         SELECT 
             COUNT(*) as pending_count,
-            COALESCE(SUM(inv.total_amount), 0) as pending_amount
-        FROM invoices inv
-        WHERE inv.status IN ('pending', 'draft')
+            COALESCE(SUM(service_price), 0) as pending_amount
+        FROM book_appointment
+        WHERE payment_status = 'Pending'
     ");
     $stmt->execute();
     $pending = $stmt->fetch();
     $pending_amount = (float) ($pending['pending_amount'] ?? 0);
     
-    // Paid revenue - from payments linked to paid invoices, or directly from paid invoices
+    // Paid revenue from paid appointments
     $stmt = $db->prepare("
-        SELECT COALESCE(SUM(p.amount), 0) as paid_revenue
-        FROM payments p
-        INNER JOIN invoices inv ON p.invoice_id = inv.id
-        WHERE inv.status = 'paid'
+        SELECT COALESCE(SUM(service_price), 0) as paid_revenue
+        FROM book_appointment
+        WHERE payment_status = 'Paid'
     ");
     $stmt->execute();
-    $paid_revenue_payments = (float) ($stmt->fetch()['paid_revenue'] ?? 0);
-    
-    // Fallback: Paid revenue from paid invoices directly
-    $stmt = $db->prepare("
-        SELECT COALESCE(SUM(inv.total_amount), 0) as paid_revenue
-        FROM invoices inv
-        WHERE inv.status = 'paid'
-    ");
-    $stmt->execute();
-    $paid_revenue_invoices = (float) ($stmt->fetch()['paid_revenue'] ?? 0);
-    
-    // Use payments if available, otherwise use invoices
-    $paid_revenue = $paid_revenue_payments > 0 ? $paid_revenue_payments : $paid_revenue_invoices;
+    $paid_revenue = (float) ($stmt->fetch()['paid_revenue'] ?? 0);
     
     // Log for debugging
     error_log("Sales Metrics - Today Sales: " . $today_sales . ", Total Revenue: " . $total_revenue . ", Pending: " . $pending_amount . ", Paid: " . $paid_revenue);
