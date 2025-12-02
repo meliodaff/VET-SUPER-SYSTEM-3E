@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Users, FileText, TrendingUp, Calendar } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { formatCurrency, formatDate } from '../../utils/helpers';
+import { X, Users, FileText, TrendingUp } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { formatCurrency } from '../../utils/helpers';
 import { dashboardAPI } from '../../services/api';
 
 const DoctorDetailModal = ({ isOpen, onClose, doctor }) => {
@@ -43,12 +43,16 @@ const DoctorDetailModal = ({ isOpen, onClose, doctor }) => {
         id: parseInt(doctorId)
       };
       console.log('Doctor with ID:', doctorWithId);
-      fetchDoctorDetail(doctorWithId);
+      const asyncFetch = async () => {
+        await fetchDoctorDetail(doctorWithId);
+      };
+      asyncFetch();
     } else {
       console.error('No valid employee_id found in doctor object. Full object:', JSON.stringify(doctor, null, 2));
       setError(`Doctor ID is missing or invalid (ID: ${doctorId}). Please check the console for details.`);
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, doctor]);
 
   const fetchDoctorDetail = async (doctorObj = null) => {

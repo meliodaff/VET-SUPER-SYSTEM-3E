@@ -1,6 +1,7 @@
 <?php
     
     require_once __DIR__ . "/../utils/checkIfEmailExists.php";
+    require_once __DIR__ . "/../utils/checkIfStatusActive.php";
     session_start();
     function login($user, $pdo){
 
@@ -14,6 +15,14 @@
         }
         // if (password_verify($employee["password"], $employeeInformation["password_hash"])) {
       
+        $isUserStatusActive = checkIfStatusActive($user["email"], $pdo);
+
+        if(!$isUserStatusActive["isStatusActive"]){
+            return $response = [
+                "success" => false,
+                "message" => $isUserStatusActive["message"]
+            ];
+        }
         
         $query = "SELECT * FROM users WHERE email = :email";
 
@@ -43,10 +52,14 @@
                     "user_id" => $userInformation["user_id"],
                     "email" => $userInformation["email"],
                     "role" => $userInformation["role"],
+                    "firstName" => $userInformation["first_name"],
+                    "lastName" => $userInformation["last_name"],
                 ];
                 $_SESSION["user_id"] = $userInformation["user_id"];
                 $_SESSION["email"] = $userInformation["email"];
                 $_SESSION["role"] = $userInformation["role"];
+                $_SESSION["firstName"] = $userInformation["first_name"];
+                $_SESSION["lastName"] = $userInformation["last_name"];
             } else {
                 $queryToFetchEmployeeInformation = "SELECT * FROM employees WHERE contact_email = :contact_email";
                 $stmtForEmployeeInformation = $pdo->prepare($queryToFetchEmployeeInformation);
@@ -60,11 +73,17 @@
                     "email" => $employeeInformation["contact_email"],
                     "role" => $employeeInformation["Position"],
                     "department" => $employeeInformation["department"],
+                    "firstName" => $employeeInformation["first_name"],
+                    "lastName" => $employeeInformation["last_name"],
+                    "photo" => $employeeInformation["profile_image_url"],
                 ];
                 $_SESSION["user_id"] = $employeeInformation["employee_id"];
                 $_SESSION["email"] = $employeeInformation["contact_email"];
                 $_SESSION["role"] = $employeeInformation["Position"];
                 $_SESSION["department"] = $employeeInformation["department"];
+                $_SESSION["firstName"] = $employeeInformation["first_name"];
+                $_SESSION["lastName"] = $employeeInformation["last_name"];
+                $_SESSION["photo"] = $employeeInformation["profile_image_url"];
             }
 
 

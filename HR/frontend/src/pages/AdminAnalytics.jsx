@@ -82,14 +82,14 @@ export default function AdminAnalytics() {
       const performanceData = record.employeePerformanceComparison;
 
       const formattedPerformanceData = performanceData.map((data) => ({
-        month: data.month_name.split(" ")[0],
+        month: data.month_name.substring(0, 3),
         value: data.avg_review_score,
       }));
 
       const attendanceTrends = record.attendanceTrends;
 
       const formattedAttendanceTrends = attendanceTrends.map((data) => ({
-        month: data.month_name.split(" ")[0],
+        month: data.month_name.substring(0, 3),
         value: data.attendance_rate,
       }));
 
@@ -101,14 +101,12 @@ export default function AdminAnalytics() {
         mostCommonHours: avgHoursWorked,
         month: monthName,
       };
-
-      console.log(formattedAvgHoursWorked);
       setStatsData(formattedData);
       setAttendanceBreakdown(formattedAttendanceBreakdown);
-      console.log(formattedAttendanceBreakdown);
-      setPerformanceData(formattedPerformanceData);
+      setPerformanceData(formattedPerformanceData.reverse());
       setAttendanceTrends(formattedAttendanceTrends);
       setAvgHoursWorked(formattedAvgHoursWorked);
+      console.log(formattedPerformanceData);
       // setClaimRequests(formattedData);
     };
     useGetAdminAnalyticsFunc();

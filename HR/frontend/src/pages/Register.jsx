@@ -44,7 +44,7 @@ export default function Register() {
     console.log(response);
 
     if (!response.success) {
-      alert(response.message.message);
+      alert(response.message.message || response.message);
       return;
     }
 

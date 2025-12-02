@@ -74,7 +74,7 @@
                 ":last_name"   => $employee["lastName"],
                 ":email"       => $employee["email"],
                 ":password"    => $hashedPassword,
-                ":role"        => $employee["jobTitle"]
+                ":role"        => $employee["department"]
             ]);
 
             $queryToInsertLeave = "INSERT INTO leave_balances (employee_id, leave_type_id, days_allocated, days_taken, days_remaining) VALUES (:employee_id, :leave_type_id, :days_allocated, 0, :days_remaining)";

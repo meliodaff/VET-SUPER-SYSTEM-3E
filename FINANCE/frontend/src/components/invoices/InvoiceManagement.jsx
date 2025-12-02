@@ -51,9 +51,6 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
                 Client
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Service
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Date
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -88,9 +85,6 @@ const InvoiceManagement = ({ invoices, pagination, onUpdateInvoice, onPageChange
                     <User className="h-4 w-4 text-gray-400 mr-2" />
                     <div className="text-sm text-gray-900">{invoice.client_name}</div>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{invoice.services || '—'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">

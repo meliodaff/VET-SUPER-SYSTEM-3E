@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, RefreshCw, BarChart3, Coins, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Search, RefreshCw, AlertTriangle } from 'lucide-react';
 import { paymentsAPI } from '../services/api';
 import PaymentStatistics from '../components/payments/PaymentStatistics';
 import PaymentList from '../components/payments/PaymentList';

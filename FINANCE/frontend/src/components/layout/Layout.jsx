@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { Menu, X } from 'lucide-react';
 
 const Layout = ({ children, admin, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
 
   // Ensure onLogout is defined
   const handleLogout = onLogout || (() => {

@@ -3,6 +3,7 @@ import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetIncentive from "../api/useGetIncentive";
 import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
 import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import useGetIncentiveAwards from "../api/useGetIncentiveAwards";
 
 export default function AdminIncentives() {
   const [activeTab, setActiveTab] = useState("request");
@@ -11,13 +12,28 @@ export default function AdminIncentives() {
     useGetIncentive();
   const { getOverAllAttendancePerMonth } = useGetAttendanceRecord();
 
+  const {
+    getIncentiveAwardsForTheMonth,
+    loadingForGetIncentiveAwardsForTheMonth,
+  } = useGetIncentiveAwards();
   const [claimRequests, setClaimRequests] = useState([]);
+  useEffect(() => {
+    const useGetClaimRequestsFunc = async () => {
+      const response = await getIncentiveAwardsForTheMonth();
+      if (!response.success) {
+        alert(response.message);
+        return;
+      }
 
+      console.log(response);
+      setClaimRequests(response.data);
+    };
+    useGetClaimRequestsFunc();
+  }, []);
   const [claimHistory, setClaimHistory] = useState([]);
   const [overAllAttendance, setOverAllAttendance] = useState(null);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
-  const [allIncentivesForTheMonth, setAllIncentivesForTheMonth] =
-    useState(false);
+  const [allIncentivesForTheMonth, setAllIncentivesForTheMonth] = useState([]);
 
   useEffect(() => {
     const useGetClaimedIncentivesFunc = async (isClaim) => {
@@ -43,28 +59,28 @@ export default function AdminIncentives() {
     useGetClaimedIncentivesFunc(1);
   }, []);
 
-  useEffect(() => {
-    const useGetUnClaimedIncentivesFunc = async (isClaim) => {
-      const response = await getIncentives(isClaim);
-      console.log(response.data);
-      if (!response.success) {
-        alert(response.message);
-        return;
-      }
+  // useEffect(() => {
+  //   const useGetUnClaimedIncentivesFunc = async (isClaim) => {
+  //     const response = await getIncentives(isClaim);
+  //     console.log(response.data);
+  //     if (!response.success) {
+  //       alert(response.message);
+  //       return;
+  //     }
 
-      const formattedData = response.data.map((value) => ({
-        name: value.name,
-        reward: value.incentive_name,
-        dateAwarded: value.award_date,
-        awardBonus: value.bonus,
-        status: value.status,
-      }));
+  //     const formattedData = response.data.map((value) => ({
+  //       name: value.name,
+  //       reward: value.incentive_name,
+  //       dateAwarded: value.award_date,
+  //       awardBonus: value.bonus,
+  //       status: value.status,
+  //     }));
 
-      setClaimRequests(formattedData);
-      setPendingRequestCount(formattedData.length);
-    };
-    useGetUnClaimedIncentivesFunc(0);
-  }, []);
+  //     setClaimRequests(formattedData);
+  //     setPendingRequestCount(formattedData.length);
+  //   };
+  //   useGetUnClaimedIncentivesFunc(0);
+  // }, []);
 
   useEffect(() => {
     const useGetOverAllAttendancePerMonth = async () => {
@@ -154,14 +170,60 @@ export default function AdminIncentives() {
     setActiveMenu(activeMenu === index ? null : index);
   };
 
-  const handleStatusChange = (status, index) => {
+  useEffect(() => {
+    const useGetClaimRequestsFunc = async () => {
+      const response = await getIncentiveAwardsForTheMonth();
+      if (!response.success) {
+        alert(response.message);
+        return;
+      }
+
+      console.log("Full API Response:", response);
+      console.log("First item in response.data:", response.data[0]);
+
+      // Log all keys from the first item to see what fields are available
+      if (response.data && response.data.length > 0) {
+        console.log("Available fields:", Object.keys(response.data[0]));
+      }
+
+      // Keep all original fields from the API response
+      const formattedRequests = response.data.map((claim) => {
+        console.log("Individual claim object:", claim);
+        return {
+          ...claim, // Spread all original fields
+          // Map common field name variations
+          performance_review_id:
+            claim.performance_review_id ||
+            claim.performanceReviewId ||
+            claim.review_id ||
+            claim.reviewId ||
+            claim.incentive_award_id ||
+            claim.id,
+        };
+      });
+
+      console.log("Formatted requests:", formattedRequests);
+      setClaimRequests(formattedRequests);
+      setPendingRequestCount(formattedRequests.length);
+    };
+    useGetClaimRequestsFunc();
+  }, []);
+
+  // Update the handleStatusChange function
+  const handleStatusChange = (status, index, performanceReviewId) => {
     const updatedRequests = [...claimRequests];
     updatedRequests[index].status = status;
     setClaimRequests(updatedRequests);
     setActiveMenu(null);
+
     console.log(
       `Status changed to: ${status} for ${updatedRequests[index].name}`
     );
+    console.log(`Performance Review ID: ${performanceReviewId}`);
+
+    // Here you can make an API call to update the status in the backend
+    // Example:
+    // updateIncentiveStatus(performanceReviewId, status);
   };
 
   //status badge color
@@ -319,6 +381,78 @@ export default function AdminIncentives() {
     return pages;
   };
 
+  // Add these state variables at the top of your component
+  const [currentPageIncentives, setCurrentPageIncentives] = useState(1);
+  const [itemsPerPageIncentives, setItemsPerPageIncentives] = useState(3);
+
+  // Add pagination calculations
+  const totalPagesIncentives = Math.ceil(
+    (Array.isArray(allIncentivesForTheMonth)
+      ? allIncentivesForTheMonth.length
+      : 0) / itemsPerPageIncentives
+  );
+  const startIndexIncentives =
+    (currentPageIncentives - 1) * itemsPerPageIncentives;
+  const endIndexIncentives = startIndexIncentives + itemsPerPageIncentives;
+  const currentIncentives = Array.isArray(allIncentivesForTheMonth)
+    ? allIncentivesForTheMonth.slice(startIndexIncentives, endIndexIncentives)
+    : [];
+
+  // Reset to page 1 when items per page changes
+  useEffect(() => {
+    setCurrentPageIncentives(1);
+  }, [itemsPerPageIncentives]);
+
+  // Pagination handlers
+  const goToPageIncentives = (page) => {
+    if (page >= 1 && page <= totalPagesIncentives) {
+      setCurrentPageIncentives(page);
+    }
+  };
+
+  const goToPreviousPageIncentives = () => {
+    if (currentPageIncentives > 1) {
+      setCurrentPageIncentives(currentPageIncentives - 1);
+    }
+  };
+
+  const goToNextPageIncentives = () => {
+    if (currentPageIncentives < totalPagesIncentives) {
+      setCurrentPageIncentives(currentPageIncentives + 1);
+    }
+  };
+
+  // Generate page numbers
+  const getPageNumbersIncentives = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    if (totalPagesIncentives <= maxPagesToShow) {
+      for (let i = 1; i <= totalPagesIncentives; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPageIncentives <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPagesIncentives);
+      } else if (currentPageIncentives >= totalPagesIncentives - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPagesIncentives - 3; i <= totalPagesIncentives; i++)
+          pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPageIncentives - 1);
+        pages.push(currentPageIncentives);
+        pages.push(currentPageIncentives + 1);
+        pages.push("...");
+        pages.push(totalPagesIncentives);
+      }
+    }
+    return pages;
+  };
+
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -350,31 +484,119 @@ export default function AdminIncentives() {
 
               {/* Employee of the Month */}
               {allIncentivesForTheMonth &&
-              allIncentivesForTheMonth.length > 1 ? (
-                allIncentivesForTheMonth.map((record, index) => (
-                  <div
-                    className="bg-white rounded-xl shadow-md p-6"
-                    key={index}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-xl overflow-hidden flex-shrink-0">
-                        <img
-                          src={`http://localhost/HR-Information-System/backend/${record.photo}`}
-                          alt="Employee of the Month"
-                          className="w-full h-full object-cover"
-                        />
+              allIncentivesForTheMonth.length > 0 ? (
+                <div>
+                  {/* Items per page selector */}
+                  <div className="mb-4 flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show:</span>
+                    <select
+                      value={itemsPerPageIncentives}
+                      onChange={(e) =>
+                        setItemsPerPageIncentives(Number(e.target.value))
+                      }
+                      className="border rounded-md p-1 text-sm"
+                    >
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                      <option value={3}>3</option>
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                    </select>
+                    <span className="text-sm text-gray-600">per page</span>
+                  </div>
+
+                  {/* Incentive cards */}
+                  <div className="space-y-4">
+                    {currentIncentives.map((record, index) => (
+                      <div
+                        className="bg-white rounded-xl shadow-md p-6"
+                        key={startIndexIncentives + index}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-xl overflow-hidden flex-shrink-0">
+                            <img
+                              src={`http://localhost/VET-SUPER-SYSTEM-3E/HR/backend/${record.photo}`}
+                              alt="Employee of the Month"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">
+                              {record.awardName} - {record.awardDate}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-gray-600">
+                              {record.notes}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">
-                          {record.awardName} - {record.awardDate}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          {record.notes}
-                        </p>
+                    ))}
+                  </div>
+
+                  {/* Pagination Controls */}
+                  <div className="flex flex-col gap-4 mt-6">
+                    {/* Results info */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">
+                        Showing {startIndexIncentives + 1} to{" "}
+                        {Math.min(
+                          endIndexIncentives,
+                          allIncentivesForTheMonth.length
+                        )}{" "}
+                        of {allIncentivesForTheMonth.length} results
+                      </span>
+                    </div>
+
+                    {/* Pagination buttons */}
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Previous button */}
+                      <button
+                        onClick={goToPreviousPageIncentives}
+                        disabled={currentPageIncentives === 1}
+                        className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+
+                      {/* Page numbers */}
+                      <div className="flex gap-1">
+                        {getPageNumbersIncentives().map((page, index) =>
+                          typeof page === "number" ? (
+                            <button
+                              key={index}
+                              onClick={() => goToPageIncentives(page)}
+                              className={`min-w-[40px] px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                                page === currentPageIncentives
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-white text-gray-700 hover:bg-gray-50 border"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ) : (
+                            <span
+                              key={index}
+                              className="px-2 py-2 text-gray-400 text-sm"
+                            >
+                              {page}
+                            </span>
+                          )
+                        )}
                       </div>
+
+                      {/* Next button */}
+                      <button
+                        onClick={goToNextPageIncentives}
+                        disabled={
+                          currentPageIncentives === totalPagesIncentives
+                        }
+                        className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
                     </div>
                   </div>
-                ))
+                </div>
               ) : (
                 <div className="bg-white rounded-xl shadow-md p-6">
                   <div className="flex items-center gap-4">
@@ -501,76 +723,66 @@ export default function AdminIncentives() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-blue-100">
-                    {currentClaimRequests.length > 0 ? (
-                      currentClaimRequests.map((claim, index) => (
-                        <tr
-                          key={index}
-                          className="hover:bg-white/50 transition-colors"
-                        >
-                          <td className="px-2 sm:px-4 py-3 text-gray-900">
-                            {claim.name}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3 text-gray-900">
-                            {claim.reward}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3 text-gray-900">
-                            {claim.dateAwarded}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3 text-gray-900">
-                            {claim.awardBonus}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3">
-                            {claim.status && (
-                              <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                                  claim.status
-                                )}`}
-                              >
-                                {claim.status}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-2 sm:px-4 py-3">
-                            <div className="relative">
-                              <button
-                                onClick={() => toggleMenu(startIndex + index)}
-                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                              >
-                                <MoreVertical className="w-5 h-5 text-gray-600" />
-                              </button>
+                    {currentClaimRequests.map((claim, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-white/50 transition-colors"
+                      >
+                        <td className="px-2 sm:px-4 py-3 text-gray-900">
+                          {claim.name}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3 text-gray-900">
+                          {claim.reward}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3 text-gray-900">
+                          {claim.dateAwarded}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3 text-gray-900">
+                          {claim.awardBonus}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3">
+                          {claim.status && (
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                                claim.status
+                              )}`}
+                            >
+                              {claim.status}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-2 sm:px-4 py-3">
+                          <div className="relative">
+                            <button
+                              onClick={() => toggleMenu(startIndex + index)}
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                              <MoreVertical className="w-5 h-5 text-gray-600" />
+                            </button>
 
-                              {activeMenu === startIndex + index && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                                  {menuOptions.map((option, optIndex) => (
-                                    <button
-                                      key={optIndex}
-                                      onClick={() =>
-                                        handleStatusChange(
-                                          option,
-                                          startIndex + index
-                                        )
-                                      }
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                                    >
-                                      {option}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="6"
-                          className="px-4 py-8 text-center text-gray-500"
-                        >
-                          No claim requests found.
+                            {activeMenu === startIndex + index && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                                {menuOptions.map((option, optIndex) => (
+                                  <button
+                                    key={optIndex}
+                                    onClick={() =>
+                                      handleStatusChange(
+                                        option,
+                                        startIndex + index,
+                                        claim.performance_review_id // Pass the correct ID here
+                                      )
+                                    }
+                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                  >
+                                    {option}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </td>
                       </tr>
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>

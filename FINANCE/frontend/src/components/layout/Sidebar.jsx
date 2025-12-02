@@ -7,6 +7,8 @@ import {
   CreditCard,
   LogOut,
   Globe,
+  Activity,
+  Package,
 } from "lucide-react";
 
 const Sidebar = ({ onLogout }) => {
@@ -23,12 +25,32 @@ const Sidebar = ({ onLogout }) => {
 
   const menuItems = [
     {
-      name: "Dashboard",
+      name: "Sales Monitoring",
+      path: "/sales-monitoring",
+      icon: Activity,
+    },
+    {
+      name: "Finance Dashboard",
       path: "/finance-dashboard",
       icon: LayoutDashboard,
     },
     {
-      name: "Employees",
+      name: "Stock Tracking",
+      path: "/stock-tracking",
+      icon: Package,
+    },
+    {
+      name: "Inventory Portal",
+      path: "/inventory-portal",
+      icon: Package,
+    },
+    {
+      name: "Employee Portal",
+      path: "/employee-portal",
+      icon: Users,
+    },
+    {
+      name: "Payroll",
       path: "/employees",
       icon: Users,
     },
@@ -41,6 +63,11 @@ const Sidebar = ({ onLogout }) => {
       name: "Monitor Payment",
       path: "/payments",
       icon: CreditCard,
+    },
+    {
+      name: "Supplier Orders",
+      path: "/supplier-payments",
+      icon: Package,
     },
   ];
 
@@ -77,7 +104,7 @@ const Sidebar = ({ onLogout }) => {
             >
               FUR-EVER CARE
             </h1>
-            <p className="text-xs text-gray-500">Sales And Finance</p>
+            <p className="text-xs text-gray-500">Sales & Monitoring</p>
           </div>
         </div>
       </div>

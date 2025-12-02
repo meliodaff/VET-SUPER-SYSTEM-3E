@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Package, AlertTriangle, Calendar } from 'lucide-react';
-import { formatCurrency, formatDateTime } from '../../utils/helpers';
+import { formatCurrency } from '../../utils/helpers';
 import { dashboardAPI } from '../../services/api';
 
 const InventoryTransactionModal = ({ isOpen, onClose }) => {

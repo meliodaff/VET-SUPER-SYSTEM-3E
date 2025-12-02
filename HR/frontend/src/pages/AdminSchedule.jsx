@@ -64,7 +64,7 @@ export default function AttendanceSchedule() {
         position: data.position,
         timeIn: data.check_in_time,
         timeOut: data.check_out_time,
-        remarks: data.attendance_status,
+        remarks: data.attendance_status || "Absent",
       }));
       console.log(normalizedData);
       setAttendanceData(normalizedData);

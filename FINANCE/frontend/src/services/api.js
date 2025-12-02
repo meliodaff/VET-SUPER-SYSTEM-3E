@@ -1,8 +1,8 @@
 import axios from "axios";
 
-// Use the dev proxy path to avoid CORS and preserve PHP sessions in development
-// See frontend/src/setupProxy.js for the proxy target
-const API_BASE_URL = "http://localhost/VET-SUPER-SYSTEM-3E/FINANCE/backend/api";
+// Use relative path in development (will use setupProxy.js)
+// Use absolute path in production (or configure via environment variable)
+const API_BASE_URL = process.env.REACT_APP_API_URL || "/backend-api";
 
 // Create axios instance with default config
 const api = axios.create({
@@ -17,9 +17,12 @@ const api = axios.create({
 // Request interceptor to add auth headers if needed
 api.interceptors.request.use(
   (config) => {
+    // Log outgoing requests
+    console.log(`[API Request] ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
     return config;
   },
   (error) => {
+    console.error('[API Request Error]', error);
     return Promise.reject(error);
   }
 );
@@ -30,6 +33,18 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Log detailed error information for debugging
+    console.error("API Error Details:", {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      message: error.message,
+      errorCode: error.code,
+      responseData: error.response?.data,
+      fullError: error
+    });
+
     // Handle timeout errors
     if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
       return Promise.reject({
@@ -52,7 +67,7 @@ api.interceptors.response.use(
           data: {
             success: false,
             message:
-              "Cannot connect to backend server. Please ensure XAMPP/WAMP Apache is running.",
+              "Cannot connect to backend server. Please ensure XAMPP/WAMP Apache is running and the database is accessible.",
           },
         },
       });
@@ -87,6 +102,13 @@ export const dashboardAPI = {
     api.get("/dashboard/inventory_transactions.php"),
   getDoctorDetail: (employeeId) =>
     api.get(`/dashboard/doctor_detail.php?employee_id=${employeeId}`),
+  
+  // Monitoring & Sales Verification APIs
+  getTreatmentsCaptured: () => api.get("/monitoring/treatments_captured.php"),
+  getMedicationsDispensed: () => api.get("/monitoring/medications_dispensed.php"),
+  getLabTestsOrdered: () => api.get("/monitoring/lab_tests_ordered.php"),
+  getInventoryDeductions: () => api.get("/monitoring/inventory_deductions.php"),
+  getVerificationStatus: () => api.get("/monitoring/verification_status.php"),
 };
 
 // Employees API
@@ -124,6 +146,34 @@ export const paymentsAPI = {
     api.put("/payments/update_payment_status.php", data),
   trackTransactions: (limit = 20) =>
     api.get(`/payments/track_transactions.php?limit=${limit}`),
+};
+
+// Inventory API
+export const inventoryAPI = {
+  getItems: () => api.get("/inventory/get_items.php"),
+};
+
+// Supplier & Purchase Orders API
+export const purchaseOrdersAPI = {
+  createPurchaseOrder: (data) =>
+    api.post("/purchase_orders/create_purchase_order.php", data),
+  getPurchaseOrders: (params = {}) => {
+    const queryParams = new URLSearchParams(params).toString();
+    return api.get(`/purchase_orders/get_purchase_orders.php?${queryParams}`);
+  },
+};
+
+export const supplierAPI = {
+  createSupplierPayment: (data) =>
+    api.post("/payments/create_supplier_payment.php", data),
+  getSupplierPayments: (params = {}) => {
+    const queryParams = new URLSearchParams(params).toString();
+    return api.get(`/payments/get_supplier_payments.php?${queryParams}`);
+  },
+  updateSupplierDeliveryStatus: (data) =>
+    api.put("/payments/update_supplier_delivery_status.php", data),
+  recordDelivery: (data) =>
+    api.post("/inventory/receive_delivery.php", data),
 };
 
 export default api;

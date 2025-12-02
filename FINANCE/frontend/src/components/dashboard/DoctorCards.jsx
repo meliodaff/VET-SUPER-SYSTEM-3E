@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { User } from 'lucide-react';
 import { formatCurrency } from '../../utils/helpers';
 import DoctorDetailModal from './DoctorDetailModal';
 

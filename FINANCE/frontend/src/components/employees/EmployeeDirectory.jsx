@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, User, Mail, Phone, MapPin } from 'lucide-react';
+import { Eye, User } from 'lucide-react';
 import { formatCurrency, getStatusColor } from '../../utils/helpers';
 import EmployeeProfileModal from './EmployeeProfileModal';
 

@@ -1,4 +1,23 @@
 <?php
+    function getIncentiveItems($pdo){
+          $query = "SELECT * FROM incentives";
+        try {
+            $stmt = $pdo->prepare($query);
+            $stmt->execute();
+
+            $datas = $stmt->fetchAll();
+            $response = [
+                "success" => true,
+                "data" => $datas 
+            ];
+        } catch (PDOException $e) {
+            $response = [
+                "success" => false,
+                "error" => $e->getMessage()
+            ];
+            }
+            return $response;
+    }
 
      function getIncentives($isClaim, $pdo) {
     
@@ -19,7 +38,8 @@ JOIN employees e
 ON ia.employee_id = e.employee_id
 JOIN incentives i
 ON ia.incentive_id = i.incentive_id
-WHERE is_claimed = :is_claim";
+WHERE is_claimed = :is_claim
+ORDER BY award_date DESC";
         try {
             $stmt = $pdo->prepare($query);
             $stmt->execute([

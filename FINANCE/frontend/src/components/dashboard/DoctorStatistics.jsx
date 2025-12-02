@@ -1,6 +1,6 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Users, TrendingUp } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { formatCurrency } from '../../utils/helpers';
 
 const DoctorStatistics = ({ data }) => {
