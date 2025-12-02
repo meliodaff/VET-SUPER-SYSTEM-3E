@@ -7,7 +7,10 @@ import SalesMonitoring from './pages/SalesMonitoring';
 import Employees from './pages/Employees';
 import Invoices from './pages/Invoices';
 import MonitorPayment from './pages/MonitorPayment';
+import SupplierPayments from './pages/SupplierPayments';
 import EmployeePortal from './pages/EmployeePortal';
+import InventoryPortal from './pages/InventoryPortal';
+import StockTracking from './pages/StockTracking';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -71,6 +74,30 @@ function App() {
             element={
               <Layout admin={admin} onLogout={noop}>
                 <MonitorPayment />
+              </Layout>
+            }
+          />
+          <Route
+            path="/supplier-payments"
+            element={
+              <Layout admin={admin} onLogout={noop}>
+                <SupplierPayments />
+              </Layout>
+            }
+          />
+          <Route
+            path="/stock-tracking"
+            element={
+              <Layout admin={admin} onLogout={noop}>
+                <StockTracking />
+              </Layout>
+            }
+          />
+          <Route
+            path="/inventory-portal"
+            element={
+              <Layout admin={admin} onLogout={noop}>
+                <InventoryPortal />
               </Layout>
             }
           />

@@ -148,4 +148,32 @@ export const paymentsAPI = {
     api.get(`/payments/track_transactions.php?limit=${limit}`),
 };
 
+// Inventory API
+export const inventoryAPI = {
+  getItems: () => api.get("/inventory/get_items.php"),
+};
+
+// Supplier & Purchase Orders API
+export const purchaseOrdersAPI = {
+  createPurchaseOrder: (data) =>
+    api.post("/purchase_orders/create_purchase_order.php", data),
+  getPurchaseOrders: (params = {}) => {
+    const queryParams = new URLSearchParams(params).toString();
+    return api.get(`/purchase_orders/get_purchase_orders.php?${queryParams}`);
+  },
+};
+
+export const supplierAPI = {
+  createSupplierPayment: (data) =>
+    api.post("/payments/create_supplier_payment.php", data),
+  getSupplierPayments: (params = {}) => {
+    const queryParams = new URLSearchParams(params).toString();
+    return api.get(`/payments/get_supplier_payments.php?${queryParams}`);
+  },
+  updateSupplierDeliveryStatus: (data) =>
+    api.put("/payments/update_supplier_delivery_status.php", data),
+  recordDelivery: (data) =>
+    api.post("/inventory/receive_delivery.php", data),
+};
+
 export default api;

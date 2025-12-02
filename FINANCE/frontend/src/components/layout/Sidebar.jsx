@@ -8,6 +8,7 @@ import {
   LogOut,
   Globe,
   Activity,
+  Package,
 } from "lucide-react";
 
 const Sidebar = ({ onLogout }) => {
@@ -34,12 +35,22 @@ const Sidebar = ({ onLogout }) => {
       icon: LayoutDashboard,
     },
     {
+      name: "Stock Tracking",
+      path: "/stock-tracking",
+      icon: Package,
+    },
+    {
+      name: "Inventory Portal",
+      path: "/inventory-portal",
+      icon: Package,
+    },
+    {
       name: "Employee Portal",
       path: "/employee-portal",
       icon: Users,
     },
     {
-      name: "Employees",
+      name: "Payroll",
       path: "/employees",
       icon: Users,
     },
@@ -52,6 +63,11 @@ const Sidebar = ({ onLogout }) => {
       name: "Monitor Payment",
       path: "/payments",
       icon: CreditCard,
+    },
+    {
+      name: "Supplier Orders",
+      path: "/supplier-payments",
+      icon: Package,
     },
   ];
 
