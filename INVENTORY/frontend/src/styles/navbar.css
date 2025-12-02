@@ -9,15 +9,19 @@ body{
   height: 64px;
   display: flex;
   align-items: center;
-  position: sticky;
-  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 256px; /* Offset by sidebar width */
+  right: 0;
+  width: calc(100% - 256px); /* Adjust width to account for sidebar */
+  z-index: 100;
 }
 
 .navbar-container {
   width: 100%;
   padding: 10px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end; /* Align content to the right */
   align-items: center;
 }
 
@@ -26,14 +30,6 @@ body{
   height: 24px;
   background-color: #d0d0d0;
   margin: 0 1.5rem;
-}
-
-.navbar-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0;
-  padding-left: 10px;
 }
 
 .navbar-user-menu {
@@ -64,7 +60,7 @@ body{
 
 .navbar-dropdown {
   position: absolute;
-  right: 0;
+  right: 2rem; /* Align with padding-right of navbar-user-menu */
   margin-top: 0.5rem;
   width: 240px;
   background-color: white;
@@ -72,6 +68,7 @@ body{
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: 1px solid #e0e0e0;
   overflow: hidden;
+  z-index: 1000;
 }
 
 .navbar-dropdown-header {
