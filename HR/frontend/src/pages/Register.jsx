@@ -7,6 +7,7 @@ export default function Register() {
     firstName: "",
     lastName: "",
     email: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: "",
     role: "Patient",
@@ -18,9 +19,17 @@ export default function Register() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    let newValue = type === "checkbox" ? checked : value;
+
+    // Validate phone number: only numbers, max 11 digits
+    if (name === "phoneNumber") {
+      newValue = value.replace(/\D/g, "").slice(0, 11);
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: newValue,
     }));
   };
 
@@ -53,6 +62,7 @@ export default function Register() {
       lastName: "",
       email: "",
       password: "",
+      phoneNumber: "",
       confirmPassword: "",
       role: "Patient",
       agreeToTerms: false,
@@ -94,6 +104,17 @@ export default function Register() {
             value={formData.email}
             onChange={handleInputChange}
             placeholder="Email Address"
+          />
+
+          <input
+            type="tel"
+            name="phoneNumber"
+            className="email"
+            value={formData.phoneNumber}
+            onChange={handleInputChange}
+            placeholder="Phone Number"
+            pattern="[0-9]{10,11}"
+            title="Please enter a valid 10-11 digit phone number"
           />
 
           <div className="password">

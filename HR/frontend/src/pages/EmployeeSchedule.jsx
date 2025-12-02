@@ -265,7 +265,7 @@ export default function EmployeeSchedule({ employee }) {
   useEffect(() => {
     const fetchAndFormatAttendance = async (id) => {
       const response = await getAllAttendanceById(id);
-
+      console.log(response.data);
       if (!response.success) {
         alert(response.message);
         return;

@@ -64,7 +64,7 @@
 
             $lastInsertId = $pdo->lastInsertId();
 
-            $queryToInsertUser = "INSERT INTO users (first_name, middle_name, last_name, email, password, role) VALUES (:first_name, :middle_name, :last_name, :email, :password, :role)";  
+            $queryToInsertUser = "INSERT INTO users (first_name, middle_name, last_name, email, password, role, phone_number) VALUES (:first_name, :middle_name, :last_name, :email, :password, :role, :phone_number)";  
             
             $insertUserStms = $pdo->prepare($queryToInsertUser);
 
@@ -74,7 +74,8 @@
                 ":last_name"   => $employee["lastName"],
                 ":email"       => $employee["email"],
                 ":password"    => $hashedPassword,
-                ":role"        => $employee["department"]
+                ":role"        => $employee["department"],
+            ":phone_number"        => $employee["phoneNumber"]
             ]);
 
             $queryToInsertLeave = "INSERT INTO leave_balances (employee_id, leave_type_id, days_allocated, days_taken, days_remaining) VALUES (:employee_id, :leave_type_id, :days_allocated, 0, :days_remaining)";

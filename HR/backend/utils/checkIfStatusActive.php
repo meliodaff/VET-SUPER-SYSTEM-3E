@@ -2,7 +2,7 @@
 
 function checkIfStatusActive($userEmail, $pdo){
         $query = "SELECT
-COUNT(*) as total, email
+COUNT(*) as total
 FROM users WHERE email = :email AND status = 'Active'";
         try {
             $stmt = $pdo->prepare($query);

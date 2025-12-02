@@ -9,7 +9,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import useGetAdminAnalytics from "../api/useGetAdminAnalytics";
@@ -17,6 +17,8 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
 import useGetEmployees from "../api/useGetEmployee";
+import useGetPerformanceReviews from "../api/useGetPerformanceReviews";
+
 export default function Dashboard() {
   const [statsData, setStatsData] = useState(null);
   const { getAdminAnalytics } = useGetAdminAnalytics();
@@ -49,10 +51,12 @@ export default function Dashboard() {
       // Create PDF in landscape mode for more columns
       const doc = new jsPDF("landscape");
 
+      // fillColor: [41, 128, 185],
       // Header
       doc.setFontSize(20);
-      doc.setTextColor(22, 163, 74);
-      doc.text("Employee Attendance Report", 14, 20);
+      doc.setTextColor(0, 0, 0);
+
+      doc.text("Employee Data", 14, 20);
 
       // Metadata
       doc.setFontSize(10);
@@ -65,33 +69,59 @@ export default function Dashboard() {
         { header: "ID", dataKey: "employee_id" },
         { header: "First Name", dataKey: "first_name" },
         { header: "Last Name", dataKey: "last_name" },
+        { header: "Contact No.", dataKey: "phone_number" },
+        { header: "Address", dataKey: "address" },
         { header: "Department", dataKey: "department" },
         { header: "Position", dataKey: "position" },
-        { header: "Day", dataKey: "day_of_week" },
-        { header: "Scheduled Start", dataKey: "scheduled_start" },
-        { header: "Scheduled End", dataKey: "scheduled_end" },
-        { header: "Check In", dataKey: "check_in_time" },
-        { header: "Check Out", dataKey: "check_out_time" },
-        { header: "Status", dataKey: "attendance_status" },
-        { header: "Notes", dataKey: "notes" },
+        { header: "Gender", dataKey: "gender" },
+        { header: "Date of Birth", dataKey: "date_of_birth" },
+        { header: "Email", dataKey: "contact_email" },
+        { header: "Hire Date", dataKey: "hire_date" },
+        // { header: "Day", dataKey: "day_of_week" },
+        // { header: "Scheduled Start", dataKey: "scheduled_start" },
+        // { header: "Scheduled End", dataKey: "scheduled_end" },
+        // { header: "Check In", dataKey: "check_in_time" },
+        // { header: "Check Out", dataKey: "check_out_time" },
+        // { header: "Status", dataKey: "attendance_status" },
+        // { header: "Notes", dataKey: "notes" },
       ];
       console.log(employees);
 
+      // { header: "First Name", dataKey: "first_name" },
+      // { header: "Last Name", dataKey: "last_name" },
+      // { header: "Contact No.", dataKey: "phone_number" },
+      // { header: "Address", dataKey: "address" },
+      // { header: "Department", dataKey: "department" },
+      // { header: "Position", dataKey: "position" },
+      // { header: "Gender", dataKey: "gender" },
+      // { header: "Date of Birth", dataKey: "date_of_birth" },
+      // { header: "Email", dataKey: "contact_email" },
+      // { header: "Hire Date", dataKey: "hire_date" },
+
       // Prepare data - handle null values
-      const tableData = employees.map((emp) => ({
-        employee_id: emp.employee_id || "N/A",
-        first_name: emp.first_name?.trim() || "N/A",
-        last_name: emp.last_name?.trim() || "N/A",
-        department: emp.department || "N/A",
-        position: emp.Position || "N/A",
-        day_of_week: emp.day_of_week || "N/A",
-        scheduled_start: emp.scheduled_start || "N/A",
-        scheduled_end: emp.scheduled_end || "N/A",
-        check_in_time: emp.check_in_time || "N/A",
-        check_out_time: emp.check_out_time || "N/A",
-        attendance_status: emp.attendance_status || "N/A",
-        notes: emp.notes || "-",
-      }));
+      const tableData = employees.map((emp) => {
+        console.log(emp);
+        return {
+          employee_id: emp.employee_id || "N/A",
+          first_name: emp.first_name?.trim() || "N/A",
+          last_name: emp.last_name?.trim() || "N/A",
+          phone_number: emp.phone_number?.trim() || "N/A",
+          address: emp.address?.trim() || "N/A",
+          department: emp.department || "N/A",
+          position: emp.Position || "N/A",
+          gender: emp.gender || "N/A",
+          date_of_birth: emp.date_of_birth || "N/A",
+          contact_email: emp.contact_email || "N/A",
+          hire_date: emp.hire_date || "N/A",
+          // day_of_week: emp.day_of_week || "N/A",
+          // scheduled_start: emp.scheduled_start || "N/A",
+          // scheduled_end: emp.scheduled_end || "N/A",
+          // check_in_time: emp.check_in_time || "N/A",
+          // check_out_time: emp.check_out_time || "N/A",
+          // attendance_status: emp.attendance_status || "N/A",
+          // notes: emp.notes || "-",
+        };
+      });
 
       // Create table
       autoTable(doc, {
@@ -103,7 +133,8 @@ export default function Dashboard() {
           cellPadding: 2,
         },
         headStyles: {
-          fillColor: [22, 163, 74],
+          // fillColor: [22, 163, 74],
+          fillColor: [41, 128, 185],
           textColor: 255,
           fontStyle: "bold",
           fontSize: 8,
@@ -136,9 +167,7 @@ export default function Dashboard() {
       }
 
       // Save PDF
-      doc.save(
-        `employee_attendance_${new Date().toISOString().split("T")[0]}.pdf`
-      );
+      doc.save(`employee_data_${new Date().toISOString().split("T")[0]}.pdf`);
     } catch (error) {
       console.error("Export error:", error);
       alert(`Failed to export: ${error.message}`);
@@ -148,6 +177,7 @@ export default function Dashboard() {
   };
 
   const [isGenerating, setIsGenerating] = useState(false);
+
   const generatePDFReport = async () => {
     setIsGenerating(true);
     try {
@@ -346,7 +376,7 @@ export default function Dashboard() {
       }.pdf`;
       doc.save(fileName);
 
-      alert("Attendance report generated successfully!");
+      // alert("Attendance report generated successfully!");
     } catch (error) {
       console.error("Error generating report:", error);
       alert("Error generating report: " + error.message);
@@ -354,6 +384,54 @@ export default function Dashboard() {
       setIsGenerating(false);
     }
   };
+
+  const { getPerformanceReviewsReport, loadingForGetPerformanceReviewsReport } =
+    useGetPerformanceReviews();
+
+  const generatePerformanceReport = useCallback(async () => {
+    console.log("Generating performance report...");
+    setIsGenerating(true);
+    try {
+      const response = await getPerformanceReviewsReport();
+
+      if (!response?.success || !Array.isArray(response?.data)) {
+        throw new Error(
+          response?.message ?? "Failed to fetch performance data"
+        );
+      }
+
+      const reviewsData = response.data;
+      if (reviewsData.length === 0) {
+        alert("No performance reviews found for this month");
+        return;
+      }
+
+      const doc = new jsPDF();
+
+      autoTable(doc, {
+        head: [["ID", "Name", "Department", "Position", "Score"]],
+        body: reviewsData.map((r) => [
+          r.employee_id ?? "N/A",
+          `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || "N/A",
+          r.department ?? "N/A",
+          r.position ?? "N/A",
+          Number(r.review_score ?? 0).toFixed(2),
+        ]),
+        theme: "grid",
+      });
+
+      const fileName = `Performance_Report_${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
+      doc.save(fileName);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      alert("Error generating report: " + (error?.message ?? "Unknown error"));
+    } finally {
+      setIsGenerating(false);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       const response = await getAdminAnalytics();
@@ -362,6 +440,8 @@ export default function Dashboard() {
         return;
       }
       const record = response.data;
+
+      console.log(response.data);
 
       const formattedData = {
         overallAttendance:
@@ -588,23 +668,38 @@ export default function Dashboard() {
                 <h3 className="font-bold text-gray-900">Quick Actions</h3>
                 <AlertCircle className="w-5 h-5 text-blue-500" />
               </div>
-              <div className="space-y-2">
-                <button
-                  onClick={generatePDFReport}
-                  className="w-full text-left px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors text-blue-700 text-sm font-medium"
-                >
-                  ▸ Generate Attendance Report
-                </button>
-                <button
-                  onClick={handleExportEmployees}
-                  disabled={exporting || loadingForGetEmployees}
-                  className="w-full text-left px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition-colors text-green-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {exporting ? "⏳ Exporting..." : "▸ Export Employee Data"}
-                </button>
-                <button className="w-full text-left px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-purple-700 text-sm font-medium">
-                  ▸ View Performance Reports
-                </button>
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900">Quick Actions</h3>
+                  <AlertCircle className="w-5 h-5 text-blue-500" />
+                </div>
+                <div className="space-y-2">
+                  <button
+                    onClick={generatePDFReport}
+                    className="w-full text-left px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors text-blue-700 text-sm font-medium"
+                  >
+                    ▸ Generate Attendance Report
+                  </button>
+                  <button
+                    onClick={generatePerformanceReport}
+                    disabled={isGenerating}
+                    className="w-full text-left px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition-colors text-green-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGenerating
+                      ? "⏳ Generating..."
+                      : "▸ Export Employee Data"}
+                  </button>
+
+                  <button
+                    onClick={generatePerformanceReport}
+                    disabled={isGenerating}
+                    className="w-full text-left px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-purple-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGenerating
+                      ? "⏳ Generating..."
+                      : "▸ Generate Performance Reports"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

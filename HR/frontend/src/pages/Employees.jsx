@@ -1,5 +1,13 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Search, Plus, X, User, Camera } from "lucide-react";
+import {
+  Search,
+  Plus,
+  X,
+  User,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import EmployeeInformation from "./EmployeeInformation";
 import useGetEmployees from "../api/useGetEmployee";
@@ -11,6 +19,11 @@ export default function Employees() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const [employees, setEmployees] = useState([]);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const [formData, setFormData] = useState({
     rfidCode: "",
     firstName: "",
@@ -69,32 +82,49 @@ export default function Employees() {
       );
     });
 
-    // Sort by position
     if (sortBy === "position") {
       filtered = [...filtered].sort((a, b) =>
         a.position.localeCompare(b.position)
       );
     } else if (sortBy === "date") {
-      // Sort by ID
       filtered = [...filtered].sort((a, b) => b.id.localeCompare(a.id));
     }
 
     return filtered;
   }, [employees, searchQuery, sortBy]);
 
-  // Handle employee click
+  // Pagination calculations
+  const totalPages = Math.ceil(
+    filteredAndSortedEmployees.length / itemsPerPage
+  );
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEmployees = filteredAndSortedEmployees.slice(
+    startIndex,
+    endIndex
+  );
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortBy]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
   const handleEmployeeClick = (employee) => {
     setSelectedEmployee(employee);
   };
 
-  // Handle close profile
   const handleCloseProfile = () => {
     setSelectedEmployee(null);
   };
 
   const { postEmployee, loadingForPostEmployee } = usePostEmployee();
 
-  // Validate form data
   const validateForm = () => {
     const errors = {};
 
@@ -129,9 +159,9 @@ export default function Employees() {
     return Object.keys(errors).length === 0;
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({
+      rfidCode: "",
       firstName: "",
       middleName: "",
       lastName: "",
@@ -146,13 +176,12 @@ export default function Employees() {
       confirmPassword: "",
       rateSalary: "500",
       department: "",
-      photo: null, // Reset file
+      photo: null,
     });
-    setPhotoPreview(""); // Reset preview
+    setPhotoPreview("");
     setValidationErrors({});
   };
 
-  // If an employee is selected, show the profile page
   if (selectedEmployee) {
     return (
       <EmployeeInformation
@@ -166,17 +195,14 @@ export default function Employees() {
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
           <div className="mb-6 sm:mb-8">
             <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
               EMPLOYEE
             </h1>
           </div>
 
-          {/* Controls */}
           <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
             <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-              {/* Add Employee Button */}
               <button
                 onClick={() => setIsAddEmployeeModalOpen(true)}
                 className="flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors order-1 sm:order-1"
@@ -185,9 +211,7 @@ export default function Employees() {
                 Add Employee
               </button>
 
-              {/* Search and Sort */}
               <div className="flex flex-col sm:flex-row gap-3 order-2 sm:order-2">
-                {/* Search */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
@@ -199,8 +223,7 @@ export default function Employees() {
                   />
                 </div>
 
-                {/* Sort by Position */}
-                <select
+                {/* <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white appearance-none cursor-pointer"
@@ -208,21 +231,12 @@ export default function Employees() {
                   <option value="">Sort by Position</option>
                   <option value="position">Position A-Z</option>
                   <option value="date">Newest First</option>
-                </select>
-
-                {/* Sort by Date */}
-                <select className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white appearance-none cursor-pointer">
-                  <option value="">Sort by date</option>
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                </select>
+                </select> */}
               </div>
             </div>
           </div>
 
-          {/* Employee Table */}
           <div className="bg-gradient-to-br from-blue-100 via-blue-50 to-white rounded-xl shadow-lg overflow-hidden">
-            {/* Desktop View */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-white border-b-2 border-blue-200">
@@ -245,8 +259,8 @@ export default function Employees() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-blue-100">
-                  {filteredAndSortedEmployees.length > 0 ? (
-                    filteredAndSortedEmployees.map((employee, index) => (
+                  {currentEmployees.length > 0 ? (
+                    currentEmployees.map((employee, index) => (
                       <tr
                         key={index}
                         onClick={() => handleEmployeeClick(employee)}
@@ -272,7 +286,7 @@ export default function Employees() {
                   ) : (
                     <tr>
                       <td
-                        colSpan="4"
+                        colSpan="5"
                         className="px-6 py-8 text-center text-gray-500"
                       >
                         No employees found
@@ -283,10 +297,9 @@ export default function Employees() {
               </table>
             </div>
 
-            {/* Mobile View */}
             <div className="md:hidden divide-y divide-blue-100">
-              {filteredAndSortedEmployees.length > 0 ? (
-                filteredAndSortedEmployees.map((employee, index) => (
+              {currentEmployees.length > 0 ? (
+                currentEmployees.map((employee, index) => (
                   <div
                     key={index}
                     onClick={() => handleEmployeeClick(employee)}
@@ -332,6 +345,113 @@ export default function Employees() {
                 </div>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {filteredAndSortedEmployees.length > 0 && (
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-blue-100 sm:px-6">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-700">
+                      Showing{" "}
+                      <span className="font-medium">{startIndex + 1}</span> to{" "}
+                      <span className="font-medium">
+                        {Math.min(endIndex, filteredAndSortedEmployees.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {filteredAndSortedEmployees.length}
+                      </span>{" "}
+                      results
+                    </p>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value={5}>5 per page</option>
+                      <option value={10}>10 per page</option>
+                      <option value={20}>20 per page</option>
+                      <option value={50}>50 per page</option>
+                    </select>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+
+                      {[...Array(totalPages)].map((_, i) => {
+                        const pageNumber = i + 1;
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === totalPages ||
+                          (pageNumber >= currentPage - 1 &&
+                            pageNumber <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageChange(pageNumber)}
+                              className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                currentPage === pageNumber
+                                  ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                  : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          pageNumber === currentPage - 2 ||
+                          pageNumber === currentPage + 2
+                        ) {
+                          return (
+                            <span
+                              key={pageNumber}
+                              className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      })}
+
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -363,7 +483,6 @@ export default function Employees() {
               {/* Modal Body */}
               <div className="p-6 sm:p-8 bg-gray-50">
                 <form className="space-y-6">
-                  {/* Row 0: Profile Image Upload */}
                   {/* Profile Photo Upload */}
                   <div className="flex flex-col items-center">
                     <label className="block text-sm font-bold text-gray-900 mb-3">
@@ -388,13 +507,11 @@ export default function Employees() {
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            // Store the actual file
                             setFormData({
                               ...formData,
                               photo: file,
                             });
 
-                            // Create preview URL for display
                             const reader = new FileReader();
                             reader.onloadend = () => {
                               setPhotoPreview(reader.result);
@@ -413,6 +530,7 @@ export default function Employees() {
                     </div>
                     {photoPreview && (
                       <button
+                        type="button"
                         onClick={() => {
                           setFormData({ ...formData, photo: null });
                           setPhotoPreview("");
@@ -424,70 +542,84 @@ export default function Employees() {
                     )}
                   </div>
 
-                  {/* Row 1: First, Middle, Last Name */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6"></div>
-                  {/* Row 1: First, Middle, Last Name */}
-                  <label className="block text-sm font-bold text-gray-900 mb-3">
-                    First Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        firstName: e.target.value,
-                      })
-                    }
-                    placeholder="John"
-                    className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
-                      validationErrors.firstName
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                        : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                    }`}
-                  />
-                  <label className="block text-sm font-bold text-gray-900 mb-3">
-                    Middle Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.middleName}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        middleName: e.target.value,
-                      })
-                    }
-                    placeholder="Middle"
-                    className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
-                      validationErrors.middleName
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                        : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                    }`}
-                  />
-                  <label className="block text-sm font-bold text-gray-900 mb-3">
-                    Last Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        lastName: e.target.value,
-                      })
-                    }
-                    placeholder="Joe"
-                    className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
-                      validationErrors.lastName
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                        : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                    }`}
-                  />
+                  {/* First, Middle, Last Name */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-3">
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          firstName: e.target.value,
+                        })
+                      }
+                      placeholder="John"
+                      className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
+                        validationErrors.firstName
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                          : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                      }`}
+                    />
+                    {validationErrors.firstName && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {validationErrors.firstName}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-3">
+                      Middle Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.middleName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          middleName: e.target.value,
+                        })
+                      }
+                      placeholder="Middle"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-3">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          lastName: e.target.value,
+                        })
+                      }
+                      placeholder="Doe"
+                      className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
+                        validationErrors.lastName
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                          : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                      }`}
+                    />
+                    {validationErrors.lastName && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {validationErrors.lastName}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* RFID Code and Rate Salary */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-3">
-                        RFID Code <span className="text-red-500">*</span>
+                        RFID Code
                       </label>
                       <input
                         type="text"
@@ -499,17 +631,8 @@ export default function Employees() {
                           })
                         }
                         placeholder="## ## ## ##"
-                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 transition-all text-sm ${
-                          validationErrors.firstName
-                            ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                            : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                        }`}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm"
                       />
-                      {validationErrors.rfidCode && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {validationErrors.rfidCode}
-                        </p>
-                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-3">
@@ -519,7 +642,7 @@ export default function Employees() {
                         type="text"
                         value={formData.rateSalary}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/[^\d.]/g, ""); // Remove non-numeric except dot
+                          const value = e.target.value.replace(/[^\d.]/g, "");
                           const formattedValue =
                             Number(value).toLocaleString("en-US");
                           setFormData({
@@ -533,7 +656,7 @@ export default function Employees() {
                     </div>
                   </div>
 
-                  {/* Row 2: Birth Date, Gender */}
+                  {/* Birth Date, Gender */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-3">
@@ -588,7 +711,7 @@ export default function Employees() {
                     </div>
                   </div>
 
-                  {/* Row 3: Email, Phone */}
+                  {/* Email, Phone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-3">
@@ -641,7 +764,7 @@ export default function Employees() {
                     </div>
                   </div>
 
-                  {/* Row 4: Address */}
+                  {/* Address */}
                   <div>
                     <label className="block text-sm font-bold text-gray-900 mb-3">
                       Address <span className="text-red-500">*</span>
@@ -666,7 +789,7 @@ export default function Employees() {
                     )}
                   </div>
 
-                  {/* Row 5: Job Title */}
+                  {/* Job Title */}
                   <div>
                     <label className="block text-sm font-bold text-gray-900 mb-3">
                       Job Title <span className="text-red-500">*</span>
@@ -703,6 +826,8 @@ export default function Employees() {
                       </p>
                     )}
                   </div>
+
+                  {/* Department */}
                   <div>
                     <label className="block text-sm font-bold text-gray-900 mb-3">
                       Department <span className="text-red-500">*</span>
@@ -719,6 +844,7 @@ export default function Employees() {
                       }`}
                     >
                       <option value="">Select Department</option>
+                      <option value="Doctor">Doctor</option>
                       <option value="Employee">Employee</option>
                       <option value="HR">HR</option>
                       <option value="Inventory">Inventory</option>
@@ -732,7 +858,7 @@ export default function Employees() {
                     )}
                   </div>
 
-                  {/* Row 6: Employment Status */}
+                  {/* Employment Status */}
                   <div>
                     <label className="block text-sm font-bold text-gray-900 mb-3">
                       Employment Status <span className="text-red-500">*</span>
@@ -753,7 +879,7 @@ export default function Employees() {
                     </select>
                   </div>
 
-                  {/* Row 7: Password, Confirm Password */}
+                  {/* Password, Confirm Password */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-3">
@@ -805,8 +931,6 @@ export default function Employees() {
                       )}
                     </div>
                   </div>
-
-                  {/* Row 8: Admin Checkbox */}
                 </form>
               </div>
 
@@ -837,7 +961,6 @@ export default function Employees() {
                         alert("Employee added successfully!");
                         setIsAddEmployeeModalOpen(false);
                         resetForm();
-                        // Refresh employee list
                         const updatedEmployees = await getEmployees();
                         if (updatedEmployees.success) {
                           const formattedData = updatedEmployees.data.map(
@@ -847,6 +970,7 @@ export default function Employees() {
                               position: record.Position,
                               email: record.contact_email,
                               photo: record.profile_image_url,
+                              department: record.department,
                             })
                           );
                           setEmployees(formattedData);

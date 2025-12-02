@@ -21,6 +21,7 @@ import EmployeePerformanceRating from "./pages/EmployeePerformanceRating";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import AdminPerformanceRatingApproval from "./pages/AdminPerformanceRatingApproval.jsx";
+import AppointmentTable from "./pages/AppointmentTable.jsx";
 export default function App() {
   return (
     <>
@@ -59,6 +60,7 @@ export default function App() {
           path="/employee-performance-rating"
         />
         <Route element={<LiveAttendance />} path="/live-attendance" />
+        <Route element={<AppointmentTable />} path="/appointment-table" />
       </Routes>
     </>
   );
