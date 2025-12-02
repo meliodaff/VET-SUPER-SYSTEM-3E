@@ -87,7 +87,7 @@ $result = $stmt->get_result();
                 <td>
                   <!-- Pass appointment ID to edit and delete -->
                   <a href="Book_appointment_dashboard_edit.php?id=<?= $row['id'] ?>">Edit</a><br>
-                  <a href="php/cancel_book.php?id=<?= $row['id'] ?>"
+                  <a href="../php/cancel_book.php?id=<?= $row['id'] ?>"
                      class="open-confirmation"
                      data-action="Cancel">
                      Cancel

@@ -162,32 +162,49 @@ $doctor_result = $doctor_stmt->get_result();
 
   <?php include '../../../MARKETING/generalfooter.php'; ?>
 
-  <script>
-    const statusRadios = document.querySelectorAll('input[name="status"]');
-    const petDropdown = document.getElementById('petDropdown');
-    const addPetBtn = document.getElementById('addPetBtn');
-    const timeInput = document.getElementById('timeInput');
+<script>
+const statusRadios = document.querySelectorAll('input[name="status"]');
+const petDropdown = document.getElementById('petDropdown');
+const addPetBtn = document.getElementById('addPetBtn');
+const timeInput = document.getElementById('timeInput');
 
-    statusRadios.forEach(radio => {
-      radio.addEventListener("change", () => {
+// Handle status change (existing/new pet)
+statusRadios.forEach(radio => {
+    radio.addEventListener("change", () => {
         if (radio.value === "new" && radio.checked) {
-          petDropdown.style.display = "none";
-          petDropdown.removeAttribute("required");
-          addPetBtn.style.display = "inline-block";
+            petDropdown.style.display = "none";
+            petDropdown.removeAttribute("required");
+            addPetBtn.style.display = "inline-block";
         } else {
-          petDropdown.style.display = "block";
-          petDropdown.setAttribute("required", true);
-          addPetBtn.style.display = "none";
+            petDropdown.style.display = "block";
+            petDropdown.setAttribute("required", true);
+            addPetBtn.style.display = "none";
         }
-      });
     });
+});
 
-    addPetBtn.addEventListener("click", function() {
-      window.location.href = "/appointment/Book_appointment_add_pet.php";
+// Add pet button
+addPetBtn.addEventListener("click", function() {
+    window.location.href = "/appointment/Book_appointment_add_pet.php";
+});
+
+// Time selection buttons
+const timeButtons = document.querySelectorAll('#timeButtonsContainer button');
+timeButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        timeInput.value = button.textContent;
     });
+});
 
-    const timeButtons = document.querySelectorAll('#timeButtonsContainer button');
-    timeButtons.forEach(button => button.addEventListener('click', () => timeInput.value = button.textContent));
-  </script>
+// **FIX: Populate vet doctor name when selected**
+const vetdocSelect = document.getElementById('vetdoc');
+const vetdocNameInput = document.getElementById('vetdoc_name');
+
+vetdocSelect.addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const doctorName = selectedOption.getAttribute('data-name');
+    vetdocNameInput.value = doctorName || '';
+});
+</script>
 </body>
 </html>

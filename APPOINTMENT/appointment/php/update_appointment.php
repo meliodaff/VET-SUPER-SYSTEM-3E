@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // ✅ Validation
     if (empty($id) || empty($pet_name) || empty($vetdoc) || empty($service) || empty($new_date) || empty($new_time)) {
-       header("Location: ../Book_appointment_dashboard_edit.php?status=error");
+       header("Location: ../client_page/Book_appointment_dashboard_edit.php?status=error");
        exit;
     }
 
@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $result = $fetch_stmt->get_result();
 
     if ($result->num_rows === 0) {
-        header("Location: ../Book_appointment_dashboard_edit.php?status=error");
+        header("Location: ../client_page/Book_appointment_dashboard_edit.php?status=error");
         die;
     }
 

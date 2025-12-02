@@ -65,7 +65,7 @@ $stmt->bind_param(
     $email,
     $vetdoc_id,
     $vetdoc_name,
-    $pet_name,
+    $pet_name, 
     $date,
     $time,
     $service_name,

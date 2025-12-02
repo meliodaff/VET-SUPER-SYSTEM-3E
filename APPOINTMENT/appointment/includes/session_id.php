@@ -11,5 +11,4 @@ if (!isset($_SESSION['user_id'])) {
 
 // Get the user ID
 $user_id = $_SESSION['user_id'];
-//$username = $_SESSION['username'];
 ?>
