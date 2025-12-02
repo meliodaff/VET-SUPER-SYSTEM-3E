@@ -16,57 +16,117 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $data = json_decode(file_get_contents("php://input"), true);
 
+// Auto-generate purchase orders per supplier.
 // Expected payload:
 // {
-//   supplier_id: number,
 //   preferred_delivery_date: 'YYYY-MM-DD', // optional
 //   notes: string, // optional
 //   items: [
-//     { item_id: number, quantity: number, unit_cost: number }
+//     { item_id: number, quantity: number }
 //   ]
 // }
 
-$supplierId = isset($data['supplier_id']) ? (int)$data['supplier_id'] : null;
 $preferredDate = !empty($data['preferred_delivery_date']) ? $data['preferred_delivery_date'] : null;
 $notes = isset($data['notes']) ? trim($data['notes']) : null;
 $items = isset($data['items']) && is_array($data['items']) ? $data['items'] : [];
 
-if (!$supplierId || empty($items)) {
-    Response::error('supplier_id and at least one item are required');
+if (empty($items)) {
+    Response::error('At least one item is required');
 }
 
-// Basic validation on items
-$cleanItems = [];
-$totalAmount = 0;
+// Collect valid item IDs
+$itemIds = [];
 foreach ($items as $item) {
     $itemId = isset($item['item_id']) ? (int)$item['item_id'] : 0;
     $qty = isset($item['quantity']) ? (float)$item['quantity'] : 0;
-    $unitCost = isset($item['unit_cost']) ? (float)$item['unit_cost'] : 0;
 
-    if ($itemId <= 0 || $qty <= 0 || $unitCost < 0) {
+    if ($itemId <= 0 || $qty <= 0) {
+        continue;
+    }
+    $itemIds[] = $itemId;
+}
+
+if (empty($itemIds)) {
+    Response::error('All items are invalid. Please provide valid item_id and quantity.');
+}
+
+// Load inventory data (must include supplier_id and unit_cost)
+$placeholders = implode(',', array_fill(0, count($itemIds), '?'));
+$invStmt = $db->prepare("
+    SELECT id, supplier_id, unit_cost
+    FROM inventory_items
+    WHERE id IN ($placeholders)
+");
+$invStmt->execute($itemIds);
+$invRows = $invStmt->fetchAll();
+
+if (empty($invRows)) {
+    Response::error('No matching inventory items found for the provided item IDs.');
+}
+
+$inventoryById = [];
+foreach ($invRows as $row) {
+    $inventoryById[(int)$row['id']] = $row;
+}
+
+// Group items by supplier_id
+$ordersBySupplier = []; // supplier_id => ['items' => [], 'total_amount' => 0]
+$invalidItems = [];
+
+foreach ($items as $item) {
+    $itemId = isset($item['item_id']) ? (int)$item['item_id'] : 0;
+    $qty = isset($item['quantity']) ? (float)$item['quantity'] : 0;
+
+    if ($itemId <= 0 || $qty <= 0) {
         continue;
     }
 
-    $lineTotal = $qty * $unitCost;
-    $totalAmount += $lineTotal;
+    if (!isset($inventoryById[$itemId])) {
+        $invalidItems[] = $itemId;
+        continue;
+    }
 
-    $cleanItems[] = [
+    $inv = $inventoryById[$itemId];
+    $supplierId = isset($inv['supplier_id']) ? (int)$inv['supplier_id'] : 0;
+
+    if ($supplierId <= 0) {
+        $invalidItems[] = $itemId;
+        continue;
+    }
+
+    $unitCost = isset($inv['unit_cost']) ? (float)$inv['unit_cost'] : 0;
+    $lineTotal = $qty * $unitCost;
+
+    if (!isset($ordersBySupplier[$supplierId])) {
+        $ordersBySupplier[$supplierId] = [
+            'items' => [],
+            'total_amount' => 0,
+        ];
+    }
+
+    $ordersBySupplier[$supplierId]['items'][] = [
         'item_id' => $itemId,
         'quantity' => $qty,
         'unit_cost' => $unitCost,
         'line_total' => $lineTotal,
     ];
+    $ordersBySupplier[$supplierId]['total_amount'] += $lineTotal;
 }
 
-if (empty($cleanItems)) {
-    Response::error('All items are invalid. Please provide valid item_id, quantity and unit_cost.');
+if (empty($ordersBySupplier)) {
+    $msg = 'No purchase orders could be generated.';
+    if (!empty($invalidItems)) {
+        $msg .= ' Check supplier mapping for item IDs: ' . implode(', ', array_unique($invalidItems));
+    }
+    Response::error($msg);
 }
 
 try {
     $db->beginTransaction();
 
-    // Insert into purchase_orders
-    $stmt = $db->prepare("
+    $createdOrders = [];
+
+    $poStmt = $db->prepare("
         INSERT INTO purchase_orders (
             supplier_id,
             total_amount,
@@ -76,16 +136,7 @@ try {
             created_at
         ) VALUES (?, ?, ?, 'Pending', ?, NOW())
     ");
-    $stmt->execute([
-        $supplierId,
-        $totalAmount,
-        $preferredDate,
-        $notes,
-    ]);
 
-    $purchaseOrderId = (int)$db->lastInsertId();
-
-    // Insert order items
     $itemStmt = $db->prepare("
         INSERT INTO purchase_order_items (
             purchase_order_id,
@@ -96,24 +147,43 @@ try {
         ) VALUES (?, ?, ?, ?, ?)
     ");
 
-    foreach ($cleanItems as $ci) {
-        $itemStmt->execute([
-            $purchaseOrderId,
-            $ci['item_id'],
-            $ci['quantity'],
-            $ci['unit_cost'],
-            $ci['line_total'],
+    foreach ($ordersBySupplier as $supplierId => $orderData) {
+        $totalAmount = $orderData['total_amount'];
+
+        $poStmt->execute([
+            $supplierId,
+            $totalAmount,
+            $preferredDate,
+            $notes,
         ]);
+
+        $purchaseOrderId = (int)$db->lastInsertId();
+
+        foreach ($orderData['items'] as $ci) {
+            $itemStmt->execute([
+                $purchaseOrderId,
+                $ci['item_id'],
+                $ci['quantity'],
+                $ci['unit_cost'],
+                $ci['line_total'],
+            ]);
+        }
+
+        $createdOrders[] = [
+            'purchase_order_id' => $purchaseOrderId,
+            'supplier_id' => $supplierId,
+            'total_amount' => $totalAmount,
+            'item_count' => count($orderData['items']),
+        ];
     }
 
     $db->commit();
 
     Response::success(
         [
-            'purchase_order_id' => $purchaseOrderId,
-            'total_amount' => $totalAmount,
+            'purchase_orders' => $createdOrders,
         ],
-        'Purchase order created successfully'
+        'Purchase orders generated successfully'
     );
 } catch (Exception $e) {
     if ($db->inTransaction()) {

@@ -4,12 +4,9 @@ import { purchaseOrdersAPI, supplierAPI, inventoryAPI } from "../services/api";
 import { formatCurrency } from "../utils/helpers";
 
 const initialOrderForm = {
-  supplier_id: "",
   preferred_delivery_date: "",
   notes: "",
-  items: [
-    { item_id: "", quantity: "", unit_cost: "" },
-  ],
+  items: [{ item_id: "", quantity: "", unit_cost: "" }],
 };
 
 const initialPaymentForm = {
@@ -94,21 +91,28 @@ const SupplierPayments = () => {
     try {
       setLoading(true);
       const payload = {
-        supplier_id: parseInt(orderForm.supplier_id, 10),
         preferred_delivery_date: orderForm.preferred_delivery_date || null,
         notes: orderForm.notes || null,
         items: orderForm.items
           .map((it) => ({
             item_id: it.item_id ? parseInt(it.item_id, 10) : null,
             quantity: it.quantity ? parseFloat(it.quantity) : null,
-            unit_cost: it.unit_cost ? parseFloat(it.unit_cost) : null,
           }))
-          .filter((it) => it.item_id && it.quantity && it.unit_cost),
+          .filter((it) => it.item_id && it.quantity),
       };
 
       const res = await purchaseOrdersAPI.createPurchaseOrder(payload);
       if (res?.data?.success) {
-        setSuccess("Purchase order created successfully.");
+        const created = res.data.data?.purchase_orders || [];
+        if (created.length > 0) {
+          setSuccess(
+            `Generated ${created.length} purchase order${
+              created.length > 1 ? "s" : ""
+            } for ${created.length} supplier(s).`
+          );
+        } else {
+          setSuccess("Purchase orders generated successfully.");
+        }
         setOrderForm(initialOrderForm);
         await loadData();
       } else {
@@ -264,20 +268,6 @@ const SupplierPayments = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Supplier ID
-              </label>
-              <input
-                type="number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={orderForm.supplier_id}
-                onChange={(e) =>
-                  setOrderForm((prev) => ({ ...prev, supplier_id: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Preferred Delivery Date
               </label>
               <div className="relative">
@@ -329,7 +319,7 @@ const SupplierPayments = () => {
             {orderForm.items.map((item, index) => (
               <div
                 key={index}
-                className="grid grid-cols-4 gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3"
+                className="grid grid-cols-3 gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3"
               >
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -344,8 +334,12 @@ const SupplierPayments = () => {
                         (it) => String(it.id) === String(value)
                       );
                       handleOrderItemChange(index, "item_id", value);
-                      if (selected && !item.unit_cost) {
-                        handleOrderItemChange(index, "unit_cost", selected.unit_cost ?? "");
+                      if (selected) {
+                        handleOrderItemChange(
+                          index,
+                          "unit_cost",
+                          selected.unit_cost ?? ""
+                        );
                       }
                     }}
                   >
@@ -368,23 +362,19 @@ const SupplierPayments = () => {
                     onChange={(e) =>
                       handleOrderItemChange(index, "quantity", e.target.value)
                     }
-                    min="0"
-                    step="0.01"
+                    min="1"
+                    step="1"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Unit Cost
+                    Unit Cost (auto)
                   </label>
                   <input
                     type="number"
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm bg-gray-100"
                     value={item.unit_cost}
-                    onChange={(e) =>
-                      handleOrderItemChange(index, "unit_cost", e.target.value)
-                    }
-                    min="0"
-                    step="0.01"
+                    readOnly
                   />
                 </div>
               </div>
