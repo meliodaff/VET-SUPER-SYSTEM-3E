@@ -46,7 +46,6 @@ include '../includes/db.php';
       <img src="image/community.png" class="nav-icon" alt="Dashboard Icon">  
         Employee Portal
       </a>
-
       <!-- Logout at bottom using padding trick -->
       <a href="http://localhost:5173/login" class="nav-logout">
       <img src="image/arrow-out-right-square-half.png" class="nav-icon" alt="Dashboard Icon">  
