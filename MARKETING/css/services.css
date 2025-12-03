@@ -405,4 +405,26 @@ header {
     width: 100%;
     align-items: center;
   }
+  /* Price Box (Option B) */
+.price-box {
+    margin-top: 15px;
+    background: #e9f0ff;              /* light blue tone to match theme */
+    padding: 12px;
+    text-align: center;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #003366;                   /* matches your headings */
+    border: 1px solid #b9c9e6;        /* subtle border */
+    width: 100%;
+    display: block;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    transition: 0.3s ease;
+}
+
+.service-card:hover .price-box {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
 }

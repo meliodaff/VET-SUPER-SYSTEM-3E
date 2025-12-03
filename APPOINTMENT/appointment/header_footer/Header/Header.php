@@ -173,7 +173,22 @@
         <?php else: ?>
           <a href="notification.php">Notification</a>
         <?php endif; ?>
-        <a href="http://localhost/VET-SUPER-SYSTEM-3E/MARKETING/index.php">Logout</a>
+        <button onclick="
+  // Clear localStorage
+  localStorage.clear();
+
+  // Delete all cookies
+  document.cookie.split(';').forEach(function(cookie) {
+    document.cookie = cookie.replace(/=.*/, '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/');
+  });
+
+  // Redirect to your page
+  window.location.href = 'http://localhost/VET-SUPER-SYSTEM-3E/MARKETING/index.php';
+">
+  Logout
+</button>
+
+
       </div>
     </div>
   </header>

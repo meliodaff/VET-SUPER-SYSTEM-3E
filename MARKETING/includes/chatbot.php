@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fur-Ever Care Chatbot</title>
   <style>
-    /* Chatbot Launcher Button */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     #vc-launcher {
       position: fixed;
       bottom: 20px;
@@ -35,7 +38,6 @@
       filter: brightness(0) invert(1);
     }
 
-    /* Chat Window */
     #vc-chat {
       position: fixed;
       bottom: 20px;
@@ -60,7 +62,6 @@
       pointer-events: all;
     }
 
-    /* Header */
     .vc-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -110,15 +111,8 @@
     }
 
     @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.5;
-      }
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
 
     .vc-header-right {
@@ -145,7 +139,6 @@
       background: rgba(255, 255, 255, 0.3);
     }
 
-    /* Messages Area */
     #vc-messages {
       flex: 1;
       overflow-y: auto;
@@ -171,6 +164,7 @@
       padding: 10px 14px;
       border-radius: 18px;
       position: relative;
+      word-wrap: break-word;
     }
 
     .msg.bot .bubble {
@@ -191,7 +185,6 @@
       margin-top: 4px;
     }
 
-    /* Quick Reply Buttons */
     .quick-replies {
       display: flex;
       flex-wrap: wrap;
@@ -215,7 +208,6 @@
       box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
     }
 
-    /* Typing Indicator */
     .typing-indicator .bubble {
       padding: 12px 18px;
     }
@@ -243,19 +235,10 @@
     }
 
     @keyframes typing {
-
-      0%,
-      60%,
-      100% {
-        transform: translateY(0);
-      }
-
-      30% {
-        transform: translateY(-10px);
-      }
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-10px); }
     }
 
-    /* Input Form */
     #vc-input {
       display: flex;
       padding: 12px;
@@ -296,12 +279,16 @@
     #vc-input button[type="submit"]:hover {
       transform: scale(1.1);
     }
+
+    #vc-input button[type="submit"]:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- Chatbot Widget -->
   <div id="vc-launcher">
     <img src="https://api.iconify.design/mdi:paw.svg" alt="Paw Icon" class="launcher-icon">
   </div>
@@ -311,10 +298,10 @@
       <div class="vc-header-left">
         <img src="https://api.iconify.design/mdi:paw.svg" alt="paw" class="paw-icon">
         <div class="vc-title">
-          <div class="assistant-name">Fur-Ever Care</div>
+          <div class="assistant-name">Fur-Ever Care AI</div>
           <div class="status">
             <span class="status-dot"></span>
-            <span class="status-text">Online • Ready to help!</span>
+            <span class="status-text">Online • Gemini Powered</span>
           </div>
         </div>
       </div>
@@ -340,14 +327,16 @@
     const form = document.getElementById('vc-input');
     const input = document.getElementById('vc-text');
     const log = document.getElementById('vc-messages');
+    const submitBtn = form.querySelector('button[type="submit"]');
 
-    // ✅ Toggle Chat
+    let conversationHistory = [];
+
     launcher.addEventListener('click', () => {
       chat.classList.add("show");
       launcher.style.display = "none";
       if (!chat.dataset.greeted) {
         setTimeout(() => {
-          addMessage("👋 I'm your Fur-Ever Care. How can I help?", "bot", ["Clinic Hours", "Appointment", "Location", "Emergency"]);
+          addMessage("👋 Hi! I'm your AI-powered veterinary assistant for Fur-Ever Care. Ask me anything about pet care, our services, or clinic info!", "bot", ["Clinic Hours", "Services", "Pet Care Tips", "Emergency"]);
         }, 500);
         chat.dataset.greeted = "true";
       }
@@ -363,14 +352,13 @@
       launcher.style.display = "flex";
     });
 
-    // ✅ Add Message
     function addMessage(text, role = 'bot', options = []) {
       const wrap = document.createElement('div');
       wrap.className = `msg ${role}`;
 
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
-      bubble.innerText = text;
+      bubble.innerHTML = text;
 
       const t = document.createElement('div');
       t.className = 'time';
@@ -384,12 +372,9 @@
           const btn = document.createElement('button');
           btn.className = 'quick-btn';
           btn.textContent = opt;
-          btn.addEventListener('click', () => {
+          btn.addEventListener('click', async () => {
             addMessage(opt, 'user');
-            setTimeout(() => {
-              const reply = getBotReply(opt);
-              botReply(reply.text, reply.options);
-            }, 600);
+            await getAIReply(opt);
           });
           btnWrap.appendChild(btn);
         });
@@ -401,88 +386,165 @@
       log.scrollTop = log.scrollHeight;
     }
 
-    // ✅ Typing Indicator
     function showTyping() {
       const typing = document.createElement('div');
       typing.className = 'msg bot typing-indicator';
-      typing.innerHTML = `
-    <div class="bubble typing">
-      <span></span><span></span><span></span>
-    </div>`;
+      typing.innerHTML = `<div class="bubble typing"><span></span><span></span><span></span></div>`;
       log.appendChild(typing);
       log.scrollTop = log.scrollHeight;
       return typing;
     }
 
-    // ✅ Bot Reply with Typing
-    function botReply(text, options = []) {
+    async function getAIReply(userMessage) {
       const typingEl = showTyping();
-      setTimeout(() => {
+      submitBtn.disabled = true;
+
+      try {
+        const systemPrompt = `You are a helpful and friendly veterinary assistant for "Fur-Ever Care" clinic.
+
+CLINIC INFO:
+- Hours: Monday–Saturday, 8AM–5PM
+- Location: 123 Pet Care Avenue, VC 12345
+- Emergency: (555) 123-PETS
+- Services: Check-ups, Vaccinations, Grooming, Deworming
+- Appointment Booking: http://localhost:5173/login    // ✅ DITO KO NILAGAY
+
+IMPORTANT INSTRUCTIONS:                                 // ✅ AT DITO
+- Keep responses under 100 words, friendly, and helpful
+- For emergencies, recommend calling the hotline immediately
+- If the patient wants to schedule/book an appointment, provide this link: http://localhost:5173/login
+- Format the link as a clickable HTML link: <a href="http://localhost:5173/login" target="_blank" style="color: #667eea; text-decoration: underline;">Click here to book an appointment</a>
+- Always mention they can book online when discussing appointments`;
+
+        // Call YOUR PHP proxy file
+        const response = await fetch('gemini-proxy.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMessage,
+            systemPrompt: systemPrompt,
+            history: conversationHistory
+          })
+        });
+
+        // Get raw text first to see what's wrong
+        const rawText = await response.text();
+        console.log('Raw PHP Response:', rawText);
+
+        // Try to parse JSON
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch (parseError) {
+          console.error('JSON Parse Error:', parseError);
+          console.error('Response text:', rawText);
+          throw new Error('Invalid JSON response from server');
+        }
+
+        if (data.success && data.reply) {
+          conversationHistory.push({ role: 'user', content: userMessage });
+          conversationHistory.push({ role: 'assistant', content: data.reply });
+
+          if (conversationHistory.length > 10) {
+            conversationHistory = conversationHistory.slice(-10);
+          }
+
+          typingEl.remove();
+          addMessage(data.reply, 'bot', ["Ask Another", "Clinic Hours", "Emergency"]);
+        } else {
+          throw new Error(data.error || "No response from AI");
+        }
+
+      } catch (error) {
+        console.error("AI Error:", error);
         typingEl.remove();
-        addMessage(text, 'bot', options);
-      }, 1200);
+        addMessage("Sorry, I'm having trouble connecting. 😔 Check console (F12) for details.", "bot", ["Clinic Hours", "Services", "Emergency"]);
+      } finally {
+        submitBtn.disabled = false;
+      }
     }
 
-    // ✅ Bot Logic
-    function getBotReply(message) {
-      const text = message.toLowerCase();
-      let reply = {
-        text: "🤖 You can ask about hours, appointments, staff, prices, or emergencies.",
-        options: ["Clinic Hours", "Appointment", "Location", "Emergency", "Price"]
-      };
-
-      if (text.includes("oras") || text.includes("hours") || text.includes("clinic hours")) {
-        reply = { text: "🕘 The clinic is open Monday–Saturday, 8AM–5PM.", options: ["Appointment", "Location", "Emergency"] };
-      }
-      else if (text.includes("saan") || text.includes("location") || text.includes("address")) {
-        reply = { text: "📍 We are located at 123 Pet Care Avenue, Veterinary District, VC 12345.", options: ["Clinic Hours", "Appointment", "Emergency"] };
-      }
-      else if (text.includes("appointment") || text.includes("booking") || text.includes("schedule")) {
-        reply = { text: "📅 You can book a check-up, vaccination, grooming, or deworming.", options: ["Clinic Hours", "Staff", "Emergency"] };
-      }
-      else if (text.includes("emergency") || text.includes("saklolo")) {
-        reply = { text: "🚑 For emergencies, call 911 or our hotline: (555) 123-PETS.", options: ["Clinic Hours", "Appointment", "Staff"] };
-      }
-      else if (text.includes("staff") || text.includes("doctor") || text.includes("nurse")) {
-        reply = { text: "👩‍⚕️ Our staff are licensed and ready to help you.", options: ["Clinic Hours", "Appointment", "Emergency"] };
-      }
-      else if (text.includes("price") || text.includes("bayad") || text.includes("cost") || text.includes("gastos")) {
-        reply = { text: "💵 Prices depend on the service. Please contact reception for details.", options: ["Clinic Hours", "Appointment", "Emergency"] };
-      }
-      else if (text.includes("vaccine") || text.includes("bakuna") || text.includes("vaccination")) {
-        reply = { text: "💉 Yes, we provide vaccination services for pets (dogs & cats).", options: ["Clinic Hours", "Appointment", "Emergency"] };
-      }
-      else if (text.includes("grooming")) {
-        reply = { text: "✂️ We provide pet grooming (bath, haircut, nail trim).", options: ["Appointment", "Price", "Emergency"] };
-      }
-      else if (text.includes("deworming")) {
-        reply = { text: "💊 Yes, we provide deworming services for your pets.", options: ["Appointment", "Price", "Emergency"] };
-      }
-      else if (text.includes("check-up") || text.includes("checkup") || text.includes("consultation")) {
-        reply = { text: "👩‍⚕️ You can book a veterinary check-up for your pets.", options: ["Appointment", "Price", "Emergency"] };
-      } else {
-
-
-      }
-
-      return reply;
-    }
-
-    // ✅ Manual Input
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const text = input.value.trim();
       if (!text) return;
+      
       addMessage(text, 'user');
       input.value = '';
-
-      setTimeout(() => {
-        const reply = getBotReply(text);
-        botReply(reply.text, reply.options);
-      }, 600);
+      await getAIReply(text);
     });
   </script>
 
 </body>
-
 </html>
+
+<!-- 
+===============================================
+CREATE THIS PHP FILE: gemini-proxy.php
+===============================================
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
+$apiKey = 'AIzaSyChYap9dcHbsEHZw9LRNhZDNHmCPPx4CMg';
+$input = json_decode(file_get_contents('php://input'), true);
+
+$message = $input['message'] ?? '';
+$systemPrompt = $input['systemPrompt'] ?? '';
+$history = $input['history'] ?? [];
+
+// Build conversation context
+$context = '';
+foreach ($history as $msg) {
+    $role = $msg['role'] === 'user' ? 'User' : 'Assistant';
+    $context .= "$role: {$msg['content']}\n";
+}
+
+$fullPrompt = $systemPrompt . "\n\n" . $context . "User: " . $message;
+
+$payload = [
+    'contents' => [
+        [
+            'parts' => [
+                ['text' => $fullPrompt]
+            ]
+        ]
+    ],
+    'generationConfig' => [
+        'temperature' => 0.7,
+        'maxOutputTokens' => 500
+    ]
+];
+
+$ch = curl_init("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" . $apiKey);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+
+$result = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($httpCode === 200) {
+    $data = json_decode($result, true);
+    if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+        echo json_encode([
+            'success' => true,
+            'reply' => $data['candidates'][0]['content']['parts'][0]['text']
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'No response from AI']);
+    }
+} else {
+    echo json_encode(['success' => false, 'error' => "API Error: $httpCode", 'details' => $result]);
+}
+?>
+===============================================
+-->

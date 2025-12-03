@@ -4,6 +4,7 @@ import useGetIncentive from "../api/useGetIncentive";
 import useGetAttendanceRecord from "../api/useGetAttendanceRecord";
 import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import useGetIncentiveAwards from "../api/useGetIncentiveAwards";
+import usePatchIncentiveAward from "../api/usePatchIncentiveAward";
 
 export default function AdminIncentives() {
   const [activeTab, setActiveTab] = useState("request");
@@ -15,6 +16,7 @@ export default function AdminIncentives() {
   const {
     getIncentiveAwardsForTheMonth,
     loadingForGetIncentiveAwardsForTheMonth,
+    getIncentiveAwards,
   } = useGetIncentiveAwards();
   const [claimRequests, setClaimRequests] = useState([]);
   useEffect(() => {
@@ -25,8 +27,29 @@ export default function AdminIncentives() {
         return;
       }
 
-      console.log(response);
-      setClaimRequests(response.data);
+      console.log("Full API Response:", response);
+
+      // Format the requests with consistent field names
+      const formattedRequests = response.data.map((claim) => {
+        console.log("Individual claim object:", claim);
+        return {
+          // Keep all original fields
+          ...claim,
+          // Add formatted/consistent field names for easier access
+          awardId: claim.award_id,
+          name: claim.name,
+          reward: claim.reward,
+          dateAwarded: claim.dateAwarded,
+          awardBonus: claim.awardBonus,
+          status: claim.status || "Pending Approval",
+        };
+      });
+
+      console.log("Formatted requests:", formattedRequests);
+      setClaimRequests(formattedRequests);
+      setPendingRequestCount(
+        formattedRequests.filter((r) => r.status === "Pending Approval").length
+      );
     };
     useGetClaimRequestsFunc();
   }, []);
@@ -45,6 +68,7 @@ export default function AdminIncentives() {
       }
 
       const formattedData = response.data.map((value) => ({
+        awardId: value.award_id,
         name: value.name,
         reward: value.incentive_name,
         dateAwarded: value.award_date,
@@ -210,7 +234,24 @@ export default function AdminIncentives() {
   }, []);
 
   // Update the handleStatusChange function
-  const handleStatusChange = (status, index, performanceReviewId) => {
+
+  const { patchIncentiveAward, loadingForPatchIncentiveAward } =
+    usePatchIncentiveAward();
+  const handleStatusChange = async (status, index, awardId) => {
+    console.log("handleStatusChange called with:", {
+      status,
+      index,
+      awardId,
+      claim: claimRequests[index],
+    });
+
+    if (!claimRequests[index].award_id) {
+      console.error("No award ID found!", claimRequests[index]);
+      alert("Error: Cannot update status - missing award ID");
+      return;
+    }
+    console.log(claimRequests[index]);
+    // Update UI immediately (optimistic update)
     const updatedRequests = [...claimRequests];
     updatedRequests[index].status = status;
     setClaimRequests(updatedRequests);
@@ -219,11 +260,34 @@ export default function AdminIncentives() {
     console.log(
       `Status changed to: ${status} for ${updatedRequests[index].name}`
     );
-    console.log(`Performance Review ID: ${performanceReviewId}`);
+    // console.log(`Award ID: ${}`);
 
-    // Here you can make an API call to update the status in the backend
-    // Example:
-    // updateIncentiveStatus(performanceReviewId, status);
+    try {
+      const response = await patchIncentiveAward(
+        claimRequests[index].award_id,
+        status
+      );
+      console.log(response);
+
+      if (!response.success) {
+        alert(response.error || response.message || "Failed to update status");
+        // Reload data to revert to actual state
+        const freshData = await getIncentiveAwardsForTheMonth();
+        if (freshData.success) {
+          setClaimRequests(freshData.data);
+        }
+      } else {
+        alert("Status updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status");
+      // Reload data
+      const freshData = await getIncentiveAwardsForTheMonth();
+      if (freshData.success) {
+        setClaimRequests(freshData.data);
+      }
+    }
   };
 
   //status badge color
