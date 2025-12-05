@@ -20,6 +20,24 @@ const MonitorPayment = () => {
 
   useEffect(() => {
     fetchPayments();
+    // Auto-detect overdue payments on component mount and periodically
+    const autoDetectOverdue = async () => {
+      try {
+        // Call auto-detect endpoint to mark overdue invoices
+        await fetch('/backend-api/payments/auto_detect_overdue.php', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        console.warn('Auto-detect overdue failed:', error);
+      }
+    };
+    
+    autoDetectOverdue();
+    // Set up periodic check every 5 minutes
+    const interval = setInterval(autoDetectOverdue, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, currentPage, searchTerm]);
 

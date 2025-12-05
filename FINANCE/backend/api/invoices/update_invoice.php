@@ -39,6 +39,31 @@ $due_date = isset($data['due_date']) ? $data['due_date'] : null;
 $total_amount = isset($data['amount']) ? (float)$data['amount'] : (isset($data['total_amount']) ? (float)$data['total_amount'] : null);
 $status = isset($data['status']) ? $data['status'] : null;
 
+// Data validation
+if ($id <= 0) {
+    Response::error('Invalid invoice ID');
+}
+
+if ($client_name !== null && empty(trim($client_name))) {
+    Response::error('Client name cannot be empty');
+}
+
+if ($total_amount !== null && $total_amount < 0) {
+    Response::error('Amount cannot be negative');
+}
+
+if ($invoice_date !== null && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $invoice_date)) {
+    Response::error('Invalid invoice date format. Use YYYY-MM-DD');
+}
+
+if ($due_date !== null && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $due_date)) {
+    Response::error('Invalid due date format. Use YYYY-MM-DD');
+}
+
+if ($invoice_date !== null && $due_date !== null && strtotime($due_date) < strtotime($invoice_date)) {
+    Response::error('Due date cannot be before invoice date');
+}
+
 // Map frontend status to database payment_status
 $statusMap = [
     'Outstanding' => 'Pending',

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, ExternalLink } from 'lucide-react';
-import { payrollAPI, employeesAPI } from '../services/api';
+import { Search, Download, ExternalLink, CreditCard, CheckCircle2 } from 'lucide-react';
+import { payrollAPI, employeesAPI, paymentsAPI } from '../services/api';
+import { formatCurrency } from '../utils/helpers';
+import PaymentModal from '../components/employees/PaymentModal';
 
 // This page replaces the previous Employees management view and now serves as the Payroll page.
 const Employees = () => {
@@ -9,6 +11,10 @@ const Employees = () => {
   const [payrolls, setPayrolls] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedPayrollData, setSelectedPayrollData] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentStatuses, setPaymentStatuses] = useState({});
 
   // Get current date and calculate dynamic period, month, year
   const now = new Date();
@@ -50,8 +56,49 @@ const Employees = () => {
           employees = [{ id: 1 }, { id: 2 }, { id: 3 }];
         }
 
-        // Extract employee IDs
-        const employeeIds = employees.map(emp => emp.id || emp.employee_id).filter(Boolean);
+        // Extract employee IDs and deduplicate
+        // Create a map to track unique employees by their primary ID
+        const employeeMap = new Map();
+        const idToPrimaryIdMap = new Map(); // Map to track both id and employee_id relationships
+        
+        employees.forEach(emp => {
+          // Normalize IDs - convert to numbers if possible, otherwise keep as string
+          const numericId = emp.id ? (typeof emp.id === 'string' ? parseInt(emp.id, 10) : emp.id) : null;
+          const employeeIdStr = emp.employee_id ? String(emp.employee_id) : null;
+          
+          // Use numeric id as primary key, fallback to employee_id
+          const primaryId = numericId || employeeIdStr;
+          
+          if (primaryId) {
+            // Store the employee with the primary ID
+            if (!employeeMap.has(primaryId)) {
+              employeeMap.set(primaryId, emp);
+            } else {
+              // If entry exists, prefer the one with more complete data
+              const existing = employeeMap.get(primaryId);
+              const existingFields = Object.keys(existing).filter(k => existing[k] != null && existing[k] !== '').length;
+              const newFields = Object.keys(emp).filter(k => emp[k] != null && emp[k] !== '').length;
+              if (newFields > existingFields) {
+                employeeMap.set(primaryId, emp);
+              }
+            }
+            
+            // Create bidirectional mapping for lookup
+            if (numericId && numericId !== primaryId) {
+              idToPrimaryIdMap.set(numericId, primaryId);
+            }
+            if (employeeIdStr && employeeIdStr !== primaryId) {
+              idToPrimaryIdMap.set(employeeIdStr, primaryId);
+            }
+          }
+        });
+        
+        // Get unique employee IDs (normalized)
+        const employeeIds = Array.from(employeeMap.keys()).map(id => {
+          // Convert to number if it's a numeric string, otherwise keep as is
+          const numId = typeof id === 'string' && /^\d+$/.test(id) ? parseInt(id, 10) : id;
+          return numId;
+        });
         
         if (employeeIds.length === 0) {
           setError('No employees found. Please ensure employees are added to the system.');
@@ -76,10 +123,36 @@ const Employees = () => {
             console.log(`✅ Success for employee ${id}:`, response.data);
             
             // Handle response structure: { data: [{ attendance_id, employee_id, check_in_time, check_out_time, rate, paid_hours }, ...] }
-            const attendanceRecords = response.data?.data || [];
+            const attendanceRecords = Array.isArray(response.data?.data) ? response.data.data : [];
             
-            // Find employee details
-            const employee = employees.find(emp => (emp.id || emp.employee_id) === id) || {};
+            // Find employee details from the map - try multiple lookup strategies
+            let employee = employeeMap.get(id) || null;
+            
+            // If not found, try looking up by converted ID
+            if (!employee) {
+              const stringId = String(id);
+              const numId = typeof id === 'string' ? parseInt(id, 10) : id;
+              employee = employeeMap.get(stringId) || employeeMap.get(numId) || null;
+              
+              // Try using the idToPrimaryIdMap if available
+              if (!employee && idToPrimaryIdMap && idToPrimaryIdMap.has(id)) {
+                const primaryId = idToPrimaryIdMap.get(id);
+                employee = employeeMap.get(primaryId) || null;
+              }
+              
+              // Also try reverse lookup - check if any employee has this as their id or employee_id
+              if (!employee) {
+                employeeMap.forEach((emp, key) => {
+                  if (!employee && (emp.id === id || emp.employee_id === id || emp.id === numId || emp.employee_id === stringId)) {
+                    employee = emp;
+                  }
+                });
+              }
+            }
+            
+            // Fallback to empty object if still not found
+            employee = employee || {};
+            
             const employeeName = employee.first_name && employee.last_name 
               ? `${employee.first_name} ${employee.last_name}`.trim()
               : employee.name || employee.employee_name || `Employee ${id}`;
@@ -130,18 +203,121 @@ const Employees = () => {
         });
 
         const results = await Promise.all(payrollPromises);
-        const validResults = results.filter(r => r !== null);
+        const validResults = results.filter(r => r !== null && r !== undefined && r.id !== undefined);
+        
+        // Deduplicate results by employee ID to prevent duplicates
+        let uniquePayrollsMap = new Map();
+        let finalUniquePayrolls = new Map();
+        
+        try {
+          validResults.forEach(payroll => {
+            if (!payroll || !payroll.id) {
+              console.warn('Skipping invalid payroll record:', payroll);
+              return;
+            }
+          
+          // Normalize the key - use both id and employeeId for uniqueness
+          const key = String(payroll.id);
+          const altKey = payroll.employeeId ? String(payroll.employeeId) : null;
+          
+          // Check if we already have this employee (by id or employeeId)
+          let existingKey = uniquePayrollsMap.has(key) ? key : null;
+          if (!existingKey && altKey && uniquePayrollsMap.has(altKey)) {
+            existingKey = altKey;
+          }
+          
+          if (!existingKey) {
+            // New employee, add it
+            uniquePayrollsMap.set(key, payroll);
+            if (altKey && altKey !== key) {
+              uniquePayrollsMap.set(altKey, payroll); // Also index by employeeId
+            }
+          } else {
+            // Duplicate found, merge attendance records and recalculate totals
+            const existing = uniquePayrollsMap.get(existingKey);
+            const existingRecords = Array.isArray(existing.attendanceRecords) ? existing.attendanceRecords : [];
+            const newRecords = Array.isArray(payroll.attendanceRecords) ? payroll.attendanceRecords : [];
+            const mergedRecords = [...existingRecords, ...newRecords];
+            
+            // Remove duplicate attendance records based on attendance_id if available
+            const uniqueRecords = mergedRecords.filter((record, index, self) => {
+              const recordId = record.attendance_id || `${record.check_in_time}_${record.check_out_time}`;
+              return index === self.findIndex(r => {
+                const rId = r.attendance_id || `${r.check_in_time}_${r.check_out_time}`;
+                return rId === recordId;
+              });
+            });
+            
+            // Recalculate totals
+            const totalPaidHours = uniqueRecords.reduce((sum, record) => {
+              const hours = parseFloat(record.paid_hours || 0);
+              return sum + (isNaN(hours) ? 0 : hours);
+            }, 0);
+            
+            const hourlyRate = uniqueRecords.length > 0 
+              ? parseFloat(uniqueRecords[0].rate || 0) 
+              : (existing.hourlyRate || payroll.hourlyRate || 0);
+            
+            const totalAmount = totalPaidHours * hourlyRate;
+            
+            // Update with merged data
+            const updatedPayroll = {
+              ...existing,
+              ...payroll, // Keep latest data
+              attendanceRecords: uniqueRecords,
+              totalPaidHours: totalPaidHours.toFixed(2),
+              hourlyRate: hourlyRate,
+              monthlySalary: totalAmount,
+              recordCount: uniqueRecords.length,
+            };
+            
+            uniquePayrollsMap.set(existingKey, updatedPayroll);
+            if (altKey && altKey !== existingKey) {
+              uniquePayrollsMap.set(altKey, updatedPayroll);
+            }
+          }
+        });
+        
+        // Remove duplicates from map - keep only one entry per employee
+        finalUniquePayrolls = new Map();
+        const seenIds = new Set();
+        
+        uniquePayrollsMap.forEach((payroll, key) => {
+          const id = String(payroll.id || key);
+          if (!seenIds.has(id)) {
+            seenIds.add(id);
+            finalUniquePayrolls.set(id, payroll);
+          }
+        });
+        } catch (dedupeError) {
+          console.error('Error during deduplication:', dedupeError);
+          // Fallback: use validResults as-is if deduplication fails
+          finalUniquePayrolls = new Map();
+          validResults.forEach((payroll, index) => {
+            if (payroll && payroll.id) {
+              finalUniquePayrolls.set(String(payroll.id) + '-' + index, payroll);
+            }
+          });
+        }
+        
+        // Convert map back to array
+        const uniquePayrolls = Array.from(finalUniquePayrolls.values()).filter(p => p && p.id);
         
         console.log('📊 Payroll results:', {
           total: results.length,
           successful: validResults.length,
+          unique: uniquePayrolls.length,
+          duplicates_removed: validResults.length - uniquePayrolls.length,
           failed: results.length - validResults.length,
-          data: validResults
+          data: uniquePayrolls
         });
         
-        setPayrolls(validResults);
+        setPayrolls(uniquePayrolls);
         
-        if (validResults.length === 0) {
+        // Check payment statuses for all employees
+        checkPaymentStatuses(uniquePayrolls);
+        
+        if (uniquePayrolls.length === 0) {
           setError('No payroll data found. Please check if the HR endpoint is accessible and employee IDs are correct.');
         }
       } catch (err) {
@@ -154,6 +330,33 @@ const Employees = () => {
 
     fetchPayrollData();
   }, [period, year, month]);
+
+  // Check payment statuses for employees
+  const checkPaymentStatuses = async (payrollRecords) => {
+    const statusMap = {};
+    
+    for (const record of payrollRecords) {
+      try {
+        const response = await paymentsAPI.getEmployeePayments({
+          employee_id: record.id,
+          period: period,
+          year: year,
+          month: month
+        });
+        
+        if (response?.data?.success && response.data.data.payments.length > 0) {
+          statusMap[record.id] = 'paid';
+        } else {
+          statusMap[record.id] = 'pending';
+        }
+      } catch (err) {
+        console.error(`Error checking payment status for employee ${record.id}:`, err);
+        statusMap[record.id] = 'pending';
+      }
+    }
+    
+    setPaymentStatuses(statusMap);
+  };
 
   const filtered = payrolls.filter((p) => {
     const employeeName = (p.employeeName || p.name || '').toLowerCase();
@@ -239,6 +442,31 @@ const Employees = () => {
     const url = `${base}?${params.toString()}`;
     console.log('🔗 Generated HR Reference URL:', url);
     return url;
+  };
+
+  const handleProcessPayment = (payrollRecord) => {
+    // Find employee details
+    const employee = {
+      id: payrollRecord.id,
+      employee_id: payrollRecord.employeeId,
+      first_name: payrollRecord.employeeName?.split(' ')[0] || '',
+      last_name: payrollRecord.employeeName?.split(' ').slice(1).join(' ') || ''
+    };
+    
+    setSelectedEmployee(employee);
+    setSelectedPayrollData(payrollRecord);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    // Refresh payment statuses
+    checkPaymentStatuses(payrolls);
+    setShowPaymentModal(false);
+    setSelectedEmployee(null);
+    setSelectedPayrollData(null);
+    
+    // Show success message
+    alert('Payment processed successfully!');
   };
 
   return (
@@ -333,6 +561,37 @@ const Employees = () => {
         </div>
       )}
 
+      {/* Payroll Summary */}
+      {payrolls.length > 0 && (
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg p-6 text-white">
+          <h3 className="text-lg font-semibold mb-4">Payroll Summary</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-blue-100 text-sm">Total Employees</p>
+              <p className="text-2xl font-bold">{payrolls.length}</p>
+            </div>
+            <div>
+              <p className="text-blue-100 text-sm">Total Salary Amount</p>
+              <p className="text-2xl font-bold">
+                {formatCurrency(payrolls.reduce((sum, p) => sum + (p.monthlySalary || 0), 0))}
+              </p>
+            </div>
+            <div>
+              <p className="text-blue-100 text-sm">Paid Employees</p>
+              <p className="text-2xl font-bold">
+                {Object.values(paymentStatuses).filter(s => s === 'paid').length}
+              </p>
+            </div>
+            <div>
+              <p className="text-blue-100 text-sm">Pending Payments</p>
+              <p className="text-2xl font-bold">
+                {Object.values(paymentStatuses).filter(s => s === 'pending').length}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -340,9 +599,10 @@ const Employees = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Employee</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Employee ID</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Monthly Salary</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Hours Worked</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Hourly Rate</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Total Salary</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Reference</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Pay Date</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
                 <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
               </tr>
@@ -350,18 +610,21 @@ const Employees = () => {
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
                     Loading payroll data...
                   </td>
                 </tr>
               ) : filtered.length > 0 ? (
-                filtered.map((p) => {
+                filtered.map((p, index) => {
                   // Extract numeric ID from employeeId for the HR reference
                   const digits = (p.employeeId || '').toString().replace(/\D/g, '');
                   const numericId = digits ? parseInt(digits, 10) : p.id;
                   
+                  // Create a unique key combining id and index to prevent React key conflicts
+                  const uniqueKey = `${p.id}-${p.employeeId || ''}-${index}`;
+                  
                   return (
-                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={uniqueKey} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 text-sm text-gray-900 font-medium">
                         {p.employeeName || p.name || 'N/A'}
                       </td>
@@ -369,18 +632,21 @@ const Employees = () => {
                         {p.employeeId || `EMP-${String(p.id).padStart(3, '0')}`}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700">
-                        {p.totalPaidHours || '0'} hrs
-                        {p.recordCount > 0 && (
-                          <span className="text-xs text-gray-500 block">
-                            ({p.recordCount} {p.recordCount === 1 ? 'record' : 'records'})
-                          </span>
-                        )}
+                        <div>
+                          <span className="font-medium">{p.totalPaidHours || '0'} hrs</span>
+                          {p.recordCount > 0 && (
+                            <span className="text-xs text-gray-500 block">
+                              ({p.recordCount} {p.recordCount === 1 ? 'record' : 'records'})
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700">
-                        {formatCurrency(p.hourlyRate || 0)}
+                        <span className="font-medium">{formatCurrency(p.hourlyRate || 0)}</span>
+                        <span className="text-xs text-gray-500 block">per hour</span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700 font-semibold">
-                        {formatCurrency(p.monthlySalary || p.salary || p.amount || 0)}
+                        <span className="text-lg text-blue-600">{formatCurrency(p.monthlySalary || p.salary || p.amount || 0)}</span>
                       </td>
                       <td className="px-6 py-4 text-sm text-blue-600">
                         <a 
@@ -393,35 +659,42 @@ const Employees = () => {
                           Reference
                         </a>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {p.payDate || p.payment_date || '-'}
-                      </td>
                       <td className="px-6 py-4 text-sm">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          (p.status || '').toLowerCase() === 'paid' 
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
+                          paymentStatuses[p.id] === 'paid'
                             ? 'bg-green-100 text-green-800' 
-                            : (p.status || '').toLowerCase() === 'pending' 
-                            ? 'bg-yellow-100 text-yellow-800' 
-                            : 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {p.status || 'pending'}
+                          {paymentStatuses[p.id] === 'paid' && <CheckCircle2 className="w-3 h-3" />}
+                          {paymentStatuses[p.id] === 'paid' ? 'Paid' : 'Pending'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => downloadSlip(p)}
-                          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
-                        >
-                          <Download className="w-4 h-4" />
-                          Download
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => downloadSlip(p)}
+                            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download
+                          </button>
+                          {paymentStatuses[p.id] !== 'paid' && (
+                            <button
+                              onClick={() => handleProcessPayment(p)}
+                              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm"
+                            >
+                              <CreditCard className="w-4 h-4" />
+                              Pay Salary
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
                     No payroll records found for Period {period}, {month}/{year}.
                   </td>
                 </tr>
@@ -430,6 +703,23 @@ const Employees = () => {
           </table>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && selectedEmployee && selectedPayrollData && (
+        <PaymentModal
+          employee={selectedEmployee}
+          payrollData={selectedPayrollData}
+          period={period}
+          year={year}
+          month={month}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setSelectedEmployee(null);
+            setSelectedPayrollData(null);
+          }}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 };
