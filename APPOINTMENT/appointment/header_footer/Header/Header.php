@@ -1,15 +1,5 @@
 <?php
   require_once '../includes/session_id.php';
-  require_once '../includes/db.php';
-
-  function getTotalNotifications($conn) {
-      $sql = "SELECT COUNT(*) AS total_read FROM notifications WHERE is_read > 0";
-      $res = $conn->query($sql);
-      $row = $res->fetch_assoc();
-      return $row['total_read'] ?? 0;
-  }
-
-  $total_read = getTotalNotifications($conn);
 ?>
 
 <!DOCTYPE html>
@@ -186,11 +176,7 @@
         <a href="Book_appointment_profile.php">My Profile</a>
         <a href="Book_appointment_dashboard.php">Dashboard</a>
         <a href="Book_appointment_my_pet.php">My Pets</a>
-        <?php if ($total_read > 0): ?>
-          <a href="notification.php" style="color: blue;">Notification</a>
-        <?php else: ?>
-          <a href="notification.php">Notification</a>
-        <?php endif; ?>
+        <a href="notification.php">Notification</a>
         <button onclick="
           // Clear localStorage
           localStorage.clear();
