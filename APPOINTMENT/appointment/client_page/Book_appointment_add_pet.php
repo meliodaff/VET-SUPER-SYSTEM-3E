@@ -68,7 +68,8 @@
                             </div>
                           <div class="form-group">
                               <label for="age">Age</label>
-                              <input type="number" id="age" name="age" min="0" required>
+                              <input type="number" id="month" name="month" min="0" placeholder="Month" required>
+                              <input type="number" id="year" name="year" min="0" placeholder="Year" required>
                           </div>
                           <button type="submit" class="submit-btn">+ Add Pet</button> 
                       </form> 

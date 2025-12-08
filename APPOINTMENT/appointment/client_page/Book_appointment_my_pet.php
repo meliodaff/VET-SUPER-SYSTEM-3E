@@ -1,8 +1,9 @@
 <?php
   require_once '../includes/session_id.php';
   require_once '../includes/db.php';
+
   // Fetch pets for logged-in user
-  $sql = "SELECT id, pet_name, pet_image, species, breed, age FROM mypet WHERE user_id = ?";
+  $sql = "SELECT id, pet_name, pet_image, species, breed, month, year FROM mypet WHERE user_id = ?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("i", $user_id);
   $stmt->execute();
@@ -22,9 +23,7 @@
   <title>My Pets</title>
   <link rel="stylesheet" href="../styles/Book_appointment_my_pet.css" />
   <link rel="stylesheet" href="/appointment/styles/popup.css">
-
-      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
-
+  <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 </head>
 <body>
   <!-- header-->
@@ -45,28 +44,38 @@
           <?php foreach ($pets as $pet): ?>
             <div class="pet-card">
               <div class="pet-image">
-                <img src="../uploads/pets/<?php echo htmlspecialchars($pet['pet_image']); ?>" alt="<?php echo htmlspecialchars($pet['pet_name']); ?>" />
+                <img src="../uploads/pets/<?php echo htmlspecialchars($pet['pet_image']); ?>" 
+                     alt="<?php echo htmlspecialchars($pet['pet_name']); ?>" />
               </div>
+
               <div class="pet-info">
                 <h3><?php echo htmlspecialchars($pet['pet_name']); ?></h3>
                 <p><strong>Species:</strong> <?php echo htmlspecialchars($pet['species']); ?></p>
                 <p><strong>Breed:</strong> <?php echo htmlspecialchars($pet['breed']); ?></p>
-                <p><strong>Age:</strong> <?php echo (int)$pet['age']; ?> year<?php echo ((int)$pet['age'] !== 1) ? 's' : ''; ?></p>
-              </div>
-              <div class="pet-actions">
-                  <!-- Edit -->
-                  <a href="Book_appointment_edit_pet.php?pet_id=<?php echo (int)$pet['id']; ?>">
-                    Edit
-                  </a>
 
-                  <!-- Delete -->
-                  <a href="../php/delete_pet.php?pet_id=<?php echo (int)$pet['id']; ?>"
-                    class="open-confirmation"
-                    data-action="delete"
-                    data-name="<?php echo htmlspecialchars($pet['pet_name']); ?>">
-                    Delete
-                  </a>
-                </div>
+                <!-- UPDATED AGE DISPLAY -->
+                <p><strong>Age:</strong>
+                  <?php echo (int)$pet['year']; ?> 
+                  year<?php echo ((int)$pet['year'] != 1) ? 's' : ''; ?>,
+                  <?php echo (int)$pet['month']; ?>
+                  month<?php echo ((int)$pet['month'] != 1) ? 's' : ''; ?>
+                </p>
+              </div>
+
+              <div class="pet-actions">
+                <!-- Edit -->
+                <a href="Book_appointment_edit_pet.php?pet_id=<?php echo (int)$pet['id']; ?>">
+                  Edit
+                </a>
+
+                <!-- Delete -->
+                <a href="../php/delete_pet.php?pet_id=<?php echo (int)$pet['id']; ?>"
+                  class="open-confirmation"
+                  data-action="delete"
+                  data-name="<?php echo htmlspecialchars($pet['pet_name']); ?>">
+                  Delete
+                </a>
+              </div>
 
             </div>
           <?php endforeach; ?>
@@ -77,34 +86,26 @@
     </div>
   </main>
 
-
-  <!-- Confirmation Popup (reusable) -->
+  <!-- Confirmation Popup -->
   <?php include '../php/confirmation.php'; ?>
 
-
   <!-- Script -->
-<script>
-  document.querySelectorAll(".open-confirmation").forEach(link => {
-    link.addEventListener("click", function(e) {
-      e.preventDefault();
-      const action = this.getAttribute("data-action");
-      const name = this.getAttribute("data-name");
-      const url = this.getAttribute("href");
+  <script>
+    document.querySelectorAll(".open-confirmation").forEach(link => {
+      link.addEventListener("click", function(e) {
+        e.preventDefault();
+        const action = this.getAttribute("data-action");
+        const name = this.getAttribute("data-name");
+        const url = this.getAttribute("href");
 
-      // Correct way: pass a callback function
-      openConfirmation(action, name, function() {
-        window.location.href = url; // ✅ perform delete when confirmed
+        openConfirmation(action, name, function() {
+          window.location.href = url; 
+        });
       });
     });
-  });
-</script>
-
-
-
+  </script>
 
   <!-- footer-->
-  <?php
-    include '../../../MARKETING/generalfooter.php';
-  ?>
+  <?php include '../../../MARKETING/generalfooter.php'; ?>
 </body>
 </html>
