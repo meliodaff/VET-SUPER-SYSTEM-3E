@@ -1,0 +1,14 @@
+# Ignore everything to prevent ESLint conflicts
+**/*
+node_modules/
+build/
+dist/
+*.config.js
+*.config.ts
+*.config.jsx
+*.config.tsx
+.env
+.env.local
+.env.development
+.env.production
+

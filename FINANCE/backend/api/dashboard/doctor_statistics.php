@@ -3,40 +3,16 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-// Connect to fur_ever_care_db for employees
-$host = 'localhost';
-$db_name_employees = 'fur_ever_care_db';
-$username = 'root';
-$password = '';
+$database = new Database();
+$db = $database->getConnection();
 
-try {
-    $db_employees = new PDO(
-        "mysql:host=$host;dbname=$db_name_employees",
-        $username,
-        $password
-    );
-    $db_employees->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db_employees->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    Response::error('Database connection failed: ' . $e->getMessage());
-}
-
-// Connect to appointment_sia for appointments
-try {
-    $db_appointments = new PDO(
-        "mysql:host=$host;dbname=appointment_sia",
-        $username,
-        $password
-    );
-    $db_appointments->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db_appointments->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    Response::error('Appointment database connection failed: ' . $e->getMessage());
+if (!$db) {
+    Response::error('Database connection failed');
 }
 
 try {
     // Check what columns exist in employees table
-    $columnsStmt = $db_employees->query("SHOW COLUMNS FROM employees");
+    $columnsStmt = $db->query("SHOW COLUMNS FROM employees");
     $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
     $hasId = in_array('id', $columns);
     $hasName = in_array('name', $columns);
@@ -111,30 +87,52 @@ try {
         $sql .= " WHERE " . implode(" AND ", $whereConditions);
     }
     
-    $stmt = $db_employees->prepare($sql);
+    $stmt = $db->prepare($sql);
     $stmt->execute();
     $doctors = $stmt->fetchAll();
     
-    // Get appointment statistics from appointment_sia.book_appointment
-    // Group by doctor_id
-    $stmt_appointments = $db_appointments->prepare("
-        SELECT 
-            doctor_id,
-            COUNT(DISTINCT user_id) as patients_count,
-            COUNT(*) as appointments_count,
-            SUM(CASE WHEN payment_status = 'Paid' THEN service_price ELSE 0 END) as total_revenue,
-            COUNT(CASE WHEN payment_status = 'Paid' THEN 1 END) as paid_appointments_count
-        FROM book_appointment
-        WHERE payment_status = 'Paid'
-        GROUP BY doctor_id
-    ");
+    // Check what columns exist in invoices table
+    $invoicesColumnsStmt = $db->query("SHOW COLUMNS FROM invoices");
+    $invoicesColumns = $invoicesColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    $amountField = in_array('total_amount', $invoicesColumns) ? 'total_amount' : (in_array('amount', $invoicesColumns) ? 'amount' : '0');
+    $statusField = in_array('status', $invoicesColumns) ? 'status' : 'paid';
+    $hasPatientId = in_array('patient_id', $invoicesColumns);
+    
+    // Get invoice statistics from invoices table
+    // Group by employee_id
+    if ($hasPatientId) {
+        $stmt_appointments = $db->prepare("
+            SELECT 
+                employee_id,
+                COUNT(DISTINCT patient_id) as patients_count,
+                COUNT(*) as appointments_count,
+                SUM(CASE WHEN $statusField = 'paid' THEN $amountField ELSE 0 END) as total_revenue,
+                COUNT(CASE WHEN $statusField = 'paid' THEN 1 END) as paid_appointments_count
+            FROM invoices
+            WHERE $statusField = 'paid'
+            GROUP BY employee_id
+        ");
+    } else {
+        $stmt_appointments = $db->prepare("
+            SELECT 
+                employee_id,
+                COUNT(DISTINCT id) as patients_count,
+                COUNT(*) as appointments_count,
+                SUM(CASE WHEN $statusField = 'paid' THEN $amountField ELSE 0 END) as total_revenue,
+                COUNT(CASE WHEN $statusField = 'paid' THEN 1 END) as paid_appointments_count
+            FROM invoices
+            WHERE $statusField = 'paid'
+            GROUP BY employee_id
+        ");
+    }
     $stmt_appointments->execute();
     $appointment_stats = $stmt_appointments->fetchAll();
     
-    // Create a map of doctor_id to appointment statistics
+    // Create a map of employee_id to appointment statistics
     $appointment_map = [];
     foreach ($appointment_stats as $stat) {
-        $appointment_map[(int)$stat['doctor_id']] = $stat;
+        $appointment_map[(int)$stat['employee_id']] = $stat;
     }
     
     // Combine doctor data with appointment statistics

@@ -34,13 +34,8 @@ const Sidebar = ({ onLogout }) => {
       icon: Package,
     },
     {
-      name: "Inventory Portal",
-      path: "/inventory-portal",
-      icon: Package,
-    },
-    {
       name: "Employee Portal",
-      path: "/employee-portal",
+      path: "http://localhost:5173/employee-analytics",
       icon: Users,
     },
     {
@@ -57,11 +52,6 @@ const Sidebar = ({ onLogout }) => {
       name: "Monitor Payment",
       path: "/payments",
       icon: CreditCard,
-    },
-    {
-      name: "Supplier Orders",
-      path: "/supplier-payments",
-      icon: Package,
     },
   ];
 

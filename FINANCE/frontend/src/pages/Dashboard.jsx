@@ -3,12 +3,9 @@ import { dashboardAPI } from "../services/api";
 import SalesMetrics from "../components/dashboard/SalesMetrics";
 import SalesTrend from "../components/dashboard/SalesTrend";
 import ProductsRevenue from "../components/dashboard/ProductsRevenue";
-import DoctorStatistics from "../components/dashboard/DoctorStatistics";
-import DoctorCards from "../components/dashboard/DoctorCards";
 import InventoryCost from "../components/dashboard/InventoryCost";
 import DoctorSurgeryFees from "../components/dashboard/DoctorSurgeryFees";
 import RecentPayments from "../components/dashboard/RecentPayments";
-import SuppliesExpenses from "../components/dashboard/SuppliesExpenses";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -17,11 +14,9 @@ const Dashboard = () => {
     salesMetrics: null,
     salesTrend: [],
     productsRevenue: [],
-    doctorStatistics: [],
     inventoryCost: null,
-    doctorSurgeryFees: [],
-    recentPayments: [],
-    suppliesExpenses: null,
+        doctorSurgeryFees: [],
+        recentPayments: [],
   });
 
   useEffect(() => {
@@ -38,11 +33,9 @@ const Dashboard = () => {
         salesMetricsRes,
         salesTrendRes,
         productsRevenueRes,
-        doctorStatisticsRes,
         inventoryCostRes,
         doctorSurgeryFeesRes,
         recentPaymentsRes,
-        suppliesExpensesRes,
       ] = await Promise.all([
         dashboardAPI.getSalesMetrics().catch((err) => {
           console.error("Sales Metrics Error:", err);
@@ -54,10 +47,6 @@ const Dashboard = () => {
         }),
         dashboardAPI.getProductsRevenue().catch((err) => {
           console.error("Products Revenue Error:", err);
-          return { data: { success: false, data: [], error: err } };
-        }),
-        dashboardAPI.getDoctorStatistics().catch((err) => {
-          console.error("Doctor Statistics Error:", err);
           return { data: { success: false, data: [], error: err } };
         }),
         dashboardAPI.getInventoryCost().catch((err) => {
@@ -72,66 +61,7 @@ const Dashboard = () => {
           console.error("Recent Payments Error:", err);
           return { data: { success: false, data: [], error: err } };
         }),
-        dashboardAPI.getSuppliesExpenses(6).catch((err) => {
-          console.error("Supplies Expenses Error:", err);
-          return { data: { success: false, data: null, error: err } };
-        }),
       ]);
-
-      // Validate and extract doctor statistics data
-      let doctorStats = [];
-      if (
-        doctorStatisticsRes?.data?.success &&
-        Array.isArray(doctorStatisticsRes.data.data)
-      ) {
-        console.log(
-          "Raw doctor statistics data:",
-          doctorStatisticsRes.data.data
-        );
-        doctorStats = doctorStatisticsRes.data.data
-          .map((stat) => {
-            // Try multiple possible ID fields
-            const employeeId = parseInt(
-              stat.employee_id || stat.id || stat.employeeId || 0
-            );
-            console.log(
-              "Mapping doctor stat:",
-              stat,
-              "employee_id:",
-              employeeId
-            );
-
-            // Only include doctors with valid employee_id
-            if (!employeeId || employeeId <= 0 || isNaN(employeeId)) {
-              console.warn("Skipping doctor with invalid employee_id:", stat);
-              return null;
-            }
-
-            return {
-              employee_id: employeeId,
-              id: employeeId, // Also include as id for compatibility
-              doctor: stat.doctor || "Unknown Doctor",
-              title: stat.title || stat.position || "Veterinarian",
-              role: stat.role || "Employee",
-              patients: parseInt(stat.patients || stat.patients_count || 0, 10),
-              revenue: parseFloat(stat.revenue || stat.total_revenue || 0),
-              avg_per_patient: parseFloat(stat.avg_per_patient || 0),
-            };
-          })
-          .filter((stat) => stat !== null); // Remove null entries
-        console.log("Mapped doctor stats (filtered):", doctorStats);
-
-        // Verify all doctors have valid employee_id
-        const invalidDoctors = doctorStats.filter(
-          (d) => !d.employee_id || d.employee_id <= 0
-        );
-        if (invalidDoctors.length > 0) {
-          console.error(
-            "Warning: Some doctors still have invalid employee_id:",
-            invalidDoctors
-          );
-        }
-      }
 
       // Validate and extract doctor surgery fees data
       let surgeryFees = [];
@@ -147,16 +77,6 @@ const Dashboard = () => {
       }
 
       // Log successful data fetching for debugging
-      if (doctorStats.length > 0) {
-        console.log(
-          "✓ Doctor Statistics loaded:",
-          doctorStats.length,
-          "doctors"
-        );
-      } else {
-        console.warn("⚠ No doctor statistics data available");
-      }
-
       if (surgeryFees.length > 0) {
         console.log(
           "✓ Doctor Surgery Fees loaded:",
@@ -196,7 +116,6 @@ const Dashboard = () => {
         productsRevenue: productsRevenueRes?.data?.success
           ? productsRevenueRes?.data?.data || []
           : [],
-        doctorStatistics: doctorStats,
         inventoryCost: inventoryCostRes?.data?.success
           ? inventoryCostRes?.data?.data || null
           : null,
@@ -204,9 +123,6 @@ const Dashboard = () => {
         recentPayments: recentPaymentsRes?.data?.success
           ? recentPaymentsRes?.data?.data || []
           : [],
-        suppliesExpenses: suppliesExpensesRes?.data?.success
-          ? suppliesExpensesRes?.data?.data || null
-          : null,
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -266,22 +182,8 @@ const Dashboard = () => {
       {/* Sales Metrics */}
       <SalesMetrics data={dashboardData.salesMetrics} />
 
-      {/* Doctor Performance Section */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-        <div className="mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
-            Doctor Performance Overview
-          </h2>
-          <p className="text-sm text-gray-600">
-            Click on a doctor card to view detailed performance metrics,
-            statistics, and revenue trends
-          </p>
-        </div>
-        <DoctorCards data={dashboardData.doctorStatistics} />
-      </div>
-
       {/* Charts Grid - First Row - Adjusted sizes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Sales Trend */}
         <div className="lg:col-span-1 bg-white rounded-lg shadow-md border border-gray-200 p-4">
           <SalesTrend data={dashboardData.salesTrend} />
@@ -291,21 +193,11 @@ const Dashboard = () => {
         <div className="lg:col-span-1 bg-white rounded-lg shadow-md border border-gray-200 p-4">
           <ProductsRevenue data={dashboardData.productsRevenue} />
         </div>
-
-        {/* Doctor Statistics - Patient Load and Revenue */}
-        <div className="lg:col-span-1 bg-white rounded-lg shadow-md border border-gray-200 p-4">
-          <DoctorStatistics data={dashboardData.doctorStatistics} />
-        </div>
       </div>
 
       {/* Doctor Surgery Fees - Full Width */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4">
         <DoctorSurgeryFees data={dashboardData.doctorSurgeryFees} />
-      </div>
-
-      {/* Supplies Expenses Analytics - Full Width */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-        <SuppliesExpenses data={dashboardData.suppliesExpenses} />
       </div>
 
       {/* Inventory and Recent Payments - Side by Side - Adjusted sizes */}

@@ -38,43 +38,14 @@ include '../includes/db.php';
   <?php include '../php/popup.php'; ?>
 
     <div class="side-nav">
-      <a href="" class="nav-item">
+            <a href="" class="nav-item">
         <img src="image/home.png" class="nav-icon" alt="Dashboard Icon">
         Dashboard
       </a>
-      <a href="" class="nav-item">
-        <img src="image/user.png" class="nav-icon" alt="Dashboard Icon">
-        Employee Profile
-      </a>
-      <a href="" class="nav-item">
-          <img src="image/Group.png" class="nav-icon" alt="Dashboard Icon">
-        Applicant
-      </a>
-      <a href="" class="nav-item">
-      <img src="image/calendar.png" class="nav-icon" alt="Dashboard Icon">
-        Schedule
-      </a>
-      <a href="" class="nav-item">
-      <img src="image/gift.png" class="nav-icon" alt="Dashboard Icon">
-        Incentives
-      </a>
-      <a href="" class="nav-item">
-      <img src="image/chart-line.png" class="nav-icon" alt="Dashboard Icon">  
-        Analytics
-      </a>
-      <a href="" class="nav-item">
-      <img src="image/megaphone-alt.png" class="nav-icon" alt="Dashboard Icon">  
-        Announcement
-      </a>
-      <a href="" class="nav-item">
-      <img src="image/star.png" class="nav-icon" alt="Dashboard Icon">  
-        Performance Rating
-      </a>
-      <a href="" class="nav-item">
+      <a href="http://localhost:5173/employee-analytics" class="nav-item">
       <img src="image/community.png" class="nav-icon" alt="Dashboard Icon">  
         Employee Portal
       </a>
-
       <!-- Logout at bottom using padding trick -->
       <a href="http://localhost:5173/login" class="nav-logout">
       <img src="image/arrow-out-right-square-half.png" class="nav-icon" alt="Dashboard Icon">  

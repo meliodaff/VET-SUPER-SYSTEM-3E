@@ -67,55 +67,87 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 
     <!-- Services Section -->
-    <section class="services-section">
-        <h1>Our Services</h1>
-        <h2>We provide comprehensive veterinary care services to ensure the highest quality care for your beloved pets.
-        </h2>
+   <section class="services-section">
+    <h1>Our Services</h1>
+    <h2>We provide comprehensive veterinary care services to ensure the highest quality care for your beloved pets.</h2>
 
-        <div class="services">
-            <div class="service-card">
-                <div class="icon">🩺</div>
-                <h3>General Checkups</h3>
-                <p>Comprehensive health examinations to keep your pets healthy and happy.</p>
-                <p><b>Includes:</b> Physical examination, Health assessment, Preventive care</p>
-            </div>
+    <div class="services">
 
-            <div class="service-card">
-                <div class="icon">💉</div>
-                <h3>Vaccinations</h3>
-                <p>Complete vaccination programs to protect your pets from diseases.</p>
-                <p><b>Includes:</b> Core vaccines, Non-core vaccines, Health certificates</p>
-            </div>
+        <!-- General Checkups -->
+        <div class="service-card">
+            <div class="icon">🩺</div>
+            <h3>General Checkups</h3>
+            <p>Comprehensive health examinations to keep your pets healthy and happy.</p>
+            <p><b>Includes:</b> Physical examination, Health assessment, Preventive care</p>
 
-            <div class="service-card">
-                <div class="icon">🚑</div>
-                <h3>Emergency Care</h3>
-                <p>24/7 emergency services for urgent medical situations.</p>
-                <p><b>Includes:</b> Emergency surgery, Critical care, Trauma treatment</p>
-            </div>
-
-            <div class="service-card">
-                <div class="icon">🔧</div>
-                <h3>Surgical Services</h3>
-                <p>Advanced surgical procedures performed by experienced veterinarians.</p>
-                <p><b>Includes:</b> Spay/neuter, Orthopedic surgery, Soft tissue surgery</p>
-            </div>
-
-            <div class="service-card">
-                <div class="icon">🛡️</div>
-                <h3>Preventive Care</h3>
-                <p>Proactive healthcare to prevent diseases and maintain wellness.</p>
-                <p><b>Includes:</b> Parasite prevention, Dental care, Nutritional counseling</p>
-            </div>
-
-            <div class="service-card">
-                <div class="icon">❤️</div>
-                <h3>Wellness Programs</h3>
-                <p>Customized wellness plans tailored to your pet's specific needs.</p>
-                <p><b>Includes:</b> Puppy/kitten programs, Senior pet care, Weight management</p>
+            <div class="price-box">
+                <span>₱500 – ₱900</span>
             </div>
         </div>
-    </section>
+
+        <!-- Vaccinations -->
+        <div class="service-card">
+            <div class="icon">💉</div>
+            <h3>Vaccinations</h3>
+            <p>Complete vaccination programs to protect your pets from diseases.</p>
+            <p><b>Includes:</b> Core vaccines, Non-core vaccines, Health certificates</p>
+
+            <div class="price-box">
+                <span>₱350 – ₱700</span>
+            </div>
+        </div>
+
+        <!-- Emergency Care -->
+        <div class="service-card">
+            <div class="icon">🚑</div>
+            <h3>Emergency Care</h3>
+            <p>24/7 emergency services for urgent medical situations.</p>
+            <p><b>Includes:</b> Emergency surgery, Critical care, Trauma treatment</p>
+
+            <div class="price-box">
+                <span>₱1200 – ₱2500</span>
+            </div>
+        </div>
+
+        <!-- Surgical Services -->
+        <div class="service-card">
+            <div class="icon">🔧</div>
+            <h3>Surgical Services</h3>
+            <p>Advanced surgical procedures performed by experienced veterinarians.</p>
+            <p><b>Includes:</b> Spay/neuter, Orthopedic surgery, Soft tissue surgery</p>
+
+            <div class="price-box">
+                <span>₱2500 – ₱7000</span>
+            </div>
+        </div>
+
+        <!-- Preventive Care -->
+        <div class="service-card">
+            <div class="icon">🛡️</div>
+            <h3>Preventive Care</h3>
+            <p>Proactive healthcare to prevent diseases and maintain wellness.</p>
+            <p><b>Includes:</b> Parasite prevention, Dental care, Nutritional counseling</p>
+
+            <div class="price-box">
+                <span>₱400 – ₱1000</span>
+            </div>
+        </div>
+
+        <!-- Wellness Programs -->
+        <div class="service-card">
+            <div class="icon">❤️</div>
+            <h3>Wellness Programs</h3>
+            <p>Customized wellness plans tailored to your pet's specific needs.</p>
+            <p><b>Includes:</b> Puppy/kitten programs, Senior pet care, Weight management</p>
+
+            <div class="price-box">
+                <span>₱600 – ₱1500</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
 
     <?php include 'generalfooter.php'; ?>
 

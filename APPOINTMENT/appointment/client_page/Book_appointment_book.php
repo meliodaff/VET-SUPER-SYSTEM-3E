@@ -37,10 +37,49 @@ $doctor_result = $doctor_stmt->get_result();
   <link rel="stylesheet" href="../styles/popup.css">
   <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
   <style>
-    .add-pet-btn { display: none; margin-top: 10px; padding: 10px 20px; background: #002060; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .add-pet-btn:hover { background: #001040; }
-    .submit-btn { padding: 12px 20px; background: #002060; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .submit-btn:hover { background: #001040; }
+    .add-pet-btn { 
+      display: none; 
+      margin-top: 10px; 
+      padding: 10px 20px; 
+      background: #002060; 
+      color: #fff; 
+      border: none; 
+      border-radius: 8px; 
+      font-weight: bold; 
+      cursor: pointer; 
+    }
+    .add-pet-btn:hover { 
+      background: #001040; 
+    }
+    .submit-btn { 
+      padding: 12px 20px; 
+      background: #002060; 
+      color: #fff; 
+      border: none; 
+      border-radius: 8px; 
+      font-weight: bold; 
+      cursor: pointer; 
+    }
+    .submit-btn:hover { 
+      background: #001040; 
+    }
+    .time-btn {
+      background-color: #F0F8FF;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .time-btn:hover {
+      background-color: #003080;
+      color: #fff;
+    }
+    .time-btn.active {
+      background-color: #002060;
+      color: #fff;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -110,15 +149,17 @@ $doctor_result = $doctor_stmt->get_result();
           <div class="section-header">Appointment Details</div>
 
           <div class="form-row">
-          <div id="timeButtonsContainer" style="display: flex; flex-direction: column; gap: 10px;">
-              <input id="timeInput" name="time" readonly placeholder="Time" style="...">
-              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">9AM - 10AM</button>
-              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">10AM - 11AM</button>
-              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">1PM - 2PM</button>
-              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">2PM - 3PM</button>
-              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">3PM - 4PM</button>
-              <button type="button" style="background-color:#F0F8FF; border-radius: 5px; border: 1px solid #ccc;">4PM - 5PM</button>
-          </div>
+            <div id="timeButtonsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+              <input id="timeInput" name="time" readonly placeholder="Select Time *" required 
+                     style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ccc; background-color: #F0F8FF;">
+              
+              <button type="button" value="09:00:00" class="time-btn">9AM - 10AM</button>
+              <button type="button" value="10:00:00" class="time-btn">10AM - 11AM</button>
+              <button type="button" value="13:00:00" class="time-btn">1PM - 2PM</button>
+              <button type="button" value="14:00:00" class="time-btn">2PM - 3PM</button>
+              <button type="button" value="15:00:00" class="time-btn">3PM - 4PM</button>
+              <button type="button" value="16:00:00" class="time-btn">4PM - 5PM</button>
+            </div>
 
             <input type="date" name="date" id="appointmentDate" style="height:44px;" required>
 
@@ -146,7 +187,6 @@ $doctor_result = $doctor_stmt->get_result();
               $app_conn->close();
               ?>
             </select>
-            
           </div>
         </div>
 
@@ -188,15 +228,24 @@ addPetBtn.addEventListener("click", function() {
     window.location.href = "/appointment/Book_appointment_add_pet.php";
 });
 
-// Time selection buttons
-const timeButtons = document.querySelectorAll('#timeButtonsContainer button');
+// Time selection buttons with visual feedback
+const timeButtons = document.querySelectorAll('.time-btn');
 timeButtons.forEach(button => {
     button.addEventListener('click', () => {
-        timeInput.value = button.textContent;
+        // Remove active class from all buttons
+        timeButtons.forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        // Set the value (time in HH:MM:SS format) to the input
+        timeInput.value = button.value;
     });
 });
 
-// **FIX: Populate vet doctor name when selected**
+// Populate vet doctor name when selected
 const vetdocSelect = document.getElementById('vetdoc');
 const vetdocNameInput = document.getElementById('vetdoc_name');
 
@@ -205,6 +254,11 @@ vetdocSelect.addEventListener('change', function() {
     const doctorName = selectedOption.getAttribute('data-name');
     vetdocNameInput.value = doctorName || '';
 });
+
+// Set minimum date to today
+const appointmentDate = document.getElementById('appointmentDate');
+const today = new Date().toISOString().split('T')[0];
+appointmentDate.setAttribute('min', today);
 </script>
 </body>
 </html>

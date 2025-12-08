@@ -135,37 +135,15 @@ const PaymentList = ({ payments, pagination, onUpdatePaymentStatus, onPageChange
                       View Invoice
                     </button>
                     
-                    {/* Mark Paid Button */}
+                    {/* Mark Paid Button - Only allow marking as paid, status is automatically detected */}
                     <button
                       onClick={() => handleStatusUpdate(payment.id, 'Paid', payment.payment_method)}
                       disabled={payment.status?.toLowerCase() === 'paid' || payment.raw_status === 'paid'}
                       className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Mark Paid"
+                      title="Mark as Paid"
                     >
                       <CheckCircle className="h-3.5 w-3.5 mr-1" />
                       Mark Paid
-                    </button>
-                    
-                    {/* Mark Pending Button */}
-                    <button
-                      onClick={() => handleStatusUpdate(payment.id, 'Pending')}
-                      disabled={payment.status?.toLowerCase() === 'pending' || payment.raw_status === 'pending'}
-                      className="inline-flex items-center px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Mark Pending"
-                    >
-                      <Clock className="h-3.5 w-3.5 mr-1" />
-                      Mark Pending
-                    </button>
-                    
-                    {/* Mark Overdue Button */}
-                    <button
-                      onClick={() => handleStatusUpdate(payment.id, 'Overdue')}
-                      disabled={payment.status?.toLowerCase() === 'overdue' || payment.raw_status === 'overdue'}
-                      className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Mark Overdue"
-                    >
-                      <AlertTriangle className="h-3.5 w-3.5 mr-1" />
-                      Mark Overdue
                     </button>
                   </div>
                 </td>

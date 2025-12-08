@@ -3,27 +3,16 @@ require_once '../../config/database.php';
 require_once '../../utils/cors.php';
 require_once '../../utils/response.php';
 
-// Connect to vet-inventory database
-$host = 'localhost';
-$db_name = 'vet-inventory';
-$username = 'root';
-$password = '';
+$database = new Database();
+$db = $database->getConnection();
 
-try {
-    $db = new PDO(
-        "mysql:host=$host;dbname=$db_name",
-        $username,
-        $password
-    );
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    Response::error('Database connection failed: ' . $e->getMessage());
+if (!$db) {
+    Response::error('Database connection failed');
 }
 
 try {
-    // First, check what columns exist in the products table
-    $columnsStmt = $db->query("SHOW COLUMNS FROM products");
+    // First, check what columns exist in the inventory_items table
+    $columnsStmt = $db->query("SHOW COLUMNS FROM inventory_items");
     $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
     
     // Determine field names based on what exists
@@ -31,51 +20,52 @@ try {
     $hasUnitCost = in_array('unit_cost', $columns) || in_array('unitCost', $columns) || in_array('price', $columns) || in_array('cost', $columns);
     $hasCategoryId = in_array('category_id', $columns);
     $hasName = in_array('name', $columns) || in_array('product_name', $columns);
+    $hasCategory = in_array('category', $columns);
     
     // Build field selections
-    $quantityField = in_array('quantity', $columns) ? 'p.quantity' : (in_array('qty', $columns) ? 'p.qty' : (in_array('stock', $columns) ? 'p.stock' : '0'));
-    $unitCostField = in_array('unit_cost', $columns) ? 'p.unit_cost' : (in_array('unitCost', $columns) ? 'p.unitCost' : (in_array('price', $columns) ? 'p.price' : (in_array('cost', $columns) ? 'p.cost' : '0')));
-    $nameField = in_array('name', $columns) ? 'p.name' : (in_array('product_name', $columns) ? 'p.product_name' : 'p.id');
+    $quantityField = in_array('quantity', $columns) ? 'ii.quantity' : (in_array('qty', $columns) ? 'ii.qty' : (in_array('stock', $columns) ? 'ii.stock' : '0'));
+    $unitCostField = in_array('unit_cost', $columns) ? 'ii.unit_cost' : (in_array('unitCost', $columns) ? 'ii.unitCost' : (in_array('price', $columns) ? 'ii.price' : (in_array('cost', $columns) ? 'ii.cost' : '0')));
+    $nameField = in_array('name', $columns) ? 'ii.name' : (in_array('product_name', $columns) ? 'ii.product_name' : 'ii.id');
     
-    // Get inventory data from products table, joining with categories
+    // Get inventory data from inventory_items table, joining with categories
     $sql = "
         SELECT 
-            p.id,
+            ii.id,
             $nameField AS product_name,
             COALESCE(c.name, c.category_name, 'Uncategorized') AS category,
             $quantityField AS quantity,
             $unitCostField AS unit_cost,
             ($quantityField * $unitCostField) AS total_cost
-        FROM products p
-        LEFT JOIN categories c ON p.category_id = c.id
+        FROM inventory_items ii
+        LEFT JOIN categories c ON ii.category_id = c.id
         ORDER BY ($quantityField * $unitCostField) DESC
     ";
     
     // If category_id doesn't exist, try alternative approach
     if (!$hasCategoryId) {
-        // Check if category is stored directly in products table
-        if (in_array('category', $columns)) {
+        // Check if category is stored directly in inventory_items table
+        if ($hasCategory) {
             $sql = "
                 SELECT 
-                    p.id,
+                    ii.id,
                     $nameField AS product_name,
-                    COALESCE(p.category, 'Uncategorized') AS category,
+                    COALESCE(ii.category, 'Uncategorized') AS category,
                     $quantityField AS quantity,
                     $unitCostField AS unit_cost,
                     ($quantityField * $unitCostField) AS total_cost
-                FROM products p
+                FROM inventory_items ii
                 ORDER BY ($quantityField * $unitCostField) DESC
             ";
         } else {
             $sql = "
                 SELECT 
-                    p.id,
+                    ii.id,
                     $nameField AS product_name,
                     'Uncategorized' AS category,
                     $quantityField AS quantity,
                     $unitCostField AS unit_cost,
                     ($quantityField * $unitCostField) AS total_cost
-                FROM products p
+                FROM inventory_items ii
                 ORDER BY ($quantityField * $unitCostField) DESC
             ";
         }
@@ -105,19 +95,19 @@ try {
                 COALESCE(c.name, c.category_name, 'Uncategorized') AS category,
                 SUM($quantityField * $unitCostField) as category_total,
                 COUNT(*) as item_count
-            FROM products p
-            LEFT JOIN categories c ON p.category_id = c.id
+            FROM inventory_items ii
+            LEFT JOIN categories c ON ii.category_id = c.id
             GROUP BY category
             ORDER BY category_total DESC
         ";
-    } else if (in_array('category', $columns)) {
+    } else if ($hasCategory) {
         $categorySql = "
             SELECT 
-                COALESCE(p.category, 'Uncategorized') AS category,
+                COALESCE(ii.category, 'Uncategorized') AS category,
                 SUM($quantityField * $unitCostField) as category_total,
                 COUNT(*) as item_count
-            FROM products p
-            GROUP BY p.category
+            FROM inventory_items ii
+            GROUP BY ii.category
             ORDER BY category_total DESC
         ";
     } else {
@@ -126,7 +116,7 @@ try {
                 'Uncategorized' AS category,
                 SUM($quantityField * $unitCostField) as category_total,
                 COUNT(*) as item_count
-            FROM products p
+            FROM inventory_items ii
             ORDER BY category_total DESC
         ";
     }
