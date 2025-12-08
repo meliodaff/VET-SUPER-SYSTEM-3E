@@ -80,6 +80,12 @@ $doctor_result = $doctor_stmt->get_result();
       color: #fff;
       font-weight: bold;
     }
+
+    .time-btn.disabled {
+      background-color: #ccc !important;
+      color: #666 !important;
+      cursor: not-allowed !important;
+    }
   </style>
 </head>
 <body>
@@ -259,6 +265,50 @@ vetdocSelect.addEventListener('change', function() {
 const appointmentDate = document.getElementById('appointmentDate');
 const today = new Date().toISOString().split('T')[0];
 appointmentDate.setAttribute('min', today);
+
+
+
+function fetchBookedTimes() {
+    const doctorId = vetdocSelect.value;
+    const date = appointmentDate.value;
+
+    if (!doctorId || !date) return;
+
+    // 🔥 Clear selected time if doctor/date changes
+    timeInput.value = "";
+    currentSelectedTime = null;
+
+    fetch(`../php/fetch_booked.php?doctor_id=${doctorId}&date=${date}`)
+        .then(response => response.json())
+        .then(bookedTimes => {
+
+            // Reset all buttons
+            timeButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove("disabled");
+
+                if (btn.originalText) {
+                    btn.textContent = btn.originalText;
+                }
+            });
+
+            // Disable booked time buttons
+            timeButtons.forEach(btn => {
+                if (bookedTimes.includes(btn.value)) {
+                    btn.disabled = true;
+                    btn.classList.add("disabled");
+
+                    btn.originalText = btn.textContent;
+                    btn.textContent = btn.textContent + " (Booked)";
+                }
+            });
+
+        });
+}
+
+// Check whenever doctor or date changes
+vetdocSelect.addEventListener("change", fetchBookedTimes);
+appointmentDate.addEventListener("change", fetchBookedTimes);
 </script>
 </body>
 </html>
