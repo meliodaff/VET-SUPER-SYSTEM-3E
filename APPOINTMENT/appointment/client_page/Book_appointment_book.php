@@ -128,22 +128,33 @@ $doctor_result = $doctor_stmt->get_result();
             </div>
 
             <select id="petDropdown" name="pet_name" class="select-pet" required>
-              <option value="">Select Pet *</option>
-              <?php
-                $pet_sql = "SELECT id, pet_name FROM mypet WHERE user_id = ?";
-                $pet_stmt = $conn->prepare($pet_sql);
-                $pet_stmt->bind_param("i", $user_id);
-                $pet_stmt->execute();
-                $pet_result = $pet_stmt->get_result();
-                if ($pet_result->num_rows > 0) {
-                    while ($row = $pet_result->fetch_assoc()) {
-                        echo '<option value="'.htmlspecialchars($row['pet_name']).'">'.htmlspecialchars($row['pet_name']).'</option>';
-                    }
-                } else {
-                    echo '<option value="">No pets found</option>';
-                }
-              ?>
-            </select>
+    <option value="">Select Pet *</option>
+    <?php
+    // Connect to appointment_sia DB
+    $conn_pet = new mysqli('localhost', 'root', '', 'appointment_sia');
+    if ($conn_pet->connect_error) {
+        die("Pet DB connection failed: " . $conn_pet->connect_error);
+    }
+
+    $pet_sql = "SELECT id, pet_name FROM mypet WHERE user_id = ?";
+    $pet_stmt = $conn_pet->prepare($pet_sql);
+    if (!$pet_stmt) die("Prepare failed: " . $conn_pet->error);
+
+    $pet_stmt->bind_param("i", $user_id);
+    $pet_stmt->execute();
+    $pet_result = $pet_stmt->get_result();
+
+    if ($pet_result->num_rows > 0) {
+        while ($row = $pet_result->fetch_assoc()) {
+            echo '<option value="' . htmlspecialchars($row['pet_name']) . '">' . htmlspecialchars($row['pet_name']) . '</option>';
+        }
+    } else {
+        echo '<option value="">No pets found</option>';
+    }
+
+    $conn_pet->close();
+    ?>
+</select>
 
             <button type="button" id="addPetBtn" class="add-pet-btn">Add Pet</button>
           </div>
