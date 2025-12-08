@@ -68,7 +68,7 @@ $doctor_result = $doctor_stmt->get_result();
               while ($doctor = $doctor_result->fetch_assoc()) {
                   $doctor_id = $doctor['employee_id'];
                   $doctor_name = trim($doctor['first_name'] . ' ' . $doctor['middle_name'] . ' ' . $doctor['last_name']);
-                  echo '<option value="'.htmlspecialchars($doctor_id).'" data-name="'.htmlspecialchars($doctor_name).'">'.htmlspecialchars($doctor_name).'</option>';
+                  echo '<option value="'.htmlspecialchars($doctor_id).'" data-name="'.htmlspecialchars($doctor_name).'"> Dr. '.htmlspecialchars($doctor_name).'</option>';
               }
               ?>
             </select>
