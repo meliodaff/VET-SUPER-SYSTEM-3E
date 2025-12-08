@@ -100,7 +100,7 @@ $result = $stmt->get_result();
                         <a href="Book_appointment_dashboard_receipt.php?id=<?= $row['id'] ?>">View Receipt</a>
                       <?php endif; ?>
                       <?php if (strtolower($row['payment_status']) === 'pending'): ?>
-                        <a href="pay_reciept.php?id=<?= $row['id'] ?>">Pay Receipt</a>
+                        <a href="pay_reciept.php?id=<?= $row['id'] ?>">View Receipt</a>
                       <?php endif; ?>
                   <?php endif; ?>
                 </td>
