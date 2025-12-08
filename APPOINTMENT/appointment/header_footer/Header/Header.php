@@ -122,6 +122,24 @@
     }
 
     /* Dropdown links */
+    .dropdown button {
+      width: 100%;
+      background-color: white;
+      border: none;
+      height: 100%;
+      padding-right: 80px;
+      padding-left: 10px;
+      padding-bottom: 10px;
+      padding-top:10px;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .dropdown button:hover {
+      background: #f2f2f2;
+    }
+
+    /* Dropdown links */
     .dropdown a {
       display: block;
       padding: 10px 15px;
@@ -174,19 +192,19 @@
           <a href="notification.php">Notification</a>
         <?php endif; ?>
         <button onclick="
-  // Clear localStorage
-  localStorage.clear();
+          // Clear localStorage
+          localStorage.clear();
 
-  // Delete all cookies
-  document.cookie.split(';').forEach(function(cookie) {
-    document.cookie = cookie.replace(/=.*/, '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/');
-  });
+          // Delete all cookies
+          document.cookie.split(';').forEach(function(cookie) {
+            document.cookie = cookie.replace(/=.*/, '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/');
+          });
 
-  // Redirect to your page
-  window.location.href = 'http://localhost/VET-SUPER-SYSTEM-3E/MARKETING/index.php';
-">
-  Logout
-</button>
+          // Redirect to your page
+          window.location.href = 'http://localhost/VET-SUPER-SYSTEM-3E/MARKETING/index.php';
+        ">
+        Logout
+        </button>
 
 
       </div>
