@@ -1,19 +1,22 @@
 <?php
-include '../includes/session_id.php'; // has $user_id
-include '../includes/db.php'; // database connection (mysqli)
+include '../includes/session_id.php';
+include '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // Get pet ID
+    // Pet ID
     $id = intval($_POST['pet_id']);
 
-    // Collect inputs
+    // Inputs
     $pet_name = trim($_POST['pet_name']);
     $species = trim($_POST['species']);
     $breed = trim($_POST['breed']);
-    $age = intval($_POST['age']);
 
-    // Handle "Other" species/breed
+    // AGE is SPLIT into month + year
+    $month = intval($_POST['month'] ?? 0);
+    $year  = intval($_POST['year'] ?? 0);
+
+    // Handle Other selection
     if ($species === "Other") {
         if (!empty($_POST['other_species'])) {
             $species = trim($_POST['other_species']);
@@ -26,8 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $update_image = false;
     $file_name = null;
 
-    // Check if new image uploaded
+    // New Image Upload
     if (isset($_FILES["pet_image"]) && $_FILES["pet_image"]["error"] === UPLOAD_ERR_OK) {
+
         $target_dir = "../uploads/pets/";
         if (!is_dir($target_dir)) {
             mkdir($target_dir, 0777, true);
@@ -44,28 +48,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Prepare SQL
+    // With image
     if ($update_image) {
         $sql = "UPDATE mypet 
-                SET pet_name = ?, pet_image = ?, species = ?, breed = ?, age = ?, date_update = NOW() 
+                SET pet_name = ?, pet_image = ?, species = ?, breed = ?, 
+                    month = ?, year = ?, date_update = NOW()
                 WHERE id = ? AND user_id = ?";
+
         $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            die("Prepare failed: " . htmlspecialchars($conn->error));
-        }
-        $stmt->bind_param("ssssiii", $pet_name, $file_name, $species, $breed, $age, $id, $user_id);
+        $stmt->bind_param(
+            "ssssiiii",
+            $pet_name,
+            $file_name,
+            $species,
+            $breed,
+            $month,
+            $year,
+            $id,
+            $user_id
+        );
+
     } else {
+        // Without image
         $sql = "UPDATE mypet 
-                SET pet_name = ?, species = ?, breed = ?, age = ?, date_update = NOW() 
+                SET pet_name = ?, species = ?, breed = ?, 
+                    month = ?, year = ?, date_update = NOW()
                 WHERE id = ? AND user_id = ?";
+
         $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            die("Prepare failed: " . htmlspecialchars($conn->error));
-        }
-        $stmt->bind_param("sssiii", $pet_name, $species, $breed, $age, $id, $user_id);
+        $stmt->bind_param(
+            "sssiiii",
+            $pet_name,
+            $species,
+            $breed,
+            $month,
+            $year,
+            $id,
+            $user_id
+        );
     }
 
-    // Execute
+    // EXECUTE
     if ($stmt->execute()) {
         $stmt->close();
         header("Location: ../client_page/Book_appointment_my_pet.php?status=updated");

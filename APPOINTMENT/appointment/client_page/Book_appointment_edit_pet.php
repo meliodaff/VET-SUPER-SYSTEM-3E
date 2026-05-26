@@ -91,22 +91,26 @@ if (!$pet) {
           <label for="breed">Breed</label>
           <select id="breed" name="breed" required></select>
           <input type="text" id="otherBreed" name="other_breed" placeholder="Specify breed"
-                 value="<?php echo (!in_array($pet['breed'], [
-                   "Shih Tzu","Labrador","Pomeranian","German Shepherd","Golden Retriever",
-                   "Persian","Siamese","Ragdoll","Domestic Shorthair",
-                   "Parrot","Lovebird","Cockatiel",
-                   "Holland Lop","Netherland Dwarf",
-                   "Syrian","Dwarf","Roborovski",
-                   "Red-Eared Slider","Box Turtle",
-                   "Goldfish","Betta","Guppy",
-                   "Iguana","Snake","Gecko"
-                 ])) ? htmlspecialchars($pet['breed']) : ''; ?>" style="display:none;">
+            value="<?php echo (!in_array($pet['breed'], [
+              "Shih Tzu","Labrador","Pomeranian","German Shepherd","Golden Retriever",
+              "Persian","Siamese","Ragdoll","Domestic Shorthair",
+              "Parrot","Lovebird","Cockatiel",
+              "Holland Lop","Netherland Dwarf",
+              "Syrian","Dwarf","Roborovski",
+              "Red-Eared Slider","Box Turtle",
+              "Goldfish","Betta","Guppy",
+              "Iguana","Snake","Gecko"
+            ])) ? htmlspecialchars($pet['breed']) : ''; ?>" style="display:none;">
         </div>
 
-        <!-- Age -->
+        <!-- AGE — SPLIT INTO YEAR + MONTH -->
         <div class="form-group">
-          <label for="age">Age</label>
-          <input type="number" id="age" name="age" min="0" value="<?php echo (int)$pet['age']; ?>" required>
+          <label>Age</label>
+            <input type="number" name="month" min="0" max="11" placeholder="Months"
+                   value="<?php echo (int)$pet['month']; ?>" required>
+                   
+            <input type="number" name="year" min="0" placeholder="Years"
+                   value="<?php echo (int)$pet['year']; ?>" required>
         </div>
 
         <!-- Submit -->
@@ -197,8 +201,6 @@ function toggleSpecies() {
 // Initialize
 updateBreeds();
 toggleSpecies();
-
-// Event listener
 document.getElementById("species").addEventListener("change", updateBreeds);
 document.getElementById("species").addEventListener("change", toggleSpecies);
 

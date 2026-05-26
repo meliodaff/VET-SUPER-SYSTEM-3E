@@ -23,6 +23,41 @@ $due_date = $data['due_date'];
 $amount = (float)$data['amount'];
 $status = isset($data['status']) ? $data['status'] : 'Outstanding';
 
+// Data validation
+if (empty($invoice_number)) {
+    Response::error('Invoice number is required');
+}
+
+if (empty($client_name)) {
+    Response::error('Client name is required');
+}
+
+if (empty($date)) {
+    Response::error('Invoice date is required');
+}
+
+if (empty($due_date)) {
+    Response::error('Due date is required');
+}
+
+if ($amount <= 0) {
+    Response::error('Amount must be greater than zero');
+}
+
+// Validate date format
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+    Response::error('Invalid date format. Use YYYY-MM-DD');
+}
+
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $due_date)) {
+    Response::error('Invalid due date format. Use YYYY-MM-DD');
+}
+
+// Validate that due date is not before invoice date
+if (strtotime($due_date) < strtotime($date)) {
+    Response::error('Due date cannot be before invoice date');
+}
+
 try {
     // Check if invoice number already exists
     $stmt = $db->prepare("SELECT id FROM invoices WHERE invoice_number = ?");

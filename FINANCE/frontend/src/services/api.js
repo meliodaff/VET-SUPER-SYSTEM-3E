@@ -146,6 +146,12 @@ export const paymentsAPI = {
     api.put("/payments/update_payment_status.php", data),
   trackTransactions: (limit = 20) =>
     api.get(`/payments/track_transactions.php?limit=${limit}`),
+  createEmployeePayment: (data) =>
+    api.post("/payments/create_employee_payment.php", data),
+  getEmployeePayments: (params = {}) => {
+    const queryParams = new URLSearchParams(params).toString();
+    return api.get(`/payments/get_employee_payments.php?${queryParams}`);
+  },
 };
 
 // Inventory API

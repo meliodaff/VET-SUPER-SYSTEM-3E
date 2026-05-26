@@ -1,110 +1,103 @@
 <?php
-  require_once '../includes/session_id.php';
-  require_once '../includes/db.php';
+require_once '../includes/session_id.php';
+require_once '../includes/hr_db.php';
 
-  // Get current logged-in user ID from session
-  $user_id = $_SESSION['user_id'];
+// ------------------------
+// Get logged-in user ID
+// ------------------------
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
+    die("❌ No user logged in.");
+}
 
-  // Prepare query to fetch user details
-  $query = "SELECT * FROM registered WHERE user_id = ?";
-  $stmt = $conn->prepare($query);
-  $stmt->bind_param("i", $user_id); // "i" means integer
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $user = $result->fetch_assoc();
+// ------------------------
+// Fetch user data
+// ------------------------
+$query = "SELECT first_name, middle_name, last_name, email, phone_number 
+          FROM users 
+          WHERE user_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+if (!$user) {
+    die("❌ User not found.");
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Update Details</title>
-  <link rel="stylesheet" href="../styles/profile.css">
-  <link rel="stylesheet" href="/appointment/styles/popup.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Update Profile</title>
 
-      <link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
+<!-- Existing CSS -->
+<link rel="stylesheet" href="../styles/profile.css">
+<link rel="stylesheet" href="/appointment/styles/popup.css">
+<link rel="stylesheet" href="../../../MARKETING/css/generalfooter.css">
 
 </head>
 <body>
-  
 
-  <!-- Header -->
-  <?php include '../header_footer/Header/Header.php'; ?>
+<!-- Header -->
+<?php include '../header_footer/Header/Header.php'; ?>
 
-  <!-- popup -->
-  <?php include '../php/popup.php'; ?>
+<!-- Popup -->
+<?php include '../php/popup.php'; ?>
 
-  <main>
-    <section class="form-section">
-      <h2>Details</h2>
+<main>
+<section class="form-section">
+  <h2>Profile Details</h2>
 
-      <form class="details-form" method="POST" action="../php/update_profile.php">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" name="fname" value="<?= htmlspecialchars($user['fname']) ?>">
-        </div>
+  <form class="details-form" method="POST" action="../php/update_profile.php">
 
-        <div class="form-group">
-          <label>Street Address</label>
-          <input type="text" name="street_address" value="<?= htmlspecialchars($user['street_address']) ?>">
-        </div>
+    <div class="form-group">
+      <label>First Name</label>
+      <input type="text" name="first_name" value="<?php echo htmlspecialchars($user['first_name']); ?>">
+    </div>
 
-        <div class="form-group">
-          <label>Last Name</label>
-          <input type="text" name="lname" value="<?= htmlspecialchars($user['lname']) ?>">
-        </div>
+    <div class="form-group">
+      <label>Middle Name</label>
+      <input type="text" name="middle_name" value="<?php echo htmlspecialchars($user['middle_name']); ?>">
+    </div>
 
-        <div class="form-group">
-          <label>City</label>
-          <input type="text" name="city" value="<?= htmlspecialchars($user['city']) ?>">
-        </div>
+    <div class="form-group">
+      <label>Last Name</label>
+      <input type="text" name="last_name" value="<?php echo htmlspecialchars($user['last_name']); ?>">
+    </div>
 
-        <div class="form-group">
-          <label>Phone Number</label>
-          <input type="text" name="phone" value="<?= htmlspecialchars($user['phone']) ?>">
-        </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>">
+    </div>
 
-        <div class="form-group">
-          <label>State</label>
-          <input type="text" name="state" value="<?= htmlspecialchars($user['state']) ?>">
-        </div>
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="text" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number']); ?>">
+    </div>
 
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>">
-        </div>
+    <div class="btn-container">
+      <button type="submit" class="btn-save open-confirmation" data-action="save" data-name="your changes">Save</button>
+      <button type="button" class="btn-cancel" onclick="window.location.href='Book_appointment_dashboard.php'">Back</button>
+    </div>
 
-        <div class="form-group">
-          <label>ZIP Code</label>
-          <input type="text" name="zip_code" value="<?= htmlspecialchars($user['zip_code']) ?>">
-        </div>
+  </form>
+</section>
+</main>
 
-        <div class="form-group full-width">
-          <label>Emergency Contact</label>
-          <input type="text" name="emergency_contact" value="<?= htmlspecialchars($user['emergency_contact']) ?>">
-        </div>
-
-<div class="btn-container">
-  <button type="submit" class="btn-save open-confirmation" data-action="save" data-name="your changes">Save</button>
-  <button type="button" class="btn-cancel" onclick="window.location.href='Book_appointment_dashboard.php'">Back</button>
-</div>
-      </form>
-        
-    </section>
-  </main>
-
-  <!-- Confirmation Popup (reusable) -->
-  <?php include '../php/confirmation.php'; ?>
+<!-- Confirmation Popup -->
+<?php include '../php/confirmation.php'; ?>
 
 <script>
 document.querySelectorAll(".open-confirmation").forEach(btn => {
   btn.addEventListener("click", function(e) {
-    e.preventDefault(); // stop the form from submitting right away
+    e.preventDefault();
     const action = this.getAttribute("data-action");
     const name = this.getAttribute("data-name");
     const form = this.closest("form");
 
-    // Open popup and submit the form if confirmed
     openConfirmation(action, name, () => {
       form.submit();
     });
@@ -112,10 +105,8 @@ document.querySelectorAll(".open-confirmation").forEach(btn => {
 });
 </script>
 
+<!-- Footer -->
+<?php include '../../../MARKETING/generalfooter.php'; ?>
 
-  <!-- Footer -->
-  <?php
-    include '../../../MARKETING/generalfooter.php';
-  ?>
 </body>
 </html>

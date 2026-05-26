@@ -1,15 +1,5 @@
 <?php
   require_once '../includes/session_id.php';
-  require_once '../includes/db.php';
-
-  function getTotalNotifications($conn) {
-      $sql = "SELECT COUNT(*) AS total_read FROM notifications WHERE is_read > 0";
-      $res = $conn->query($sql);
-      $row = $res->fetch_assoc();
-      return $row['total_read'] ?? 0;
-  }
-
-  $total_read = getTotalNotifications($conn);
 ?>
 
 <!DOCTYPE html>
@@ -122,6 +112,24 @@
     }
 
     /* Dropdown links */
+    .dropdown button {
+      width: 100%;
+      background-color: white;
+      border: none;
+      height: 100%;
+      padding-right: 80px;
+      padding-left: 10px;
+      padding-bottom: 10px;
+      padding-top:10px;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .dropdown button:hover {
+      background: #f2f2f2;
+    }
+
+    /* Dropdown links */
     .dropdown a {
       display: block;
       padding: 10px 15px;
@@ -168,25 +176,21 @@
         <a href="Book_appointment_profile.php">My Profile</a>
         <a href="Book_appointment_dashboard.php">Dashboard</a>
         <a href="Book_appointment_my_pet.php">My Pets</a>
-        <?php if ($total_read > 0): ?>
-          <a href="notification.php" style="color: blue;">Notification</a>
-        <?php else: ?>
-          <a href="notification.php">Notification</a>
-        <?php endif; ?>
+        <a href="notification.php">Notification</a>
         <button onclick="
-  // Clear localStorage
-  localStorage.clear();
+          // Clear localStorage
+          localStorage.clear();
 
-  // Delete all cookies
-  document.cookie.split(';').forEach(function(cookie) {
-    document.cookie = cookie.replace(/=.*/, '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/');
-  });
+          // Delete all cookies
+          document.cookie.split(';').forEach(function(cookie) {
+            document.cookie = cookie.replace(/=.*/, '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/');
+          });
 
-  // Redirect to your page
-  window.location.href = 'http://localhost/VET-SUPER-SYSTEM-3E/MARKETING/index.php';
-">
-  Logout
-</button>
+          // Redirect to your page
+          window.location.href = 'http://localhost/VET-SUPER-SYSTEM-3E/MARKETING/index.php';
+        ">
+        Logout
+        </button>
 
 
       </div>

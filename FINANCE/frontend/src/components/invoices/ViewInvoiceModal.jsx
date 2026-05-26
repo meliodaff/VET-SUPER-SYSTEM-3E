@@ -7,9 +7,6 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [invoiceDetails, setInvoiceDetails] = useState(null);
-  const [addedItems, setAddedItems] = useState([]);
-  const [newItemName, setNewItemName] = useState('');
-  const [newItemPrice, setNewItemPrice] = useState('');
 
   useEffect(() => {
     // Determine best identifier available (id, invoice_id, invoice_number)
@@ -40,30 +37,8 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
     }
   };
 
-  const addInclusionItem = () => {
-    if (!newItemName.trim()) return;
-    const price = parseFloat(newItemPrice) || 0;
-    const item = {
-      id: `added-${Date.now()}`,
-      service_name: newItemName.trim(),
-      service_category: 'Inclusion',
-      quantity: 1,
-      unit_price: price,
-      line_total: price
-    };
-    setAddedItems((s) => [...s, item]);
-    setNewItemName('');
-    setNewItemPrice('');
-  };
-
-  const removeAddedItem = (id) => {
-    setAddedItems((s) => s.filter(i => i.id !== id));
-  };
-
   const calculateTotal = () => {
-    const base = invoiceDetails?.summary?.total_amount || 0;
-    const added = addedItems.reduce((acc, it) => acc + (parseFloat(it.line_total) || 0), 0);
-    return base + added;
+    return invoiceDetails?.summary?.total_amount || 0;
   };
 
   if (!invoice) return null;
@@ -130,7 +105,7 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
 
                   <hr className="my-2" />
                   <div className="text-xs">
-                    {(invoiceDetails.items || []).concat(addedItems).map((it) => (
+                    {(invoiceDetails.items || []).map((it) => (
                       <div key={it.id} className="flex justify-between">
                         <div className="truncate pr-2">{it.service_name}</div>
                         <div className="text-right">{formatCurrency(it.line_total || it.unit_price)}</div>
@@ -204,58 +179,27 @@ const ViewInvoiceModal = ({ invoice, onClose }) => {
                   </div>
                 </div>
 
-                {/* Inclusion input */}
+                {/* Items List (View Only) */}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-700">Inclusion</h4>
-                  <div className="flex items-center gap-2 mt-3">
-                    <input
-                      type="text"
-                      placeholder="Item Name"
-                      value={newItemName}
-                      onChange={(e) => setNewItemName(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Price"
-                      value={newItemPrice}
-                      onChange={(e) => setNewItemPrice(e.target.value)}
-                      className="w-28 px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                    <button
-                      onClick={addInclusionItem}
-                      className="px-3 py-2 bg-blue-700 text-white rounded-lg"
-                    >
-                      Add
-                    </button>
-                  </div>
-
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Items</h4>
                   <div className="mt-4">
                     <table className="w-full text-left">
                       <thead>
                         <tr className="text-sm text-gray-600">
                           <th>Item</th>
                           <th className="text-right">Price</th>
-                          <th className="text-center">Action</th>
                         </tr>
                       </thead>
                       <tbody className="text-sm">
-                        {((invoiceDetails.items || []).concat(addedItems)).length === 0 ? (
+                        {(invoiceDetails.items || []).length === 0 ? (
                           <tr>
-                            <td colSpan={3} className="py-4 text-center text-gray-500">No items yet</td>
+                            <td colSpan={2} className="py-4 text-center text-gray-500">No items</td>
                           </tr>
                         ) : (
-                          (invoiceDetails.items || []).concat(addedItems).map((it) => (
+                          (invoiceDetails.items || []).map((it) => (
                             <tr key={it.id} className="border-t">
                               <td className="py-2">{it.service_name}</td>
                               <td className="py-2 text-right">{formatCurrency(it.line_total || it.unit_price)}</td>
-                              <td className="py-2 text-center">
-                                {it.id && String(it.id).startsWith('added-') ? (
-                                  <button onClick={() => removeAddedItem(it.id)} className="text-sm text-red-600">Remove</button>
-                                ) : (
-                                  <span className="text-sm text-gray-400">&nbsp;</span>
-                                )}
-                              </td>
                             </tr>
                           ))
                         )}
